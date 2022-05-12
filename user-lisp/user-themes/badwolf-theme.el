@@ -92,7 +92,7 @@
 
    ;; font lock
    `(default ((t (:inherit nil :foreground ,plain :background ,bg))))
-   `(font-lock-builtin-face ((t (:foreground ,taffy))))
+   `(font-lock-builtin-face ((t (:foreground ,taffy :bold t))))
    `(font-lock-comment-face ((t (:foreground ,lightgravel))))
    `(font-lock-comment-delimiter-face ((t (:foreground ,lightgravel))))
    `(font-lock-constant-face ((t (:foreground ,toffee))))
@@ -317,7 +317,8 @@
                            `(:background ,dress :foreground ,bg)))))
    `(diff-hl-change ((t ,(if badwolf-diff-hl-inverse
                              `(:background ,bg :foreground ,dirtyblonde)
-                           `(:background ,dirtyblonde :foreground ,bg)))))))
+                           `(:background ,dirtyblonde :foreground ,bg)))))
+   '(line-number-current-line ((t (:inherit line-number :foreground "white"))))))
 
 ;;;###autoload
 (when load-file-name
