@@ -17,9 +17,6 @@
 ;; yes/no = y/n
 (defalias 'yes-or-no-p 'y-or-n-p)
 
-;; Machine-specific customisation.
-(require 'user-machine)
-
 ;; General customisation.
 (require 'user-appearance)
 (require 'user-completion)

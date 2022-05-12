@@ -7,6 +7,11 @@
 ;;; Code:
 
 (require 'use-package)
+(add-to-list 'custom-theme-load-path "~/.emacs.d/user-lisp/user-themes")
+
+;; Theme
+(defconst user-setting-theme 'badwolf)
+(defconst user-setting-font "Source Code Pro-14")
 
 ;; Hide messages when starting a new session.
 (setq initial-major-mode 'fundamental-mode)
@@ -30,14 +35,16 @@
   (set-frame-font user-setting-font nil t))
 
 ;; Use a custom theme in graphical frames.
+;; (when (display-graphic-p)
+;;   (unless (require user-setting-theme-package nil 'noerror)
+;;     (package-install user-setting-theme-package)
+;;     (require user-setting-theme-package))
+;;   (load-theme user-setting-theme t))
 (when (display-graphic-p)
-  (unless (require user-setting-theme-package nil 'noerror)
-    (package-install user-setting-theme-package)
-    (require user-setting-theme-package))
-  (load-theme user-setting-theme t))
+    (load-theme user-setting-theme t))
 
 ;; Disable frame decorations.
-(menu-bar-mode user-setting-menu-bar-mode)
+(menu-bar-mode -1)
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
 

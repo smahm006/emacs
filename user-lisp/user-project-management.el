@@ -13,7 +13,7 @@
 (use-package projectile
   :custom
   (projectile-completion-system 'default)
-  (projectile-indexing-method user-setting-project-indexing-method)
+  (projectile-indexing-method 'hybrid)
   (projectile-sort-order 'recently-active)
   :config
   (projectile-mode)
