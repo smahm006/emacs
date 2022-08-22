@@ -10,7 +10,8 @@
 (add-to-list 'custom-theme-load-path "~/.emacs.d/user-lisp/user-themes")
 
 ;; Theme
-(defconst user-setting-theme 'badwolf)
+(defconst user-setting-theme-package 'tomorrow-night-paradise-theme)
+(defconst user-setting-theme 'tomorrow-night-paradise)
 (defconst user-setting-font "Source Code Pro-14")
 
 ;; Hide messages when starting a new session.
@@ -35,13 +36,14 @@
   (set-frame-font user-setting-font nil t))
 
 ;; Use a custom theme in graphical frames.
-;; (when (display-graphic-p)
-;;   (unless (require user-setting-theme-package nil 'noerror)
-;;     (package-install user-setting-theme-package)
-;;     (require user-setting-theme-package))
-;;   (load-theme user-setting-theme t))
 (when (display-graphic-p)
-    (load-theme user-setting-theme t))
+  (unless (require user-setting-theme-package nil 'noerror)
+    (condition-case nil
+        (progn
+          (package-install user-setting-theme-package)
+          (require user-setting-theme-package)
+          (load-theme user-setting-theme t))
+      (error (load-theme user-setting-theme t)))))
 
 ;; Disable frame decorations.
 (menu-bar-mode -1)
