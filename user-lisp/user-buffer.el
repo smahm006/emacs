@@ -7,6 +7,8 @@
 ;;; Code:
 
 (require 'use-package)
+(setq trash-directory "~/.local/share/Trash/files")
+(setq delete-by-moving-to-trash t)
 
 ;; Buffer navigation.
 (use-package bufler
@@ -88,7 +90,7 @@
       (if (vc-backend filename)
           (vc-delete-file filename)
         (progn
-          (delete-file filename)
+          (delete-file filename t)
           (message "Deleted file %s" filename)
           (kill-buffer))))))
 
