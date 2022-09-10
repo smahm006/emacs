@@ -23,6 +23,7 @@
 (require 'user-development)
 (require 'user-editing)
 (require 'user-office)
+(require 'user-buffer)
 (require 'user-navigation)
 (require 'user-networking)
 (require 'user-operating-system)

@@ -101,9 +101,9 @@
   (which-key-mode))
 
 ;;; Keyboard:
-(global-set-key (kbd "C-c k k") 'which-key-show-top-level)
-(global-set-key (kbd "C-c k ,") 'which-key-show-major-mode)
-(global-set-key (kbd "C-c k .") 'which-key-show-minor-mode-keymap)
+;; (global-set-key (kbd "C-c k k") 'which-key-show-top-level)
+;; (global-set-key (kbd "C-c k ,") 'which-key-show-major-mode)
+;; (global-set-key (kbd "C-c k .") 'which-key-show-minor-mode-keymap)
 
 (provide 'user-completion)
 ;;; user-completion.el ends here

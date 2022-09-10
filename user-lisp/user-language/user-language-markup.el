@@ -62,7 +62,8 @@
   (add-hook 'yaml-mode-hook #'flycheck-mode)
   (add-hook 'yaml-mode-hook #'flyspell-prog-mode)
   (add-hook 'yaml-mode-hook #'hl-todo-mode)
-  (add-hook 'yaml-mode-hook #'rainbow-delimiters-mode))
+  (add-hook 'yaml-mode-hook #'rainbow-delimiters-mode)
+  (add-hook 'yaml-mode-hook #'highlight-indent-guides-mode))
 
 ;; Hashicorp Configuration Language
 (use-package hcl-mode

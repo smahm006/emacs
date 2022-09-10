@@ -47,7 +47,6 @@
 ;; Override Major Mode keybinds with my own
 (defvar my-keys-minor-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-M-k") 'kill-buffer-and-window)
     (define-key map (kbd "C-<return>") 'vterm-with-virtualenv)
     (define-key map (kbd "C-M-<return>") (lambda () (interactive) (vterm-dedicated-with-virtualenv) (balance-windows)))
     (define-key map (kbd "<f1>") 'open-tree)
