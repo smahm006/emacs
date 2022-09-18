@@ -12,7 +12,7 @@
 ;; Theme
 (defconst user-setting-theme-package 'tomorrow-night-paradise-theme)
 (defconst user-setting-theme 'tomorrow-night-paradise)
-(defconst user-setting-font "Source Code Pro-14")
+(defconst user-setting-font "Menlo-14")
 
 ;; Hide messages when starting a new session.
 (setq initial-major-mode 'fundamental-mode)
