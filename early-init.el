@@ -16,6 +16,9 @@
 ;; Never load site-specific files
 (setq inhibit-default-init t)
 
+;; Follow any symlink leading up to the file
+(setq find-file-visit-truename t)
+
 ;; Configure package archives
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
                          ("melpa" . "https://melpa.org/packages/")
