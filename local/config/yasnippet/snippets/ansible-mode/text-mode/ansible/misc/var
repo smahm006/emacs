@@ -1,0 +1,5 @@
+# name: varialble expansion with double curly braces
+# key: var
+# condition: ansible
+# --
+{{ $1 }} $0

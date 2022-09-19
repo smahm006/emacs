@@ -37,8 +37,6 @@
   (defun open-tree ()
   (interactive)
   (progn
-    (when (derived-mode-p 'prog-mode)
-      (lsp-treemacs-symbols-toggle))
     (pcase (treemacs-current-visibility)
       ('visible (delete-window (treemacs-get-local-window)))
       ('exists  (treemacs-display-current-project-exclusively))
@@ -46,11 +44,12 @@
     (other-window -1)))
   :config
   (setq treemacs-width 25
-        treemacs-follow-mode -1
-        treemacs-tag-follow-mode -1
-        treemacs-is-never-other-window t
+        treemacs-display-current-project-exclusively t
         treemacs-follow-after-init t
+        treemacs-project-follow-mode t
+        treemacs-project-follow-cleanup t
         treemacs-no-png-images t
+        treemacs-silent-refresh t
         treemacs-icon-open-png   (propertize "⊖ " 'face 'treemacs-directory-face)
         treemacs-icon-closed-png (propertize "⊕ " 'face 'treemacs-directory-face)
         treemacs-sorting 'alphabetic-case-insensitive-asc
@@ -64,26 +63,14 @@
                   treemacs-git-conflict-face
                   treemacs-file-face
                   treemacs-tags-face))
-    (set-face-attribute face nil :family "Noto Sans" :height 110))
+    (set-face-attribute face nil :family "Menlo" :height 140))
   (dolist (face '(treemacs-root-face
                   treemacs-directory-face
                   treemacs-directory-collapsed-face))
-    (set-face-attribute face nil :family "Noto Sans" :height 130)))
+    (set-face-attribute face nil :family "Menlo" :height 150)))
 
-(use-package lsp-treemacs
-    :init
-    (defun lsp-treemacs-symbols-toggle ()
-      "Toggle the lsp-treemacs-symbols buffer."
-      (interactive)
-      (if (get-buffer "*LSP Symbols List*")
-          (kill-buffer "*LSP Symbols List*")
-        (progn
-          (lsp-treemacs-symbols)
-          (lsp-treemacs-symbols)
-          (other-window -1))))
-    :config
-    (lsp-treemacs-sync-mode 1)
-    (defun lsp-treemacs--generic-icon (&rest _) ""))
+;;(use-package treemacs-projectile
+;;  :after (treemacs projectile))
 
 ;; Search
 (use-package ag
@@ -104,8 +91,8 @@
   (global-set-key (kbd "C-c p d") #'projectile-dired))
 
 (with-eval-after-load 'treemacs
-  (global-set-key (kbd "C-c t t") #'treemacs-select-window)
-  (global-set-key (kbd "C-c t f") #'lsp-treemacs-symbols))
+  (global-set-key (kbd "C-c t t") #'treemacs-select-window))
+
 
 (provide 'user-project-management)
 ;;; user-project-management.el ends here

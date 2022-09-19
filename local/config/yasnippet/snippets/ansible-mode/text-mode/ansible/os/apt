@@ -1,0 +1,9 @@
+# name : Manages apt-packages
+# key : apt
+# condition: ansible
+# --
+- name: ${1:Manages apt-packages}
+  apt:
+    pkg:
+      - ${2: package name}
+    update_cache: yesno $0

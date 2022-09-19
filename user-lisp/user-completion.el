@@ -44,9 +44,12 @@
   :config
   (yas-reload-all)
   (setq yas-snippet-dirs '("~/.emacs.d/local/config/yasnippet/snippets"))
+  :hook
+  (emacs-startup-hook . (lambda () (yas-load-directory "~/.emacs.d/local/config/yasnippet/snippets")))
   :bind
   ("C-c y s" . yas-insert-snippet)
-  ("C-c y v" . yas-visit-snippet-file))
+  ("C-c y v" . yas-visit-snippet-file)
+  ("C-c y y". yas-expand))
 
 ;; Text and programming language completion.
 (use-package company
@@ -55,7 +58,8 @@
   (company-auto-commit nil)
   (company-minimum-prefix-length 1)
   (company-show-numbers t)
-  (company-idle-delay 0.3)
+  (company-idle-delay 0.1)
+  (company-dabbrev-downcase 0)
   :bind
     (:map company-mode-map
 	      ("<tab>". tab-indent-or-complete)
@@ -64,8 +68,9 @@
 	      ("C-n". company-select-next)
 	      ("C-p". company-select-previous)
 	      ("M-<". company-select-first)
-	      ("M->". company-select-last)))
-
+	      ("M->". company-select-last))
+    :config
+    (add-to-list 'company-backends 'company-ansible))
 
 ;; Expand Yas Snippet with Tab
 (defun company-yasnippet-or-completion ()

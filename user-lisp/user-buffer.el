@@ -105,7 +105,7 @@
 (global-set-key (kbd "C-x C-b") #'bufler)
 (global-set-key (kbd "C-x b") #'bufler-switch-buffer)
 (global-set-key (kbd "M-o") #'ace-window)
-(global-set-key (kbd "<C-tab>") #'next-buffer)
-(global-set-key (kbd "<C-S-iso-lefttab>") #'previous-buffer)
+(global-set-key (kbd "<C-M-tab>") #'next-buffer)
+(global-set-key (kbd "<C-M-S-iso-lefttab>") #'previous-buffer)
 
 (provide 'user-buffer)

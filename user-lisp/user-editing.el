@@ -76,7 +76,73 @@
 ;; Focusing, dims surrounding text
 (use-package focus)
 
+(use-package re-builder
+  :ensure nil)
+
+;; query replace all from buffer start
+(fset 'query-replace-wraparound 'query-replace)
+(advice-add 'query-replace-wraparound
+            :around
+            #'(lambda(oldfun &rest args)
+               "Query replace the whole buffer."
+               ;; set start pos
+               (unless (nth 3 args)
+                 (setf (nth 3 args)
+                       (if (use-region-p)
+                           (region-beginning)
+                         (point-min))))
+               (unless (nth 4 args)
+                 (setf (nth 4 args)
+                       (if (use-region-p)
+                           (region-end)
+                         (point-max))))
+               (apply oldfun args)))
+
+(defvar my/re-builder-positions nil
+    "Store point and region bounds before calling re-builder")
+  (advice-add 're-builder
+              :before
+              (defun my/re-builder-save-state (&rest _)
+                "Save into `my/re-builder-positions' the point and region
+positions before calling `re-builder'."
+                          (setq my/re-builder-positions
+                                (cons (point)
+                                      (when (region-active-p)
+                                        (list (region-beginning)
+                                              (region-end)))))))
+(defun reb-replace-regexp (&optional delimited)
+  "Run `query-replace-regexp' with the contents of re-builder. With
+non-nil optional argument DELIMITED, only replace matches
+surrounded by word boundaries."
+  (interactive "P")
+  (reb-update-regexp)
+  (let* ((re (reb-target-binding reb-regexp))
+         (replacement (query-replace-read-to
+                       re
+                       (concat "Query replace"
+                               (if current-prefix-arg
+                                   (if (eq current-prefix-arg '-) " backward" " word")
+                                 "")
+                               " regexp"
+                               (if (with-selected-window reb-target-window
+                                     (region-active-p)) " in region" ""))
+                       t))
+         (pnt (car my/re-builder-positions))
+         (beg (cadr my/re-builder-positions))
+         (end (caddr my/re-builder-positions)))
+    (with-selected-window reb-target-window
+      (goto-char pnt) ; replace with (goto-char (match-beginning 0)) if you want
+                      ; to control where in the buffer the replacement starts
+                      ; with re-builder
+      (setq my/re-builder-positions nil)
+      (reb-quit)
+      (query-replace-regexp re replacement delimited beg end))))
+
 ;;; Keyboard
+(global-set-key (kbd "M-%") 'query-replace-wraparound)
+(global-set-key (kbd "C-c r") 're-builder)
+(define-key reb-mode-map (kbd "RET") 'reb-replace-regexp)
+(define-key reb-lisp-mode-map (kbd "RET") 'reb-replace-regexp)
 (global-set-key (kbd "<C-M-backsbace>") 'just-one-space)
 (global-set-key (kbd "C-c f") 'focus-mode)
 (global-set-key (kbd "M-c") 'capitalize-dwim)

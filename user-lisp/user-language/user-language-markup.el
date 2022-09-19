@@ -54,18 +54,23 @@
 
 ;; Yet another markup language (YAML), oh and also Ansible
 (use-package ansible)
+(use-package company-ansible)
 
 (use-package yaml-mode
   :mode (("\\.yml\\'" . yaml-mode)
          ("\\.yaml\\'" . yaml-mode))
   :init
+  (add-hook 'yaml-mode-hook #'company-mode)
   (add-hook 'yaml-mode-hook #'auto-fill-mode)
   (add-hook 'yaml-mode-hook #'display-line-numbers-mode)
   (add-hook 'yaml-mode-hook #'flycheck-mode)
   (add-hook 'yaml-mode-hook #'flyspell-prog-mode)
+  (add-hook 'yaml-mode-hook #'hungry-delete-mode)
+  (add-hook 'yaml-mode-hook #'lsp-deferred)
   (add-hook 'yaml-mode-hook #'hl-todo-mode)
   (add-hook 'yaml-mode-hook #'rainbow-delimiters-mode)
   (add-hook 'yaml-mode-hook #'highlight-indent-guides-mode)
+  (add-hook 'yaml-mode-hook #'user-auto-fill-only-comments)
   (add-hook 'yaml-mode-hook '(lambda () (ansible 1))))
 
 ;; Hashicorp Configuration Language

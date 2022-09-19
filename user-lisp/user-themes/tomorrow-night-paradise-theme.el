@@ -124,6 +124,8 @@
      ;; black, red, green, yellow, blue, magenta, cyan, white
      [unspecified ,background ,red ,green ,yellow ,blue ,purple ,blue ,foreground])))
 
+(custom-set-faces
+ '(line-number-current-line ((t (:inherit line-number :foreground "white")))))
 (provide-theme 'tomorrow-night-paradise)
 
 ;;; tomorrow-night-paradise-theme.el ends here
