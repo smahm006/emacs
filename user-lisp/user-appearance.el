@@ -45,6 +45,18 @@
           (load-theme user-setting-theme t))
       (error (load-theme user-setting-theme t)))))
 
+(when (daemonp)
+  (add-to-list 'default-frame-alist (cons 'font user-setting-font))
+  (add-hook 'after-make-frame-functions
+            (defun my/theme-init-daemon (frame)
+              (with-selected-frame frame
+                (load-theme user-setting-theme t))
+              ;; Run this hook only once.
+              (remove-hook 'after-make-frame-functions
+                           #'my/theme-init-daemon)
+              (fmakunbound 'my/theme-init-daemon)))
+  (load-theme user-setting-theme t))
+
 ;; Disable frame decorations.
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
