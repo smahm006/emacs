@@ -38,6 +38,9 @@
 (require 'user-language-rust)
 (require 'user-language-web)
 
+;; Refresh keychain
+(keychain-refresh-environment)
+
 ;; Local and non-version-controlled customisation
 (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
 (when (file-exists-p custom-file) (load custom-file))

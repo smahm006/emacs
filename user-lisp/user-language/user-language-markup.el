@@ -52,7 +52,9 @@
   (add-hook 'jsonnet-mode-hook #'flyspell-prog-mode)
   (add-hook 'jsonnet-mode-hook #'rainbow-delimiters-mode))
 
-;; Yet another markup language
+;; Yet another markup language (YAML), oh and also Ansible
+(use-package ansible)
+
 (use-package yaml-mode
   :mode (("\\.yml\\'" . yaml-mode)
          ("\\.yaml\\'" . yaml-mode))
@@ -63,7 +65,8 @@
   (add-hook 'yaml-mode-hook #'flyspell-prog-mode)
   (add-hook 'yaml-mode-hook #'hl-todo-mode)
   (add-hook 'yaml-mode-hook #'rainbow-delimiters-mode)
-  (add-hook 'yaml-mode-hook #'highlight-indent-guides-mode))
+  (add-hook 'yaml-mode-hook #'highlight-indent-guides-mode)
+  (add-hook 'yaml-mode-hook '(lambda () (ansible 1))))
 
 ;; Hashicorp Configuration Language
 (use-package hcl-mode
