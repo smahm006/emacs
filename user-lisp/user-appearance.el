@@ -7,7 +7,7 @@
 ;;; Code:
 
 (require 'use-package)
-(add-to-list 'custom-theme-load-path "~/.emacs.d/user-lisp/user-themes")
+(add-to-list 'custom-theme-load-path "~/.config/emacs/user-lisp/user-themes")
 
 ;; Theme
 (defconst user-setting-theme-package 'tomorrow-night-paradise-theme)

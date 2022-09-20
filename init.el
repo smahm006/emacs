@@ -9,6 +9,7 @@
 ;;; Code:
 
 ;; Backwards compatibility for systems without `early-init.el` support.
+(setq user-emacs-directory (file-truename "~/.config/emacs"))
 (require 'early-init (concat user-emacs-directory "early-init.el"))
 
 ;; Prevent accindentally killing sesesion

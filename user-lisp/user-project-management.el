@@ -12,7 +12,7 @@
 ;; Project management
 (use-package projectile
   :init
-  (shell-command "ln -sf ~/.emacs.d/.known_projects ~/.emacs.d/local/data/projectile/known-projects.el")
+  (shell-command "ln -sf ~/.config/emacs/.known_projects ~/.config/emacs/local/data/projectile/known-projects.el")
   :custom
   (projectile-completion-system 'default)
   (projectile-indexing-method 'hybrid)
