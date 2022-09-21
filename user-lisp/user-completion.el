@@ -43,9 +43,9 @@
   (add-hook 'lsp-mode-hook 'yas-minor-mode)
   :config
   (yas-reload-all)
-  (setq yas-snippet-dirs '("~/.emacs.d/local/config/yasnippet/snippets"))
+  (setq yas-snippet-dirs '("~/.config/emacs/local/config/yasnippet/snippets"))
   :hook
-  (emacs-startup-hook . (lambda () (yas-load-directory "~/.emacs.d/local/config/yasnippet/snippets")))
+  (emacs-startup-hook . (lambda () (yas-load-directory "~/.config/emacs/local/config/yasnippet/snippets")))
   :bind
   ("C-c y s" . yas-insert-snippet)
   ("C-c y v" . yas-visit-snippet-file)
