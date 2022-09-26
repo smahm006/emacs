@@ -10,8 +10,8 @@
 (add-to-list 'custom-theme-load-path "~/.config/emacs/user-lisp/user-themes")
 
 ;; Theme
-(defconst user-setting-theme-package 'tomorrow-night-paradise-theme)
-(defconst user-setting-theme 'tomorrow-night-paradise)
+(defconst user-setting-theme-package 'gruvbox-theme)
+(defconst user-setting-theme 'gruvbox-dark-hard)
 (defconst user-setting-font "Menlo-14")
 
 ;; Hide messages when starting a new session.
@@ -37,13 +37,10 @@
 
 ;; Use a custom theme in graphical frames.
 (when (display-graphic-p)
-  (unless (require user-setting-theme-package nil 'noerror)
-    (condition-case nil
-        (progn
-          (package-install user-setting-theme-package)
-          (require user-setting-theme-package)
-          (load-theme user-setting-theme t))
-      (error (load-theme user-setting-theme t)))))
+  (unless (load-theme user-setting-theme t)
+    (package-install user-setting-theme-package)
+    (require user-setting-theme-package))
+  (load-theme user-setting-theme t))
 
 (when (daemonp)
   (add-to-list 'default-frame-alist (cons 'font user-setting-font))
