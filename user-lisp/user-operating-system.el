@@ -96,8 +96,8 @@ Set the environment variables `SSH_AUTH_SOCK', `SSH_AGENT_PID'
 and `GPG_AGENT' in Emacs' `process-environment' according to
 information retrieved from files created by the keychain script."
   (interactive)
-  (let* ((ssh (shell-command-to-string "keychain -q --noask --agents ssh --eval"))
-         (gpg (shell-command-to-string "keychain -q --noask --agents gpg --eval")))
+  (let* ((ssh (shell-command-to-string (format "keychain --absolute --dir %s/keychain -q --noask --agents ssh --eval" (getenv "XDG_RUNTIME_DIR"))))
+         (gpg (shell-command-to-string (format "keychain --absolute --dir %s/keychain -q --noask --agents gpg --eval" (getenv"XDG_RUNTIME_DIR")))))
     (list (and ssh
                (string-match "SSH_AUTH_SOCK[=\s]\\([^\s;\n]*\\)" ssh)
                (setenv       "SSH_AUTH_SOCK" (match-string 1 ssh)))

@@ -76,21 +76,6 @@
   (setq lsp-ui-sideline-show-code-actions t)
   (setq lsp-ui-sideline-delay 0.05))
 
-;; Container support
-(use-package docker
-  :bind
-  ("C-c d o" . docker)
-  ("C-c d d" . docker-compose-down)
-  ("C-c d u" . docker-compose-up))
-(use-package dockerfile-mode)
-(use-package docker-compose-mode)
-
-(use-package kubernetes
-  :ensure t
-  :commands (kubernetes-overview)
-  :config
-  (setq kubernetes-poll-frequency 3600
-        kubernetes-redraw-frequency 3600))
 
 ;; Aggressive indentation
 (use-package aggressive-indent)

@@ -22,6 +22,7 @@
 (require 'user-appearance)
 (require 'user-completion)
 (require 'user-development)
+(require 'user-container)
 (require 'user-editing)
 (require 'user-office)
 (require 'user-buffer)
@@ -37,7 +38,7 @@
 (require 'user-language-python)
 (require 'user-language-go)
 (require 'user-language-rust)
-(require 'user-language-web)
+(require 'user-language-ruby)
 
 ;; Refresh keychain
 (keychain-refresh-environment)
