@@ -8,6 +8,7 @@
 
 ;;; Code:
 (require 'package)
+(require 'cl-lib)
 
 (setq read-process-output-max (* 1024 1024))
 (setq gc-cons-threshold 100000000)
@@ -52,7 +53,6 @@
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-<return>") 'vterm-with-virtualenv)
     (define-key map (kbd "C-M-<return>") (lambda () (interactive) (vterm-dedicated-with-virtualenv) (balance-windows)))
-    (define-key map (kbd "<f1>") 'open-tree)
     map)
   "my-keys-minor-mode keymap.")
 

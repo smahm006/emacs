@@ -74,7 +74,7 @@
   (interactive)
   (switch-to-buffer "*scratch*")
   (mapc 'kill-buffer
-        (remove-if
+        (cl-remove-if
          (lambda (x)
            (or
             (eq x (current-buffer))

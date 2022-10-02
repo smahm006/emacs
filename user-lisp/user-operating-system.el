@@ -14,6 +14,15 @@
 (setq gc-cons-threshold 100000000)
 (add-hook 'after-init-hook (lambda () (setq gc-cons-threshold 800000)))
 
+;; Password store
+(use-package pass)
+
+(use-package epa-file
+  :ensure nil
+  :config
+  (setq epa-pinentry-mode 'loopback)
+  (setq password-cache-expiry (* 60 15)))
+
 ;; Terminal
 (use-package vterm
   :config
@@ -44,34 +53,8 @@
   :config
   (setq multi-term-program-switches "--login"))
 
-;; Dired File Manager
-(use-package dired
-  :ensure nil
-  :config
-  (setq dired-recursive-copies 'always)
-  (setq dired-recursive-deletes 'always)
-  (setq delete-by-moving-to-trash t)
-  (setq dired-dwim-target t)
-  (setq dired-listing-switches
-        "-laGh1v --group-directories-first --time-style=long-iso"))
-
-(use-package dired-x
-  :ensure nil)
-
-(use-package diredfl
-  :hook
-  (dired-mode . diredfl-mode))
-
-(use-package dired-narrow
-  :bind
-  (:map dired-mode-map
-        ("C-c C-n" . dired-narrow)))
-
-(use-package dired-subtree
-  :after dired
-  :config
-  (bind-key "<tab>" #'dired-subtree-toggle dired-mode-map)
-  (bind-key "<backtab>" #'dired-subtree-cycle dired-mode-map))
+;; Don't change cursor from uline to block in vterm
+(advice-add #'vterm--redraw :around (lambda (fun &rest args) (let ((cursor-type cursor-type)) (apply fun args))))
 
 ;; Load environment variables from the shell
 (use-package exec-path-from-shell

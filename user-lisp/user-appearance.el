@@ -35,6 +35,9 @@
 (when (display-graphic-p)
   (set-frame-font user-setting-font nil t))
 
+(use-package all-the-icons
+  :if (display-graphic-p))
+
 (when (display-graphic-p)
 (unless (require user-setting-theme-melpa nil 'noerror)
     (condition-case nil
@@ -47,7 +50,7 @@
   (add-hook 'after-make-frame-functions
             (defun my/theme-init-daemon (frame)
               (with-selected-frame frame
-                (load-theme user-setting-theme t))
+                (load-theme user-setting-theme-file t))
               ;; Run this hook only once.
               (remove-hook 'after-make-frame-functions
                            #'my/theme-init-daemon)

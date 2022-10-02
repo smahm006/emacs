@@ -9,7 +9,7 @@
 
 (require 'user-completion)
 
-;; Docker support
+;; Docker
 (use-package docker
   :bind
   ("C-c d o" . docker)
@@ -18,7 +18,7 @@
 (use-package dockerfile-mode)
 (use-package docker-compose-mode)
 
-;; Kubernetes support
+;; Kubernetes
 (use-package kubernetes
   :ensure t
   :commands (kubernetes-overview)
@@ -26,8 +26,9 @@
   (setq kubernetes-poll-frequency 3600
         kubernetes-redraw-frequency 3600))
 
-;; Vagrant support
+;; Vagrant
 (use-package vagrant)
+(use-package vagrant-tramp)
 
 
 (provide 'user-container)

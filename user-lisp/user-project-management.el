@@ -31,47 +31,6 @@
                       dired-directory))
       ad-do-it)))
 
-;; Breakdown of code in treelike manner
-(use-package treemacs
-  :init
-  (defun open-tree ()
-  (interactive)
-  (progn
-    (pcase (treemacs-current-visibility)
-      ('visible (delete-window (treemacs-get-local-window)))
-      ('exists  (treemacs-display-current-project-exclusively))
-      ('none    (treemacs-display-current-project-exclusively)))
-    (other-window -1)))
-  :config
-  (setq treemacs-width 25
-        treemacs-display-current-project-exclusively t
-        treemacs-follow-after-init t
-        treemacs-project-follow-mode t
-        treemacs-project-follow-cleanup t
-        treemacs-no-png-images t
-        treemacs-silent-refresh t
-        treemacs-icon-open-png   (propertize "⊖ " 'face 'treemacs-directory-face)
-        treemacs-icon-closed-png (propertize "⊕ " 'face 'treemacs-directory-face)
-        treemacs-sorting 'alphabetic-case-insensitive-asc
-        treemacs-text-scale -1.3)
-  (dolist (face '(treemacs-git-unmodified-face
-                  treemacs-git-modified-face
-                  treemacs-git-renamed-face
-                  treemacs-git-ignored-face
-                  treemacs-git-untracked-face
-                  treemacs-git-added-face
-                  treemacs-git-conflict-face
-                  treemacs-file-face
-                  treemacs-tags-face))
-    (set-face-attribute face nil :family "Menlo" :height 140))
-  (dolist (face '(treemacs-root-face
-                  treemacs-directory-face
-                  treemacs-directory-collapsed-face))
-    (set-face-attribute face nil :family "Menlo" :height 150)))
-
-;;(use-package treemacs-projectile
-;;  :after (treemacs projectile))
-
 ;; Search
 (use-package ag
   :custom
@@ -89,10 +48,6 @@
   (global-set-key (kbd "C-c p a") #'projectile-ag)
   (global-set-key (kbd "<f4>") #'projectile-find-tag)
   (global-set-key (kbd "C-c p d") #'projectile-dired))
-
-(with-eval-after-load 'treemacs
-  (global-set-key (kbd "C-c t t") #'treemacs-select-window))
-
 
 (provide 'user-project-management)
 ;;; user-project-management.el ends here
