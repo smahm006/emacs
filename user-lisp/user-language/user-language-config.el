@@ -73,8 +73,7 @@
   (add-hook 'yaml-mode-hook #'lsp-deferred)
   (add-hook 'yaml-mode-hook #'hl-todo-mode)
   (add-hook 'yaml-mode-hook #'rainbow-delimiters-mode)
-  (add-hook 'yaml-mode-hook #'highlight-indent-guides-mode)
-  (add-hook 'yaml-mode-hook #'user-auto-fill-only-comments)
+  (add-hook 'yaml-mode-hook #'highlight-indent-guides-mode))
 
 ;; Hashicorp Configuration Language
 (use-package hcl-mode

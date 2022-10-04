@@ -14,6 +14,12 @@
   ;; :init
   ;; (shell-command "ln -sf ~/.config/emacs/local/data.known_projects ~/.config/emacs/local/data/projectile/known-projects.el")
   :delight projectile-mode
+  :bind
+  ("C-c p" . projectile-command-map)
+  ("C-x C-p" . projectile-switch-project)
+  ("C-c p f" . projectile-find-file)
+  ("C-c p a" . projectile-ag)
+  ("C-c p d" . projectile-dired)
   :custom
   (shell-file-name "/bin/bash")
   (projectile-completion-system 'default)
@@ -23,8 +29,8 @@
   (setq-default projectile-track-known-projects-automatically nil)
   (run-with-idle-timer 10 nil #'projectile-cleanup-known-projects)
   ;; Ensure projectile dir exists.
-  (defvar my-projectile-dir (sm/cache-for "projectile"))
-  (sm/mkdir-p my-projectile-dir)
+  (defvar my-projectile-dir (user-var "projectile"))
+  (mkdir-p my-projectile-dir)
   ;; Use projectile dir for cache and bookmarks.
   (let* ((prj-dir (file-name-as-directory my-projectile-dir))
          (prj-cache-file (concat prj-dir "projectile.cache"))
@@ -39,26 +45,6 @@
                       default-directory
                       dired-directory))
       ad-do-it)))
-
-;; perspective
-(use-package perspective
-  :hook (after-init . persp-mode)
-  :bind ("C-x b" . persp-switch-buffer)
-  :custom (persp-mode-prefix-key (kbd "C-x x"))
-  :config
-  (defun persp-next ()
-    (interactive)
-    (when (< (+ 1 (persp-curr-position)) (length (persp-all-names)))
-      (persp-switch (nth (1+ (persp-curr-position)) (persp-all-names))))))
-
-;;; Keyboard
-(with-eval-after-load 'projectile
-  (global-set-key (kbd "C-c p") 'projectile-command-map)
-  (global-set-key (kbd "C-x C-p") #'projectile-switch-project)
-  (global-set-key (kbd "C-c p f") #'projectile-find-file)
-  (global-set-key (kbd "C-c p a") #'projectile-ag)
-  (global-set-key (kbd "<f4>") #'projectile-find-tag)
-  (global-set-key (kbd "C-c p d") #'projectile-dired))
 
 (provide 'user-project-management)
 ;;; user-project-management.el ends here

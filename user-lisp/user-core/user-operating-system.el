@@ -83,7 +83,7 @@
 (use-package vterm
   :commands vterm
   :bind
-  (("C-<return>" . (lambda () (interactive) (vterm-dedicated-with-virtualenv) (balance-windows)))
+  (("M-<return>" . (lambda () (interactive) (vterm-dedicated-with-virtualenv) (balance-windows)))
    ("C-M-<return>" . vterm-with-virtualenv))
   :config
   (setq vterm-kill-buffer-on-exit t)
@@ -122,6 +122,10 @@
 
 (use-package vterm-toggle)
 
+(defun mkdir-p (dir-path)
+  "Make directory if it doesn't exist."
+  (unless (file-exists-p dir-path)
+    (make-directory dir-path t)))
 
 (defun filename ()
   (interactive)

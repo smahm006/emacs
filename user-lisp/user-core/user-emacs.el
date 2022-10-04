@@ -116,3 +116,6 @@
    ("C-c C-d" . helpful-at-point)
    ("C-h F" . helpful-function)
    ("C-h C" . helpful-command)))
+
+(provide 'user-emacs)
+;;; user-emacs.el ends here

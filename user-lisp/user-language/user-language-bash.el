@@ -11,7 +11,6 @@
 
 (require 'user-development)
 (require 'user-editing)
-(require 'user-hooks)
 
 ;; Bash language support
 (use-package sh-mode
@@ -29,7 +28,6 @@
   (add-hook 'sh-mode-hook #'flyspell-prog-mode)
   (add-hook 'sh-mode-hook #'lsp-deferred)
   (add-hook 'sh-mode-hook #'rainbow-delimiters-mode)
-  (add-hook 'sh-mode-hook #'user-auto-fill-only-comments))
 
 (defun shell-check ()
   (interactive)

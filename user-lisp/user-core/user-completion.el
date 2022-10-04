@@ -24,7 +24,7 @@
                    crm-separator)
                   (car args))
           (cdr args)))
-  (advice-add #'completing-read-multiple :filter-args #'crm-indicator)))
+  (advice-add #'completing-read-multiple :filter-args #'crm-indicator))
 
 ;; Documentation for incremental narrowing.
 (use-package marginalia
@@ -129,7 +129,7 @@
                 (cons #'tempel-expand
                       completion-at-point-functions)))
   :config
-  (setq-default tempel-path (expand-file-name "user-snippets/*.eld" "~/.config/emacs/user-lisp")))
+  (setq-default tempel-path (expand-file-name "user-snippet/*.eld" "~/.config/emacs/user-lisp")))
 
 ;; Interactive keychord completion.
 (use-package which-key

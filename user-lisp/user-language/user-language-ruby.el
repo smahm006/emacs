@@ -11,7 +11,6 @@
 
 (require 'user-completion)
 (require 'user-development)
-(require 'user-hooks)
 
 (use-package ruby
   :ensure nil

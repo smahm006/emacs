@@ -10,6 +10,9 @@
 ;; Use an easier to type prefix for merge commands
 ;;(setq smerge-command-prefix "C-c m")
 
+;; Git ignore files and templates
+(use-package git-modes)
+
 ;; Distributed revision control interface.
 (use-package magit
   :init
@@ -25,11 +28,6 @@
 ;; Git forge w/ magit.
 (use-package forge
   :after magit)
-
-
-;; Git ignore files and templates
-(use-package gitignore-mode)
-(use-package gitignore-templates)
 
 (provide 'user-version-control)
 ;;; user-version-control.el ends here

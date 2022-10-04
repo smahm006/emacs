@@ -29,7 +29,6 @@
   (emacs-lisp-mode . hungry-delete-mode)
   (emacs-lisp-mode . tempel-setup-capf)
   (emacs-lisp-mode . rainbow-delimiters-mode)
-  (emacs-lisp-mode . user-auto-fill-only-comments))
 
 ;; Code evaluation
 (use-package eros

@@ -52,7 +52,7 @@
 (use-package crux
   :bind (("C-x C-r" . crux-recentf-find-file)
          ("C-a" . crux-move-beginning-of-line)
-         ("<S-return>" . crux-smart-open-line)
+         ("C-<return>" . crux-smart-open-line)
          ("C-c R" . crux-rename-buffer-and-file)
          ("C-c D" . crux-delete-buffer-and-file)
          ("s-j" . crux-top-join-line))
@@ -62,7 +62,7 @@
   :bind (("C->" . mc/mark-next-like-this)
          ("C-<" . mc/mark-previous-like-this)
          ("C-c C->" . mc/mark-all-like-this))
-  :custom (mc/list-file (sm/emacs.d "etc/.mc-lists.el"))
+  :custom (mc/list-file (emacs.d "etc/.mc-lists.el"))
   :custom-face
   (mc/cursor-bar-face
    ((t (:height 0.2 :background "#657b83"
@@ -103,26 +103,12 @@
 (use-package focus)
 
 (use-package re-builder
-  :ensure nil)
-
-;; query replace all from buffer start
-(fset 'query-replace-wraparound 'query-replace)
-(advice-add 'query-replace-wraparound
-            :around
-            #'(lambda(oldfun &rest args)
-               "Query replace the whole buffer."
-               ;; set start pos
-               (unless (nth 3 args)
-                 (setf (nth 3 args)
-                       (if (use-region-p)
-                           (region-beginning)
-                         (point-min))))
-               (unless (nth 4 args)
-                 (setf (nth 4 args)
-                       (if (use-region-p)
-                           (region-end)
-                         (point-max))))
-               (apply oldfun args)))
+  :ensure nil
+  :bind
+  ("C-c r" . re-builder)
+  :config
+  (define-key reb-mode-map (kbd "RET") 'reb-replace-regexp)
+  (define-key reb-lisp-mode-map (kbd "RET") 'reb-replace-regexp))
 
 (defvar my/re-builder-positions nil
     "Store point and region bounds before calling re-builder")
@@ -165,10 +151,6 @@ surrounded by word boundaries."
       (query-replace-regexp re replacement delimited beg end))))
 
 ;;; Keyboard
-(global-set-key (kbd "M-%") 'query-replace-wraparound)
-(global-set-key (kbd "C-c r") 're-builder)
-(define-key reb-mode-map (kbd "RET") 'reb-replace-regexp)
-(define-key reb-lisp-mode-map (kbd "RET") 'reb-replace-regexp)
 (global-set-key (kbd "<C-M-backsbace>") 'just-one-space)
 (global-set-key (kbd "C-c f") 'focus-mode)
 (global-set-key (kbd "M-c") 'capitalize-dwim)

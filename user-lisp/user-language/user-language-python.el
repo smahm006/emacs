@@ -10,7 +10,6 @@
 (require 'use-package)
 (require 'user-development)
 (require 'user-editing)
-(require 'user-hooks)
 
 (use-package python
   :ensure nil
@@ -27,7 +26,6 @@
   (python-mode . tempel-setup-capf)
   (python-mode . hungry-delete-mode)
   (python-mode . rainbow-delimiters-mode)
-  (python-mode . user-auto-fill-only-comments)
   (python-mode . pyvenv-mode)
   (python-mode . blacken-mode)
   (python-mode . pyvenv-autoload)

@@ -21,9 +21,9 @@
 (require 'user-development)
 (require 'user-editing)
 (require 'user-writing)
+(require 'user-operating-system)
 (require 'user-networking)
 (require 'user-container)
-(require 'user-operating-system)
 (require 'user-project-management)
 (require 'user-version-control)
 

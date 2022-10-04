@@ -7,7 +7,7 @@
 ;;; Code:
 
 (require 'use-package)
-(add-to-list 'custom-theme-load-path "~/.config/emacs/user-lisp/user-themes")
+(add-to-list 'custom-theme-load-path "~/.config/emacs/user-lisp/user-theme")
 
 ;; Theme
 (defconst user-setting-theme-gui 'tomorrow-night-paradise)
@@ -52,10 +52,10 @@
 
 ;; Use a custom theme in GUI.
 (when (display-graphic-p)
-  (unless (require user-setting-theme-package nil 'noerror)
+  (when (require user-setting-theme-gui nil 'noerror)
     (package-install (concat user-setting-theme-gui "-theme"))
-    (require user-setting-theme-package))
-  (load-theme user-setting-theme t))
+    (require user-setting-theme-gui))
+  (load-theme user-setting-theme-gui t))
 
 ;; Use a custom theme in daemon.
 (when (daemonp)

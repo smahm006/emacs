@@ -11,7 +11,6 @@
 
 (require 'user-development)
 (require 'user-editing)
-(require 'user-hooks)
 
 ;; Go language support
 (use-package go-mode
@@ -29,7 +28,6 @@
   (go-mode . hungry-delete-mode)
   (go-mode . tempel-setup-capf)
   (go-mode . rainbow-delimiters-mode)
-  (go-mode . user-auto-fill-only-comments)
   :config
   (add-hook 'before-save-hook 'gofmt-before-save)
   :custom

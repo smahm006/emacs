@@ -1,4 +1,4 @@
-;;; user-office -- Office tools for viewing and editing documents
+;;; user-writing -- Writing and office tools for viewing and editing documents
 
 ;;; Commentary:
 
@@ -50,15 +50,12 @@
   :commands flyspell-mode
   :hook (text-mode . flyspell-mode)
   :config
-  (setq ispell-extra-args '("--sug-mode=ultra" "--run-together"))
   (setq flyspell-issue-message-flag nil)
   (setq flyspell-issue-welcome-flag nil))
 
 (use-package flyspell-correct
   :after flyspell
   :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)))
-(use-package flyspell-correct-ivy
-  :after flyspell-correct)
 
-(provide 'user-office)
-;;; user-office.el ends here
+(provide 'user-writing)
+;;; user-writing.el ends here

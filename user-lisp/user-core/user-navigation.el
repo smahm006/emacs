@@ -9,8 +9,6 @@
 
 (require 'use-package)
 
-;;(require 'user-completion)
-
 (use-package sr-speedbar)
 
 (use-package savehist
@@ -66,18 +64,10 @@
                           "/var/tmp/"
                           ".recentf"
                           "/elpa/.*\\'"))
-  (setq recentf-save-file (sm/cache-for "recentf"))
+  (setq recentf-save-file (user-var "recentf"))
   (recentf-mode))
 
-(defun smart-find-file ()
-  "Find files using projectile if within a project, or fall-back to `find-file'."
-  (interactive)
-  (if (projectile-project-p)
-      (projectile-find-file)
-    (call-interactively 'find-file)))
-
 ;;; Keyboard
-(global-set-key (kbd "C-x C-f") #'smart-find-file)
 (global-set-key (kbd "C-s") 'swiper)
 (global-set-key (kbd "C-o") #'avy-goto-char-timer)
 (global-set-key (kbd "M-g l") #'avy-goto-line)
