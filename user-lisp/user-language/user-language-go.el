@@ -15,21 +15,21 @@
 
 ;; Go language support
 (use-package go-mode
-  :init
-  (add-hook 'go-mode-hook #'auto-fill-mode)
-  (add-hook 'go-mode-hook #'company-mode)
-  (add-hook 'go-mode-hook #'display-line-numbers-mode)
-  (add-hook 'go-mode-hook #'eldoc-mode)
-  (add-hook 'go-mode-hook #'electric-pair-mode)
-  (add-hook 'go-mode-hook #'aggressive-indent-mode)
-  (add-hook 'go-mode-hook #'hl-todo-mode)
-  (add-hook 'go-mode-hook #'hungry-delete-mode)
-  (add-hook 'go-mode-hook #'flycheck-mode)
-  (add-hook 'go-mode-hook #'flyspell-prog-mode)
-  (add-hook 'go-mode-hook #'lsp-deferred)
-  (add-hook 'go-mode-hook #'rainbow-delimiters-mode)
-  (add-hook 'go-mode-hook #'user-auto-fill-only-comments)
-  (add-hook 'go-mode-hook #'yas-minor-mode)
+  :hook
+  (go-mode . eglot-ensure)
+  (go-mode . corfu-mode)
+  (go-mode . display-line-numbers-mode)
+  (go-mode . auto-fill-mode)
+  (go-mode . eldoc-mode)
+  (go-mode . electric-pair-mode)
+  (go-mode . hl-todo-mode)
+  (go-mode . flymake-mode)
+  (go-mode . tempel-setup-capf)
+  (go-mode . flyspell-prog-mode)
+  (go-mode . hungry-delete-mode)
+  (go-mode . tempel-setup-capf)
+  (go-mode . rainbow-delimiters-mode)
+  (go-mode . user-auto-fill-only-comments)
   :config
   (add-hook 'before-save-hook 'gofmt-before-save)
   :custom

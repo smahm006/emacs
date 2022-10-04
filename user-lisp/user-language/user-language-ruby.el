@@ -15,27 +15,26 @@
 
 (use-package ruby
   :ensure nil
-  :init
-  (add-hook 'ruby-mode-hook #'auto-fill-mode)
-  (add-hook 'ruby-mode-hook #'company-mode)
-  (add-hook 'ruby-mode-hook #'display-line-numbers-mode)
-  (add-hook 'ruby-mode-hook #'eldoc-mode)
-  (add-hook 'ruby-mode-hook #'electric-pair-mode)
-  (add-hook 'ruby-mode-hook #'hl-todo-mode)
-  (add-hook 'ruby-mode-hook #'flycheck-mode)
-  (add-hook 'ruby-mode-hook #'flyspell-prog-mode)
-  (add-hook 'ruby-mode-hook #'hungry-delete-mode)
-  (add-hook 'ruby-mode-hook #'lsp-deferred)
-  (add-hook 'ruby-mode-hook #'rainbow-delimiters-mode)
-  (add-hook 'ruby-mode-hook #'user-auto-fill-only-comments)
-  (add-hook 'ruby-mode-hook #'yas-minor-mode)
+  :hook
+  (ruby-mode . eglot-ensure)
+  (ruby-mode . corfu-mode)
+  (ruby-mode . display-line-numbers-mode)
+  (ruby-mode . auto-fill-mode)
+  (ruby-mode . eldoc-mode)
+  (ruby-mode . electric-pair-mode)
+  (ruby-mode . hl-todo-mode)
+  (ruby-mode . flymake-mode)
+  (ruby-mode . tempel-setup-capf)
+  (ruby-mode . flyspell-prog-mode)
+  (ruby-mode . hungry-delete-mode)
+  (ruby-mode . tempel-setup-capf)
+  (ruby-mode . rainbow-delimiters-mode)
+  (ruby-mode . user-auto-fill-only-comments)
   :config
   ;; Ruby language customisations
   (setq ruby-insert-encoding-magic-comment nil)
   ;; Language server protocol customisations
   (setq lsp-solargraph-use-bundler t))
-
-
 
 ;; Interactive session
 (use-package inf-ruby

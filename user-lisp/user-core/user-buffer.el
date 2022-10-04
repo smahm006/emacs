@@ -7,8 +7,6 @@
 ;;; Code:
 
 (require 'use-package)
-(setq trash-directory "~/.local/share/Trash/files")
-(setq delete-by-moving-to-trash t)
 
 ;; Buffer navigation.
 (use-package bufler
@@ -25,10 +23,8 @@
   (aw-ignore-current t)
   (aw-scope 'frame))
 
-
-;; Originally from stevey, adapted to support moving to a new directory.
+;; Renames both current buffer and file it's visiting to NEW-NAME
 (defun rename-file-and-buffer (new-name)
-  "Renames both current buffer and file it's visiting to NEW-NAME."
   (interactive
    (progn
      (if (not (buffer-file-name))
@@ -94,7 +90,45 @@
           (message "Deleted file %s" filename)
           (kill-buffer))))))
 
+(defun toggle-window-split ()
+  (interactive)
+  (if (= (count-windows) 2)
+      (let* ((this-win-buffer (window-buffer))
+         (next-win-buffer (window-buffer (next-window)))
+         (this-win-edges (window-edges (selected-window)))
+         (next-win-edges (window-edges (next-window)))
+         (this-win-2nd (not (and (<= (car this-win-edges)
+                     (car next-win-edges))
+                     (<= (cadr this-win-edges)
+                     (cadr next-win-edges)))))
+         (splitter
+          (if (= (car this-win-edges)
+             (car (window-edges (next-window))))
+          'split-window-horizontally
+        'split-window-vertically)))
+    (delete-other-windows)
+    (let ((first-win (selected-window)))
+      (funcall splitter)
+      (if this-win-2nd (other-window 1))
+      (set-window-buffer (selected-window) this-win-buffer)
+      (set-window-buffer (next-window) next-win-buffer)
+      (select-window first-win)
+      (if this-win-2nd (other-window 1))))))
 
+;; Frame title formatting.
+(setq-default frame-title-format
+              '((:eval (if (buffer-file-name)
+                           (abbreviate-file-name (buffer-file-name))
+                         "%b"))))
+
+;; Overrides Emacs' default mechanism for making buffer names unique.
+(use-package uniquify
+  :ensure nil
+  :config
+  (setq uniquify-buffer-name-style 'forward)
+  (setq uniquify-separator "/")
+  (setq uniquify-after-kill-buffer-p t)    ; rename after killing uniquified
+  (setq uniquify-ignore-buffers-re "^\\*")) ; don't muck with special buffers
 
 ;;; Keyboard
 (global-set-key (kbd "C-x w") #'rename-file-and-buffer)
@@ -107,5 +141,6 @@
 (global-set-key (kbd "M-o") #'ace-window)
 (global-set-key (kbd "<C-M-tab>") #'next-buffer)
 (global-set-key (kbd "<C-M-S-iso-lefttab>") #'previous-buffer)
+(global-set-key (kbd "C-x |") 'toggle-window-split)
 
 (provide 'user-buffer)

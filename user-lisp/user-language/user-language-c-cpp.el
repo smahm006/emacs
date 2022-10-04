@@ -15,30 +15,28 @@
 
 ;; Additional minor modes for the C language.
 (add-hook 'c-mode-hook #'auto-fill-mode)
-(add-hook 'c-mode-hook #'company-mode)
+(add-hook 'c-mode-hook #'corfu-mode)
 (add-hook 'c-mode-hook #'display-line-numbers-mode)
 (add-hook 'c-mode-hook #'electric-pair-mode)
 (add-hook 'c-mode-hook #'electric-spacing-mode)
-(add-hook 'c-mode-hook #'flycheck-mode)
+(add-hook 'c-mode-hook #'flymake-mode)
 (add-hook 'c-mode-hook #'flyspell-prog-mode)
 (add-hook 'c-mode-hook #'hl-todo-mode)
 (add-hook 'c-mode-hook #'irony-mode)
 (add-hook 'c-mode-hook #'rainbow-delimiters-mode)
-(add-hook 'c-mode-hook #'yas-minor-mode)
 (add-hook 'c-mode-hook #'user-c-set-repository-style-hook)
 
 ;; Additional minor modes for the C++ language.
 (add-hook 'c++-mode-hook #'auto-fill-mode)
-(add-hook 'c++-mode-hook #'company-mode)
+(add-hook 'c++-mode-hook #'corfu-mode)
 (add-hook 'c++-mode-hook #'display-line-numbers-mode)
 (add-hook 'c++-mode-hook #'electric-pair-mode)
 (add-hook 'c++-mode-hook #'electric-spacing-mode)
-(add-hook 'c++-mode-hook #'flycheck-mode)
+(add-hook 'c++-mode-hook #'flymake-mode)
 (add-hook 'c++-mode-hook #'flyspell-prog-mode)
 (add-hook 'c++-mode-hook #'hl-todo-mode)
 (add-hook 'c++-mode-hook #'irony-mode)
 (add-hook 'c++-mode-hook #'rainbow-delimiters-mode)
-(add-hook 'c++-mode-hook #'yas-minor-mode)
 (add-hook 'c++-mode-hook #'user-c-set-repository-style-hook)
 
 ;; Repository specific and default indentation styles.
@@ -53,24 +51,6 @@
 (add-to-list 'c++-font-lock-extra-types "shared_ptr")
 (add-to-list 'c++-font-lock-extra-types "auto_ptr")
 (add-to-list 'c++-font-lock-extra-types "weak_ptr")
-
-;; Completion back-end support.
-(use-package irony
-  :init
-  (add-hook 'irony-mode-hook #'irony-cdb-autosetup-compile-options))
-
-;; Completion support.
-(use-package company-irony
-  :after irony-mode
-  :custom
-  (irony-duplicate-candidates-filter t)
-  :config
-  (add-to-list 'company-backends 'company-irony))
-
-;; Syntax checking support.
-(use-package flycheck-irony
-  :init
-  (add-hook 'flycheck-mode-hook #'flycheck-irony-setup))
 
 ;;; Functions:
 

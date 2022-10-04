@@ -13,34 +13,29 @@
 (require 'user-editing)
 
 ;; Hooks
-(add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode)
-(add-hook 'emacs-lisp-mode-hook #'auto-fill-mode)
-(add-hook 'emacs-lisp-mode-hook #'company-mode)
-(add-hook 'emacs-lisp-mode-hook #'display-line-numbers-mode)
-(add-hook 'emacs-lisp-mode-hook #'enable-paredit-mode)
-(add-hook 'emacs-lisp-mode-hook #'flycheck-mode)
-(add-hook 'emacs-lisp-mode-hook #'flyspell-prog-mode)
-(add-hook 'emacs-lisp-mode-hook #'hl-todo-mode)
-(add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode)
-
-;; Documentation
-(use-package helpful
-  :custom
-  (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable))
+(use-package elisp
+  :ensure nil
+  :hook
+  (emacs-lisp-mode . eglot-ensure)
+  (emacs-lisp-mode . corfu-mode)
+  (emacs-lisp-mode . display-line-numbers-mode)
+  (emacs-lisp-mode . auto-fill-mode)
+  (emacs-lisp-mode . eldoc-mode)
+  (emacs-lisp-mode . electric-pair-mode)
+  (emacs-lisp-mode . hl-todo-mode)
+  (emacs-lisp-mode . flymake-mode)
+  (emacs-lisp-mode . tempel-setup-capf)
+  (emacs-lisp-mode . flyspell-prog-mode)
+  (emacs-lisp-mode . hungry-delete-mode)
+  (emacs-lisp-mode . tempel-setup-capf)
+  (emacs-lisp-mode . rainbow-delimiters-mode)
+  (emacs-lisp-mode . user-auto-fill-only-comments))
 
 ;; Code evaluation
 (use-package eros
   :init
   (add-hook 'emacs-lisp-mode-hook 'eros-mode))
 
-;;; Keyboard:
-
-(with-eval-after-load 'emacs-lisp-mode
-  (define-key emacs-lisp-mode-map (kbd "C-c C-d") #'helpful-at-point)
-  (define-key emacs-lisp-mode-map (kbd "C-h f") #'helpful-callable)
-  (define-key emacs-lisp-mode-map (kbd "C-h v") #'helpful-variable)
-  (define-key emacs-lisp-mode-map (kbd "C-h k") #'helpful-key))
 
 (provide 'user-language-emacs-lisp)
 ;;; user-language-emacs-lisp.el ends here

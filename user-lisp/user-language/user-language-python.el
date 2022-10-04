@@ -14,42 +14,27 @@
 
 (use-package python
   :ensure nil
-  :init
-  (add-hook 'python-mode-hook #'auto-fill-mode)
-  (add-hook 'python-mode-hook #'company-mode)
-  (add-hook 'python-mode-hook #'display-line-numbers-mode)
-  (add-hook 'python-mode-hook #'eldoc-mode)
-  (add-hook 'python-mode-hook #'electric-pair-mode)
-  (add-hook 'python-mode-hook #'hl-todo-mode)
-  (add-hook 'python-mode-hook #'flycheck-mode)
-  (add-hook 'python-mode-hook #'flyspell-prog-mode)
-  (add-hook 'python-mode-hook #'hungry-delete-mode)
-  (add-hook 'python-mode-hook #'lsp-deferred)
-  (add-hook 'python-mode-hook #'rainbow-delimiters-mode)
-  (add-hook 'python-mode-hook #'user-auto-fill-only-comments)
-  (add-hook 'python-mode-hook #'yas-minor-mode)
-  (add-hook 'python-mode-hook #'pyvenv-mode)
-  (add-hook 'python-mode-hook #'blacken-mode)
-  (add-hook 'python-mode-hook #'pyvenv-autoload)
+  :hook
+  (python-mode . eglot-ensure)
+  (python-mode . corfu-mode)
+  (python-mode . display-line-numbers-mode)
+  (python-mode . auto-fill-mode)
+  (python-mode . eldoc-mode)
+  (python-mode . electric-pair-mode)
+  (python-mode . hl-todo-mode)
+  (python-mode . flymake-mode)
+  (python-mode . flyspell-prog-mode)
+  (python-mode . tempel-setup-capf)
+  (python-mode . hungry-delete-mode)
+  (python-mode . rainbow-delimiters-mode)
+  (python-mode . user-auto-fill-only-comments)
+  (python-mode . pyvenv-mode)
+  (python-mode . blacken-mode)
+  (python-mode . pyvenv-autoload)
   :config
   (setq python-indent-offset 4)
   (setq lsp-diagnostic-package :none)
   (setq-local flycheck-checker 'python-flake8))
-
-;; Pyright LSP language server
-(use-package lsp-pyright
-  :hook
-  (python-mode . (lambda ()
-                   (require 'lsp-pyright)
-                   (lsp-deferred)))
-  :config
-  (setq lsp-pyright-use-library-code-for-types t)
-  (setq lsp-pyright-diagnostic-mode "workspace")
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-tramp-connection  "bin/pyright")
-                    :major-modes '(python-mode)
-                    :remote? t
-                    :server-id 'pyright-remote)))
 
 ;; Major mode for editing pip requirements files
 (use-package pip-requirements)

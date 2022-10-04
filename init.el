@@ -9,29 +9,23 @@
 ;;; Code:
 
 ;; Backwards compatibility for systems without `early-init.el` support.
-(setq user-emacs-directory (file-truename "~/.config/emacs"))
 (require 'early-init (concat user-emacs-directory "early-init.el"))
 
-;; Prevent accindentally killing sesesion
-(setq confirm-kill-emacs 'y-or-n-p)
-
-;; yes/no = y/n
-(defalias 'yes-or-no-p 'y-or-n-p)
-
 ;; General customisation.
+(require 'user-emacs)
+(require 'user-environment)
 (require 'user-appearance)
-(require 'user-completion)
-(require 'user-development)
-(require 'user-container)
-(require 'user-editing)
-(require 'user-office)
 (require 'user-buffer)
 (require 'user-navigation)
+(require 'user-completion)
+(require 'user-development)
+(require 'user-editing)
+(require 'user-writing)
 (require 'user-networking)
+(require 'user-container)
 (require 'user-operating-system)
 (require 'user-project-management)
 (require 'user-version-control)
-(require 'user-language-markup)
 
 ;; Programming languages.
 ;;(require 'user-language-c-cpp)
@@ -39,9 +33,7 @@
 (require 'user-language-go)
 (require 'user-language-rust)
 (require 'user-language-ruby)
-
-;; Refresh keychain
-(keychain-refresh-environment)
+(require 'user-language-config)
 
 ;; Local and non-version-controlled customisation
 (setq custom-file (no-littering-expand-etc-file-name "custom.el"))

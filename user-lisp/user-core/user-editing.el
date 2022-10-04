@@ -12,8 +12,11 @@
 (require 'use-package)
 
 ;; Text encoding
-(set-language-environment "UTF-8")
+(prefer-coding-system 'utf-8)
+(set-language-environment 'utf-8)
 (set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-selection-coding-system 'utf-8)
 
 ;; Auto-fill
 (setq-default comment-column 80)
@@ -39,20 +42,31 @@
 ;; Backups
 (setq make-backup-files nil)
 
-;; Saving
-(setq auto-save-default nil)
-(setq auto-save-list-file-prefix nil)
-
-;; Refresh buffers
-(setq auto-revert-interval 1)
-(global-auto-revert-mode)
-
 ;; Typing when a region is selected should replace its contents
-(delete-selection-mode)
+(delete-selection-mode t)
 
 ;; When a file is saved delete trailing whitespace and ensure it ends with a newline
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 (setq require-final-newline t)
+
+(use-package crux
+  :bind (("C-x C-r" . crux-recentf-find-file)
+         ("C-a" . crux-move-beginning-of-line)
+         ("<S-return>" . crux-smart-open-line)
+         ("C-c R" . crux-rename-buffer-and-file)
+         ("C-c D" . crux-delete-buffer-and-file)
+         ("s-j" . crux-top-join-line))
+  :config (recentf-mode t))
+
+(use-package multiple-cursors
+  :bind (("C->" . mc/mark-next-like-this)
+         ("C-<" . mc/mark-previous-like-this)
+         ("C-c C->" . mc/mark-all-like-this))
+  :custom (mc/list-file (sm/emacs.d "etc/.mc-lists.el"))
+  :custom-face
+  (mc/cursor-bar-face
+   ((t (:height 0.2 :background "#657b83"
+                :foreground "#657b83")))))
 
 ;; Visual fill mode should respect fill-column
 (use-package visual-fill-column
@@ -62,6 +76,18 @@
 ;; Smart region selecter
 (use-package expand-region
   :bind ("M-SPC" . er/expand-region))
+
+;; Add/Change/Delete pairs based on expand-region.
+(use-package embrace
+  :bind ("C-," . embrace-commander))
+
+;; Better `comment-dwim' supporting uncommenting.
+(use-package smart-comment
+  :bind ("M-;" . smart-comment))
+
+;; Browse-kill-ring
+(use-package browse-kill-ring
+  :bind ("M-y" . browse-kill-ring))
 
 ;; Hungry deletion minor mode
 (use-package hungry-delete

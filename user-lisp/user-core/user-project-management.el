@@ -11,17 +11,26 @@
 
 ;; Project management
 (use-package projectile
-  :init
-  (shell-command "ln -sf ~/.config/emacs/.known_projects ~/.config/emacs/local/data/projectile/known-projects.el")
+  ;; :init
+  ;; (shell-command "ln -sf ~/.config/emacs/local/data.known_projects ~/.config/emacs/local/data/projectile/known-projects.el")
+  :delight projectile-mode
   :custom
+  (shell-file-name "/bin/bash")
   (projectile-completion-system 'default)
   (projectile-indexing-method 'hybrid)
   (projectile-sort-order 'recently-active)
   :config
-  (projectile-mode)
   (setq-default projectile-track-known-projects-automatically nil)
   (run-with-idle-timer 10 nil #'projectile-cleanup-known-projects)
-  (setq projectile-mode-line "Projectile")
+  ;; Ensure projectile dir exists.
+  (defvar my-projectile-dir (sm/cache-for "projectile"))
+  (sm/mkdir-p my-projectile-dir)
+  ;; Use projectile dir for cache and bookmarks.
+  (let* ((prj-dir (file-name-as-directory my-projectile-dir))
+         (prj-cache-file (concat prj-dir "projectile.cache"))
+         (prj-bookmarks-file (concat prj-dir "projectile-bkmrks.eld")))
+    (setq projectile-cache-file          prj-cache-file
+          projectile-known-projects-file prj-bookmarks-file))
   (defadvice projectile-on (around exlude-tramp activate)
     (unless  (--any? (and it (file-remote-p it))
                      (list
@@ -31,14 +40,16 @@
                       dired-directory))
       ad-do-it)))
 
-;; Search
-(use-package ag
-  :custom
-  (ag-highlight-search t))
-
-;; Search result formatting
-(use-package winnow
-  :hook (ag-mode . winnow-mode))
+;; perspective
+(use-package perspective
+  :hook (after-init . persp-mode)
+  :bind ("C-x b" . persp-switch-buffer)
+  :custom (persp-mode-prefix-key (kbd "C-x x"))
+  :config
+  (defun persp-next ()
+    (interactive)
+    (when (< (+ 1 (persp-curr-position)) (length (persp-all-names)))
+      (persp-switch (nth (1+ (persp-curr-position)) (persp-all-names))))))
 
 ;;; Keyboard
 (with-eval-after-load 'projectile
