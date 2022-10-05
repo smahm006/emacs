@@ -45,10 +45,8 @@
 (use-package corfu
   :init
   (global-corfu-mode)
-    :bind
-  (:map corfu-map
-        ("TAB" . corfu-complete)
-        ([tab] . corfu-complete))
+  :bind
+  (:map corfu-map ("SPC" . corfu-insert-separator))
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                 ;; Enable auto completion

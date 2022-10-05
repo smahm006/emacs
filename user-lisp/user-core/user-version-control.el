@@ -22,7 +22,6 @@
   :hook (git-commit-mode . flyspell-mode)
   :bind ("C-x g" . magit-status)
   :custom
-  (magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
   (magit-diff-refine-hunk 'all)
   (magit-pull-or-fetch t))
 

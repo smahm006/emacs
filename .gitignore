@@ -50,8 +50,11 @@ Thumbs.db
 
 # Emacs Packages
 local/*
-!local/config/
-local/config/custom.el
-local/conifg/*
+local/config/*
+local/data/*
+!local/data
+local/data/projectile/*
+!local/data/projectile
+!local/data/projectile/projectile-bookmarks.eld
 remote-lisp/
 elpa/

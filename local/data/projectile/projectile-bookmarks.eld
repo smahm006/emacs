@@ -1,0 +1,1 @@
+("~/workstation/projects/devops-challenge/" "~/workstation/projects/debian-setup/" "~/.config/emacs/")

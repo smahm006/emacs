@@ -64,7 +64,7 @@
   :mode (("\\.yml\\'" . yaml-mode)
          ("\\.yaml\\'" . yaml-mode))
   :hook
-  (go-mode . eglot-ensure)
+  (yaml-mode . eglot-ensure)
   (yaml-mode . corfu-mode)
   (yaml-mode . display-line-numbers-mode)
   (yaml-mode . auto-fill-mode)

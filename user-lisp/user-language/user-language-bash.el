@@ -33,8 +33,7 @@
 
 (defun shell-check ()
   (interactive)
-  (compile (format "shellcheck %s" (filename)))
-  )
+  (compile (format "shellcheck %s" (filename))))
 
 ;;; Keyboard:
 (with-eval-after-load 'sh-mode

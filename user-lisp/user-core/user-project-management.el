@@ -23,7 +23,7 @@
   :custom
   (shell-file-name "/bin/bash")
   (projectile-completion-system 'default)
-  (projectile-indexing-method 'hybrid)
+  (projectile-indexing-method 'alien)
   (projectile-sort-order 'recently-active)
   :config
   (setq-default projectile-track-known-projects-automatically nil)
@@ -34,7 +34,7 @@
   ;; Use projectile dir for cache and bookmarks.
   (let* ((prj-dir (file-name-as-directory my-projectile-dir))
          (prj-cache-file (concat prj-dir "projectile.cache"))
-         (prj-bookmarks-file (concat prj-dir "projectile-bkmrks.eld")))
+         (prj-bookmarks-file (concat prj-dir "projectile-bookmarks.eld")))
     (setq projectile-cache-file          prj-cache-file
           projectile-known-projects-file prj-bookmarks-file))
   (defadvice projectile-on (around exlude-tramp activate)
