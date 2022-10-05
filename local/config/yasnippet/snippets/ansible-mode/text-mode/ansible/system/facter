@@ -1,5 +1,0 @@
-# name : Runs the discovery program I(facter) on the remote system
-# key : facter
-# --
-- name: ${1:Runs the discovery program I(facter) on the remote system}
-  facter: $0

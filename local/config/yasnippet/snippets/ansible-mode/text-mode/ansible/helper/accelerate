@@ -1,5 +1,0 @@
-# name : Enable accelerated mode on remote node
-# key : accelerate
-# --
-- name: ${1:Enable accelerated mode on remote node}
-  accelerate: $0

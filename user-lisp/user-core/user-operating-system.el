@@ -83,8 +83,8 @@
 (use-package vterm
   :commands vterm
   :bind
-  (("M-<return>" . (lambda () (interactive) (vterm-dedicated-with-virtualenv) (balance-windows)))
-   ("C-M-<return>" . vterm-with-virtualenv))
+  (("C-<return>" . (lambda () (interactive) (vterm-dedicated-with-virtualenv) (balance-windows)))
+   ("M-<return>" . vterm-with-virtualenv))
   :config
   (setq vterm-kill-buffer-on-exit t)
   (setq vterm-max-scrollback 5000)

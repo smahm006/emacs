@@ -1,5 +1,0 @@
-# name : Waits for a condition before continuing.
-# key : wait_for
-# --
-- name: ${1:Waits for a condition before continuing.}
-  wait_for: $0

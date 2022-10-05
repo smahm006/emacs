@@ -1,4 +1,0 @@
-# name: varialble expansion with double curly braces
-# key: var
-# --
-{{ $1 }} $0

@@ -1,5 +1,0 @@
-# name : Manage Ruby gems
-# key : gem
-# --
-- name: ${1:Manage Ruby gems}
-  gem: name=$2 $0

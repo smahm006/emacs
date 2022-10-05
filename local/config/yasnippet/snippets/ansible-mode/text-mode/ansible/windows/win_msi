@@ -1,5 +1,0 @@
-# name : Installs and uninstalls Windows MSI files
-# key : win_msi
-# --
-- name: ${1:Installs and uninstalls Windows MSI files}
-  win_msi: path=$2 $0

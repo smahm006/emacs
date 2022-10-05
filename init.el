@@ -34,6 +34,7 @@
 (require 'user-language-rust)
 (require 'user-language-ruby)
 (require 'user-language-config)
+(require 'user-language-emacs-lisp)
 
 ;; Local and non-version-controlled customisation
 (setq custom-file (no-littering-expand-etc-file-name "custom.el"))

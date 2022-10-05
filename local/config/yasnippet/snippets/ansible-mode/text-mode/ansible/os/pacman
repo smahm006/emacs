@@ -1,5 +1,0 @@
-# name : Manage packages with I(pacman)
-# key : pacman
-# --
-- name: ${1:Manage packages with I(pacman)}
-  pacman: $0

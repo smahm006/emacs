@@ -1,5 +1,0 @@
-# name : Pause playbook execution
-# key : pause
-# --
-- name: ${1:Pause playbook execution}
-  pause: $0

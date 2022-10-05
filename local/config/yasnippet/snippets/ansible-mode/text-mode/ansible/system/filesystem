@@ -1,5 +1,0 @@
-# name : Makes file system on block device
-# key : filesystem
-# --
-- name: ${1:Makes file system on block device}
-  filesystem: fstype=$2 dev=$3 $0

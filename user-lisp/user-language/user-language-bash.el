@@ -15,19 +15,21 @@
 ;; Bash language support
 (use-package sh-mode
   :ensure nil
-  :init
-  (add-hook 'sh-mode-hook #'auto-fill-mode)
-  (add-hook 'sh-mode-hook #'corfu-mode)
-  (add-hook 'sh-mode-hook #'display-line-numbers-mode)
-  (add-hook 'sh-mode-hook #'eldoc-mode)
-  (add-hook 'sh-mode-hook #'electric-pair-mode)
-  (add-hook 'sh-mode-hook #'aggressive-indent-mode)
-  (add-hook 'sh-mode-hook #'hl-todo-mode)
-  (add-hook 'sh-mode-hook #'hungry-delete-mode)
-  (add-hook 'sh-mode-hook #'flymake-mode)
-  (add-hook 'sh-mode-hook #'flyspell-prog-mode)
-  (add-hook 'sh-mode-hook #'lsp-deferred)
-  (add-hook 'sh-mode-hook #'rainbow-delimiters-mode)
+  :mode (("\\.sh" . emacs-lisp-mode))
+  :hook
+  (sh-mode . eglot-ensure)
+  (sh-mode . corfu-mode)
+  (sh-mode . display-line-numbers-mode)
+  (sh-mode . auto-fill-mode)
+  (sh-mode . eldoc-mode)
+  (sh-mode . electric-pair-mode)
+  (sh-mode . hl-todo-mode)
+  (sh-mode . flymake-mode)
+  (sh-mode . tempel-setup-capf)
+  (sh-mode . flyspell-prog-mode)
+  (sh-mode . hungry-delete-mode)
+  (sh-mode . tempel-setup-capf)
+  (sh-mode . rainbow-delimiters-mode))
 
 (defun shell-check ()
   (interactive)
@@ -36,7 +38,7 @@
 
 ;;; Keyboard:
 (with-eval-after-load 'sh-mode
-  (define-key sh-mode-map (kbd "C-c r s") #'shell-check)
+  (define-key sh-mode-map (kbd "C-c r s") #'shell-check))
 
 (provide 'user-language-bash)
 ;;; user-language-bash.el ends here

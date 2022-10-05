@@ -14,7 +14,6 @@
 (use-package python
   :ensure nil
   :hook
-  (python-mode . eglot-ensure)
   (python-mode . corfu-mode)
   (python-mode . display-line-numbers-mode)
   (python-mode . auto-fill-mode)

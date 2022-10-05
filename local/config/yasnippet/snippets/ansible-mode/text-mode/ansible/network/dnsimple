@@ -1,5 +1,0 @@
-# name : Interface with dnsimple.com (a DNS hosting service).
-# key : dnsimple
-# --
-- name: ${1:Interface with dnsimple.com (a DNS hosting service).}
-  dnsimple: $0

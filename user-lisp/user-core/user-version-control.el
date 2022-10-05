@@ -16,7 +16,8 @@
 ;; Distributed revision control interface.
 (use-package magit
   :init
-  (add-hook 'after-save-hook 'magit-after-save-refresh-status t)
+  (with-eval-after-load 'magit-mode
+    (add-hook 'after-save-hook 'magit-after-save-refresh-status t))
   :commands magit-status
   :hook (git-commit-mode . flyspell-mode)
   :bind ("C-x g" . magit-status)

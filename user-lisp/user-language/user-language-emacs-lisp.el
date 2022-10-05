@@ -8,15 +8,14 @@
 ;;; Code:
 
 (require 'use-package)
-
 (require 'user-development)
 (require 'user-editing)
 
 ;; Hooks
-(use-package elisp
+(use-package lisp-mode
   :ensure nil
+  :mode (("\\.el" . emacs-lisp-mode))
   :hook
-  (emacs-lisp-mode . eglot-ensure)
   (emacs-lisp-mode . corfu-mode)
   (emacs-lisp-mode . display-line-numbers-mode)
   (emacs-lisp-mode . auto-fill-mode)
@@ -28,7 +27,7 @@
   (emacs-lisp-mode . flyspell-prog-mode)
   (emacs-lisp-mode . hungry-delete-mode)
   (emacs-lisp-mode . tempel-setup-capf)
-  (emacs-lisp-mode . rainbow-delimiters-mode)
+  (emacs-lisp-mode . rainbow-delimiters-mode))
 
 ;; Code evaluation
 (use-package eros

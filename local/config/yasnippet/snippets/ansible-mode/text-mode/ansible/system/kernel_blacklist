@@ -1,5 +1,0 @@
-# name : Blacklist kernel modules
-# key : kernel_blacklist
-# --
-- name: ${1:Blacklist kernel modules}
-  kernel_blacklist: name=$2 $0

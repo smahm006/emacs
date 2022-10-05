@@ -1,5 +1,0 @@
-# name : Manage the state of a virtual host in RabbitMQ
-# key : rabbitmq_vhost
-# --
-- name: ${1:Manage the state of a virtual host in RabbitMQ}
-  rabbitmq_vhost: name=$2 $0

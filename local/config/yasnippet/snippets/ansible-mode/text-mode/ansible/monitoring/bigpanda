@@ -1,5 +1,0 @@
-# name : Notify BigPanda about deployments
-# key : bigpanda
-# --
-- name: ${1:Notify BigPanda about deployments}
-  bigpanda: component=$2 version=$3 token=$4 state=$5 $0

@@ -1,5 +1,0 @@
-# name : This module handles some common Riak operations
-# key : riak
-# --
-- name: ${1:This module handles some common Riak operations}
-  riak: $0

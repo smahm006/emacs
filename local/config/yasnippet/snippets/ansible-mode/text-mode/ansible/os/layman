@@ -1,5 +1,0 @@
-# name : Manage Gentoo overlays
-# key : layman
-# --
-- name: ${1:Manage Gentoo overlays}
-  layman: name=$2 $0

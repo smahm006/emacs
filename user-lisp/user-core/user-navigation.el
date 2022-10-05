@@ -9,23 +9,15 @@
 
 (require 'use-package)
 
-(use-package sr-speedbar)
-
-(use-package savehist
-  :config
-  '(progn
-     (savehist-mode 1)
-     (setq savehist-file (concat user-emacs-directory "savehist")
-           savehist-save-minibuffer-history 1
-           savehist-additional-variables '(kill-ring search-ring regexp-search-ring))))
-
 (use-package saveplace
   :hook (after-init . save-place-mode)
   :config
   (setq save-place-file (user-var "saveplace")))
 
 ;; Window layout stack.
-(winner-mode t)
+(use-package winner
+  :init
+  (winner-mode))
 
 ;; Character and line navigation.
 (use-package avy

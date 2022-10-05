@@ -1,5 +1,0 @@
-# name : Manages Python library dependencies.
-# key : pip
-# --
-- name: ${1:Manages Python library dependencies.}
-  pip: $0

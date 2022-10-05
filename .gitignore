@@ -53,8 +53,5 @@ local/*
 !local/config/
 local/config/custom.el
 local/conifg/*
-!local/conig/yasnippet/
-local/conig/yasnippet/*
-!local/config/yasnippet/snippets
 remote-lisp/
 elpa/

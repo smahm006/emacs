@@ -28,7 +28,6 @@
   (ruby-mode . hungry-delete-mode)
   (ruby-mode . tempel-setup-capf)
   (ruby-mode . rainbow-delimiters-mode)
-  (ruby-mode . user-auto-fill-only-comments)
   :config
   ;; Ruby language customisations
   (setq ruby-insert-encoding-magic-comment nil)

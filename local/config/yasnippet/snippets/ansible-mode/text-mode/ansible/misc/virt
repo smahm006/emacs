@@ -1,5 +1,0 @@
-# name : Manages virtual machines supported by libvirt
-# key : virt
-# --
-- name: ${1:Manages virtual machines supported by libvirt}
-  virt: name=$2 $0

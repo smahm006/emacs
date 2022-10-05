@@ -1,5 +1,0 @@
-# name : Module for tracking logs via logentries.com
-# key : logentries
-# --
-- name: ${1:Module for tracking logs via logentries.com}
-  logentries: path=$2 $0

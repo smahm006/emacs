@@ -1,5 +1,0 @@
-# name : Runs a local script on a remote node after transferring it
-# key : script
-# --
-- name: ${1:Runs a local script on a remote node after transferring it}
-  script: free_form=$2 $0

@@ -2,7 +2,7 @@
 
 ;;; Commentary:
 
-;; Provides buffer and corresponding file management
+;; Provides more buffer customization and corresponding file management
 
 ;;; Code:
 
@@ -31,7 +31,7 @@
       (window-configuration-to-register '_)
       (delete-other-windows))))
 
-(defun my/kill-all-buffers-except-toolbox ()
+(defun kill-all-buffers-except-toolbox ()
   "Kill all buffers except current one and toolkit (*Messages*, *scratch*). Close other windows."
   (interactive)
   (switch-to-buffer "*scratch*")
@@ -43,18 +43,6 @@
             (member (buffer-name x) '("*Messages*" "*scratch*"))))
          (buffer-list)))
   (delete-other-windows))
-
-(defun delete-file-and-buffer ()
-  "Kill the current buffer and deletes the file it is visiting."
-  (interactive)
-  (let ((filename (buffer-file-name)))
-    (when filename
-      (if (vc-backend filename)
-          (vc-delete-file filename)
-        (progn
-          (delete-file filename t)
-          (message "Deleted file %s" filename)
-          (kill-buffer))))))
 
 (defun toggle-window-split ()
   (interactive)
@@ -98,7 +86,8 @@
 
 ;;; Keyboard
 (global-set-key (kbd "C-x f") #'toggle-maximize-buffer)
-(global-set-key (kbd "C-c A") #'my/kill-all-buffers-except-toolbox)
+(global-set-key (kbd "C-c A") #'kill-all-buffers-except-toolbox)
+(global-set-key (kbd "C-c K") #'kill-buffer-and-window)
 (global-set-key (kbd "C-x C-b") #'bufler)
 (global-set-key (kbd "C-x b") #'bufler-switch-buffer)
 (global-set-key (kbd "M-o") #'ace-window)

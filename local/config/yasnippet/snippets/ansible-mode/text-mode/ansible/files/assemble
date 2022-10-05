@@ -1,5 +1,0 @@
-# name : Assembles a configuration file from fragments
-# key : assemble
-# --
-- name: ${1:Assembles a configuration file from fragments}
-  assemble: src=$2 dest=$3 $0

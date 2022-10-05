@@ -1,5 +1,0 @@
-# name : Print statements during execution
-# key : debug
-# --
-- name: ${1:Print statements during execution}
-  debug: $0

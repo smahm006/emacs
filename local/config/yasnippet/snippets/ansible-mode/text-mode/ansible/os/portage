@@ -1,5 +1,0 @@
-# name : Package manager for Gentoo
-# key : portage
-# --
-- name: ${1:Package manager for Gentoo}
-  portage: $0

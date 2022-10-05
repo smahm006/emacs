@@ -1,5 +1,0 @@
-# name : a wrapper to the unix getent utility
-# key : getent
-# --
-- name: ${1:a wrapper to the unix getent utility}
-  getent: database=$2 $0

@@ -63,17 +63,20 @@
 (use-package yaml-mode
   :mode (("\\.yml\\'" . yaml-mode)
          ("\\.yaml\\'" . yaml-mode))
-  :init
-  (add-hook 'yaml-mode-hook #'corfu-mode)
-  (add-hook 'yaml-mode-hook #'auto-fill-mode)
-  (add-hook 'yaml-mode-hook #'display-line-numbers-mode)
-  (add-hook 'yaml-mode-hook #'flymake-mode)
-  (add-hook 'yaml-mode-hook #'flyspell-prog-mode)
-  (add-hook 'yaml-mode-hook #'hungry-delete-mode)
-  (add-hook 'yaml-mode-hook #'lsp-deferred)
-  (add-hook 'yaml-mode-hook #'hl-todo-mode)
-  (add-hook 'yaml-mode-hook #'rainbow-delimiters-mode)
-  (add-hook 'yaml-mode-hook #'highlight-indent-guides-mode))
+  :hook
+  (go-mode . eglot-ensure)
+  (yaml-mode . corfu-mode)
+  (yaml-mode . display-line-numbers-mode)
+  (yaml-mode . auto-fill-mode)
+  (yaml-mode . eldoc-mode)
+  (yaml-mode . electric-pair-mode)
+  (yaml-mode . hl-todo-mode)
+  (yaml-mode . flymake-mode)
+  (yaml-mode . tempel-setup-capf)
+  (yaml-mode . flyspell-prog-mode)
+  (yaml-mode . hungry-delete-mode)
+  (yaml-mode . tempel-setup-capf)
+  (yaml-mode . rainbow-delimiters-mode))
 
 ;; Hashicorp Configuration Language
 (use-package hcl-mode

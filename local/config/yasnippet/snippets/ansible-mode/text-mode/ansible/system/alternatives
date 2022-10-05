@@ -1,5 +1,0 @@
-# name : Manages alternative programs for common commands
-# key : alternatives
-# --
-- name: ${1:Manages alternative programs for common commands}
-  alternatives: name=$2 path=$3 $0

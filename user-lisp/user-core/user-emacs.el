@@ -93,7 +93,22 @@
 
   ;; Return path inside user's emacs config
   (defun emacs.d (path)
-    (expand-file-name path user-emacs-directory)))
+    (expand-file-name path user-emacs-directory))
+
+  ;; Load recursively all .el files in DIRECTORY
+  (defun eval-directory (directory)
+  (dolist (element (directory-files-and-attributes directory nil nil nil))
+    (let* ((path (car element))
+           (fullpath (concat directory "/" path))
+           (isdir (car (cdr element)))
+           (ignore-dir (or (string= path ".") (string= path ".."))))
+      (cond
+       ((and (eq isdir t) (not ignore-dir))
+        (sm/load-directory fullpath))
+       ((and (eq isdir nil)
+             (string= (substring path -3) ".el")
+             (not (string-match "^\\." path)))
+        (load (file-name-sans-extension fullpath))))))))
 
 ;; Persist history over Emacs restarts.
 (use-package savehist

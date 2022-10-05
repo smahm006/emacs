@@ -1,5 +1,0 @@
-# name : Manage services.
-# key : service
-# --
-- name: ${1:Manage services.}
-  service: name=$2 $0

@@ -1,5 +1,0 @@
-# name : get details reported by lldp
-# key : lldp
-# --
-- name: ${1:get details reported by lldp}
-  lldp: $0

@@ -52,7 +52,6 @@
 (use-package crux
   :bind (("C-x C-r" . crux-recentf-find-file)
          ("C-a" . crux-move-beginning-of-line)
-         ("C-<return>" . crux-smart-open-line)
          ("C-c R" . crux-rename-buffer-and-file)
          ("C-c D" . crux-delete-buffer-and-file)
          ("s-j" . crux-top-join-line))
@@ -97,58 +96,16 @@
 ;; Simple undo and redo system
 (use-package undo-tree
   :config
-  (global-undo-tree-mode))
+  (global-undo-tree-mode)
+  (setq undo-tree-auto-save-history t)
+  (defun my-undo-tree-save-history (undo-tree-save-history &rest args)
+  (let ((message-log-max nil)
+        (inhibit-message t))
+    (apply undo-tree-save-history args)))
+  (advice-add 'undo-tree-save-history :around 'my-undo-tree-save-history))
 
 ;; Focusing, dims surrounding text
 (use-package focus)
-
-(use-package re-builder
-  :ensure nil
-  :bind
-  ("C-c r" . re-builder)
-  :config
-  (define-key reb-mode-map (kbd "RET") 'reb-replace-regexp)
-  (define-key reb-lisp-mode-map (kbd "RET") 'reb-replace-regexp))
-
-(defvar my/re-builder-positions nil
-    "Store point and region bounds before calling re-builder")
-  (advice-add 're-builder
-              :before
-              (defun my/re-builder-save-state (&rest _)
-                "Save into `my/re-builder-positions' the point and region
-positions before calling `re-builder'."
-                          (setq my/re-builder-positions
-                                (cons (point)
-                                      (when (region-active-p)
-                                        (list (region-beginning)
-                                              (region-end)))))))
-(defun reb-replace-regexp (&optional delimited)
-  "Run `query-replace-regexp' with the contents of re-builder. With
-non-nil optional argument DELIMITED, only replace matches
-surrounded by word boundaries."
-  (interactive "P")
-  (reb-update-regexp)
-  (let* ((re (reb-target-binding reb-regexp))
-         (replacement (query-replace-read-to
-                       re
-                       (concat "Query replace"
-                               (if current-prefix-arg
-                                   (if (eq current-prefix-arg '-) " backward" " word")
-                                 "")
-                               " regexp"
-                               (if (with-selected-window reb-target-window
-                                     (region-active-p)) " in region" ""))
-                       t))
-         (pnt (car my/re-builder-positions))
-         (beg (cadr my/re-builder-positions))
-         (end (caddr my/re-builder-positions)))
-    (with-selected-window reb-target-window
-      (goto-char pnt) ; replace with (goto-char (match-beginning 0)) if you want
-                      ; to control where in the buffer the replacement starts
-                      ; with re-builder
-      (setq my/re-builder-positions nil)
-      (reb-quit)
-      (query-replace-regexp re replacement delimited beg end))))
 
 ;;; Keyboard
 (global-set-key (kbd "<C-M-backsbace>") 'just-one-space)

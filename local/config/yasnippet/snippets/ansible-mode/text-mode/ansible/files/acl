@@ -1,5 +1,0 @@
-# name : Sets and retrieves file ACL information.
-# key : acl
-# --
-- name: ${1:Sets and retrieves file ACL information.}
-  acl: name=$2 $0
