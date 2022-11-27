@@ -122,15 +122,6 @@
 
 (use-package vterm-toggle)
 
-(defun mkdir-p (dir-path)
-  "Make directory if it doesn't exist."
-  (unless (file-exists-p dir-path)
-    (make-directory dir-path t)))
-
-(defun filename ()
-  (interactive)
-  (kill-new (buffer-file-name (window-buffer (minibuffer-selected-window)))))
-
 ;; Load recursively all .el files in directory
 (defun load-directory (directory)
 (dolist (element (directory-files-and-attributes directory nil nil nil))

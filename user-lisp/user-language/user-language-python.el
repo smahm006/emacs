@@ -14,7 +14,9 @@
 (use-package python
   :ensure nil
   :hook
+  (python-mode . eglot-ensure)
   (python-mode . corfu-mode)
+  (python-mode . tempel-setup-capf)
   (python-mode . display-line-numbers-mode)
   (python-mode . auto-fill-mode)
   (python-mode . eldoc-mode)
@@ -30,11 +32,13 @@
   (python-mode . pyvenv-autoload)
   :config
   (setq python-indent-offset 4)
-  (setq lsp-diagnostic-package :none)
-  (setq-local flycheck-checker 'python-flake8))
+  (setq python-indent-guess-indent-offset t)
+  (setq python-indent-guess-indent-offset-verbose nil))
 
 ;; Major mode for editing pip requirements files
-(use-package pip-requirements)
+(use-package pip-requirements
+  :config
+  (add-hook 'pip-requirements-mode-hook #'pip-requirements-auto-complete-setup))
 
 ;; Python Code Formatter
 (use-package blacken)
@@ -44,7 +48,8 @@
   :config
   (setq pyvenv-default-virtual-env-name "~/workstation/architecture/.pyvenv_default"))
 
-(defun setup_pyvenv ()
+(defun pyvenv-setup ()
+  "Install .pyvenv virtual environment with pyright+black+flake8 and requirements.txt if it exists."
   (interactive)
   (let* ((pdir (file-name-directory buffer-file-name)) (pvenv (concat pdir ".pyvenv")))
   (progn
@@ -61,8 +66,8 @@
         (pyvenv-activate pvenv)
     (pyvenv-activate pyvenv-default-virtual-env-name))))
 
-;; Run Python Code
 (defun python-compile ()
+  "Compile current buffer file with python."
   (interactive)
   (compile (format "python %s" (filename))))
 

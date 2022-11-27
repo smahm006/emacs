@@ -29,6 +29,7 @@
 
 ;; Programming languages.
 ;;(require 'user-language-c-cpp)
+(require 'user-language-bash)
 (require 'user-language-python)
 (require 'user-language-go)
 (require 'user-language-rust)

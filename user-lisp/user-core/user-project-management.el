@@ -13,7 +13,6 @@
 (use-package projectile
   ;; :init
   ;; (shell-command "ln -sf ~/.config/emacs/local/data.known_projects ~/.config/emacs/local/data/projectile/known-projects.el")
-  :delight projectile-mode
   :bind
   ("C-c p" . projectile-command-map)
   ("C-x C-p" . projectile-switch-project)
@@ -23,11 +22,11 @@
   :custom
   (shell-file-name "/bin/bash")
   (projectile-completion-system 'default)
-  (projectile-indexing-method 'alien)
+  (projectile-indexing-method 'hybrid)
   (projectile-sort-order 'recently-active)
   :config
   (setq-default projectile-track-known-projects-automatically nil)
-  (run-with-idle-timer 10 nil #'projectile-cleanup-known-projects)
+  (run-with-idle-timer 0.1 nil #'projectile-cleanup-known-projects)
   ;; Ensure projectile dir exists.
   (defvar my-projectile-dir (user-var "projectile"))
   (mkdir-p my-projectile-dir)

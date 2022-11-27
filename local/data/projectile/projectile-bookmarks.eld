@@ -1,1 +1,1 @@
-("~/workstation/projects/devops-challenge/" "~/workstation/projects/debian-setup/" "~/.config/emacs/")
+("~/workstation/projects/mfg-call/" "~/.dotfiles/" "~/.config/emacs/" "~/workstation/projects/devops-challenge/" "~/workstation/projects/debian-setup/")

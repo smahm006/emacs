@@ -17,6 +17,7 @@
   :hook
   (ruby-mode . eglot-ensure)
   (ruby-mode . corfu-mode)
+  (ruby-mode . tempel-setup-capf)
   (ruby-mode . display-line-numbers-mode)
   (ruby-mode . auto-fill-mode)
   (ruby-mode . eldoc-mode)
@@ -26,7 +27,6 @@
   (ruby-mode . tempel-setup-capf)
   (ruby-mode . flyspell-prog-mode)
   (ruby-mode . hungry-delete-mode)
-  (ruby-mode . tempel-setup-capf)
   (ruby-mode . rainbow-delimiters-mode)
   :config
   ;; Ruby language customisations

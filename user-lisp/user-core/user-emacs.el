@@ -46,20 +46,30 @@
   ;; Remove pesky CL warning
   (setq byte-compile-warnings '(cl-functions))
 
-  ;; Keep autosave files in /tmp.
-  (setq auto-save-file-name-transforms
-        `((".*" ,temporary-file-directory t)))
-
-  ;; Change auto-save-list directory.
-  (setq auto-save-list-file-prefix (user-var "auto-save-list/.saves-"))
+  ;; Backups
+  (defvar my-backups-dir (user-var "backups"))
+  (mkdir-p my-backups-dir)
+  (setq backup-directory-alist `(("." . "~/.config/emacs/local/data/backups"))
+        make-backup-files t
+        backup-by-copying t
+        version-control t
+        delete-old-versions t
+        delete-by-moving-to-trash t
+        kept-old-versions 6
+        kept-new-versions 9
+        auto-save-default t
+        auto-save-timeout 20
+        auto-save-interval 200
+        auto-save-file-name-transforms `((".*" "~/.config/emacs/local/data/backups/" t))
+        auto-save-list-file-prefix "~/.config/emacs/local/data/backups/")
 
   ;; Change bookmarks file location.
-  (setq bookmark-default-file (user-etc "bookmarks"))
+  (setq bookmark-default-file (user-var "bookmarks"))
 
   ;; Change save-places file location.
   (setq save-place-file (user-var "places"))
 
-  ;; Disable annoying lock files.
+  ;; Disable annoying lock files.b
   (setq create-lockfiles nil)
 
   ;; Allow pasting selection outside of Emacs.
@@ -96,10 +106,9 @@
   :init
   (savehist-mode))
 
-;; Refresh useuffers automatically when underlying files are changed externally.
+;; Refresh buffers automatically when underlying files are changed externally.
 (use-package autorevert
   :hook (after-init . global-auto-revert-mode)
-  :delight auto-revert-mode
   :config (setq auto-revert-interval 1))
 
 ;; Add better help functionality

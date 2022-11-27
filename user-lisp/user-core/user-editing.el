@@ -30,7 +30,7 @@
 (setq-default tab-width 4)
 
 ;; Kill ring
-;;(setq-default backward-delete-char-untabify-method 'all)
+
 (setq-default kill-do-not-save-duplicates t)
 (setq-default kill-ring-max 1024)
 (setq-default save-interprogram-paste-before-kill t)
@@ -38,9 +38,6 @@
 
 ;; Automatically create newlines at the end of a file.
 (setq next-line-add-newlines t)
-
-;; Backups
-(setq make-backup-files nil)
 
 ;; Typing when a region is selected should replace its contents
 (delete-selection-mode t)
@@ -61,7 +58,7 @@
   :bind (("C->" . mc/mark-next-like-this)
          ("C-<" . mc/mark-previous-like-this)
          ("C-c C->" . mc/mark-all-like-this))
-  :custom (mc/list-file (emacs.d "etc/.mc-lists.el"))
+  :custom (mc/list-file (user-var ".mc-lists.el"))
   :custom-face
   (mc/cursor-bar-face
    ((t (:height 0.2 :background "#657b83"
@@ -98,11 +95,18 @@
   :config
   (global-undo-tree-mode)
   (setq undo-tree-auto-save-history t)
-  (defun my-undo-tree-save-history (undo-tree-save-history &rest args)
-  (let ((message-log-max nil)
-        (inhibit-message t))
-    (apply undo-tree-save-history args)))
-  (advice-add 'undo-tree-save-history :around 'my-undo-tree-save-history))
+  (defun my-undo-tree-suppress-buffer-modified-message
+      (undo-tree-load-history &rest args)
+    (let ((message-log-max nil)
+          (inhibit-message t))
+      (apply undo-tree-load-history args)))
+  (defun my-undo-tree-suppress-undo-history-saved-message
+      (undo-tree-save-history &rest args)
+    (let ((message-log-max nil)
+          (inhibit-message t))
+      (apply undo-tree-save-history args)))
+  (advice-add 'undo-tree-load-history :around 'my-undo-tree-suppress-buffer-modified-message)
+  (advice-add 'undo-tree-save-history :around 'my-undo-tree-suppress-undo-history-saved-message))
 
 ;; Focusing, dims surrounding text
 (use-package focus)

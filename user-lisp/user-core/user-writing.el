@@ -24,8 +24,8 @@
 ;; Mode for typographical editing.
 (use-package typo
   :commands typo-mode
-  :config (setq-default typo-language "English")
-  :init (add-hook 'text-mode-hook #'typo-mode))
+  :config (setq-default typo-language "English"))
+  ;;:init (add-hook 'text-mode-hook #'typo-mode))
 
 ;; Distraction-free writing.
 (use-package writeroom-mode
@@ -38,15 +38,13 @@
 ;; olivetti -- similar to writeroom but a simple minor mode
 (use-package olivetti
   :if window-system
-  :delight
-  :hook (text-mode . olivetti-mode)
+  ;;:hook (text-mode . olivetti-mode)
   :bind ("C-c o" . olivetti-mode)
   :custom
   (olivetti-minimum-body-width 80)
   (olivetti-body-width 0.66))
 
 (use-package flyspell
-  :delight flyspell-mode
   :commands flyspell-mode
   :hook (text-mode . flyspell-mode)
   :config

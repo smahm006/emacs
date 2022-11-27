@@ -22,6 +22,15 @@
 (defun user-etc (identifier)
   (expand-file-name identifier (emacs.d "local/config")))
 
+(defun mkdir-p (dir-path)
+  "Make directory in DIR-PATH if it doesn't exist."
+  (unless (file-exists-p dir-path)
+    (make-directory dir-path t)))
+
+(defun filename ()
+  "Gets the name of the file the current buffer is based on."
+  (kill-new (buffer-file-name (window-buffer (minibuffer-selected-window)))))
+
 ;; Add user modules to the load path.
 (add-to-list 'load-path (locate-user-emacs-file "user-lisp/user-core"))
 (add-to-list 'load-path (locate-user-emacs-file "user-lisp/user-language"))

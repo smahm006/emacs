@@ -16,6 +16,7 @@
 (use-package go-mode
   :hook
   (go-mode . eglot-ensure)
+  (go-mode . tempel-setup-capf)
   (go-mode . corfu-mode)
   (go-mode . display-line-numbers-mode)
   (go-mode . auto-fill-mode)
@@ -26,7 +27,6 @@
   (go-mode . tempel-setup-capf)
   (go-mode . flyspell-prog-mode)
   (go-mode . hungry-delete-mode)
-  (go-mode . tempel-setup-capf)
   (go-mode . rainbow-delimiters-mode)
   :config
   (add-hook 'before-save-hook 'gofmt-before-save)
@@ -34,9 +34,10 @@
   (godoc-reuse-buffer t))
 
 (defun go-build ()
+  "Compile current buffer file with go."
   (interactive)
-  (compile (format "go build %s" (filename)))
-  )
+  (compile (format "go build %s" (filename))))
+
 ;; Go test support
 (use-package gotest)
 
