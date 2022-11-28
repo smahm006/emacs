@@ -23,10 +23,8 @@
   (emacs-lisp-mode . electric-pair-mode)
   (emacs-lisp-mode . hl-todo-mode)
   (emacs-lisp-mode . flymake-mode)
-  (emacs-lisp-mode . tempel-setup-capf)
   (emacs-lisp-mode . flyspell-prog-mode)
   (emacs-lisp-mode . hungry-delete-mode)
-  (emacs-lisp-mode . tempel-setup-capf)
   (emacs-lisp-mode . rainbow-delimiters-mode))
 
 ;; Code evaluation

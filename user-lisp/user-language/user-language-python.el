@@ -16,7 +16,6 @@
   :hook
   (python-mode . eglot-ensure)
   (python-mode . corfu-mode)
-  (python-mode . tempel-setup-capf)
   (python-mode . display-line-numbers-mode)
   (python-mode . auto-fill-mode)
   (python-mode . eldoc-mode)
@@ -24,7 +23,6 @@
   (python-mode . hl-todo-mode)
   (python-mode . flymake-mode)
   (python-mode . flyspell-prog-mode)
-  (python-mode . tempel-setup-capf)
   (python-mode . hungry-delete-mode)
   (python-mode . rainbow-delimiters-mode)
   (python-mode . pyvenv-mode)

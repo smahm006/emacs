@@ -20,8 +20,18 @@
 (use-package eglot
   :commands (eglot eglot-ensure)
   :config
+  (defun my/eglot-capf ()
+  (setq-local completion-at-point-functions
+              (list (cape-super-capf
+                     #'eglot-completion-at-point
+                     #'tempel-expand
+                     #'cape-file))))
+  (add-hook 'eglot-managed-mode-hook #'my/eglot-capf)
   (setq eglot-strict-mode nil)
-  (setq eglot-confirm-server-initiated-edits nil))
+  (setq eglot-confirm-server-initiated-edits nil)
+  (setq completion-category-overrides '((eglot (styles orderless)))))
+
+
 
 ;; Syntax Checker
 (use-package flymake

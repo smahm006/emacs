@@ -53,7 +53,9 @@
   :init
   (global-corfu-mode)
   :bind
-  (:map corfu-map ("SPC" . corfu-insert-separator))
+  (:map corfu-map
+        ("SPC" . corfu-insert-separator)
+        ("M-n" . nil))
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                 ;; Enable auto completion
@@ -91,23 +93,7 @@
 
 ;; Better backend language support with corfu
 (use-package cape
-  ;; Bind dedicated completion commands
-  :bind (("C-c c c" . completion-at-point) ;; capf
-         ("C-c c t" . complete-tag)        ;; etags
-         ("C-c c d" . cape-dabbrev)        ;; or dabbrev-completion
-         ("C-c c h" . cape-history)
-         ("C-c c f" . cape-file)
-         ("C-c c k" . cape-keyword)
-         ("C-c c s" . cape-symbol)
-         ("C-c c a" . cape-abbrev)
-         ("C-c c i" . cape-ispell)
-         ("C-c c l" . cape-line)
-         ("C-c c w" . cape-dict)
-         ("C-c c \\" . cape-tex)
-         ("C-c c _" . cape-tex)
-         ("C-c c ^" . cape-tex)
-         ("C-c c &" . cape-sgml)
-         ("C-c c r" . cape-rfc1345))
+  :bind (("M-<tab>" . completion-at-point))
   :init
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-file)
@@ -127,16 +113,11 @@
   ;; Require trigger prefix before template name when completing.
   ;; :custom
   ;; (tempel-trigger-prefix "<")
-  :bind (("C-M-<return>" . tempel-expand)
+  :commands (tempel-expand)
+  :bind (("M-n" . tempel-expand)
          ("C-M-n" . tempel-insert)
          (:map tempel-map (("M-n" . tempel-next)
                            ("M-p" . tempel-previous))))
-  :init
-  ;; Setup completion at point
-  (defun tempel-setup-capf ()
-    (setq-local completion-at-point-functions
-                (cons #'tempel-expand
-                      completion-at-point-functions)))
   :config
   (setq-default tempel-path (expand-file-name "user-snippet/*.eld" "~/.config/emacs/user-lisp")))
 
@@ -145,10 +126,6 @@
   :config
   (which-key-mode))
 
-;;; Keyboard:
-;; (global-set-key (kbd "C-c k k") 'which-key-show-top-level)
-;; (global-set-key (kbd "C-c k ,") 'which-key-show-major-mode)
-;; (global-set-key (kbd "C-c k .") 'which-key-show-minor-mode-keymap)
 
 (provide 'user-completion)
 ;;; user-completion.el ends here

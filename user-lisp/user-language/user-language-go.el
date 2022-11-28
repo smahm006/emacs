@@ -16,7 +16,6 @@
 (use-package go-mode
   :hook
   (go-mode . eglot-ensure)
-  (go-mode . tempel-setup-capf)
   (go-mode . corfu-mode)
   (go-mode . display-line-numbers-mode)
   (go-mode . auto-fill-mode)
@@ -24,7 +23,6 @@
   (go-mode . electric-pair-mode)
   (go-mode . hl-todo-mode)
   (go-mode . flymake-mode)
-  (go-mode . tempel-setup-capf)
   (go-mode . flyspell-prog-mode)
   (go-mode . hungry-delete-mode)
   (go-mode . rainbow-delimiters-mode)

@@ -72,10 +72,8 @@
   (yaml-mode . electric-pair-mode)
   (yaml-mode . hl-todo-mode)
   (yaml-mode . flymake-mode)
-  (yaml-mode . tempel-setup-capf)
   (yaml-mode . flyspell-prog-mode)
   (yaml-mode . hungry-delete-mode)
-  (yaml-mode . tempel-setup-capf)
   (yaml-mode . rainbow-delimiters-mode))
 
 ;; Hashicorp Configuration Language
