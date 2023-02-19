@@ -34,7 +34,7 @@
 ;; Match space-seperated components
 (use-package orderless
   :init
-  (setq completion-styles '(orderless basic)
+  (setq completion-styles '(orderless fast)
         completion-category-defaults nil
         completion-category-overrides '((file (styles . (partial-completion)))))
   :config
@@ -58,7 +58,7 @@
         ("M-n" . nil))
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-  (corfu-auto t)                 ;; Enable auto completion
+  (corfu-auto nil)                 ;; Enable auto completion
   (corfu-auto-delay 0)
   (corfu-auto-prefix 0)
   (completion-styles '(orderless-fast))
@@ -88,6 +88,9 @@
   :after corfu
   :custom
   (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
+  (kind-icon-default-face 'corfu-default) ; Have background color be the same as `corfu' face background
+  (kind-icon-blend-background nil)  ; Use midpoint color between foreground and background colors ("blended")?
+  (kind-icon-blend-frac 0.08)
   :config
   (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 

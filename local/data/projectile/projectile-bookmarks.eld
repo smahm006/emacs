@@ -1,1 +1,1 @@
-("~/workstation/projects/sak_installer/" "~/workstation/projects/mfg-call/" "~/.dotfiles/" "~/.config/emacs/" "~/workstation/projects/devops-challenge/" "~/workstation/projects/debian-setup/")
+("~/workstation/projects/personal/debian-setup/" "~/.dotfiles/" "~/.config/emacs/")

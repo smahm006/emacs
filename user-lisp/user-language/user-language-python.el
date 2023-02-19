@@ -41,6 +41,9 @@
 ;; Python Code Formatter
 (use-package blacken)
 
+;; Robot Framework
+(use-package robot-mode)
+
 ;; Virtual environment setup
 (use-package pyvenv
   :config
@@ -51,7 +54,7 @@
   (interactive)
   (let* ((pdir (file-name-directory buffer-file-name)) (pvenv (concat pdir ".pyvenv")))
   (progn
-    (shell-command (concat "virtualenv " pvenv))
+    (shell-command (concat "python3 -m venv " pvenv))
     (compile (concat "source " pvenv "/bin/activate" " && " "pip3 install pyright black flake8" " && " "pip3 install -r requirements.txt || true"))
     (pyvenv-activate pvenv))))
 
