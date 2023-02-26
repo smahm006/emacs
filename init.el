@@ -21,6 +21,7 @@
 (require 'user-development)
 (require 'user-editing)
 (require 'user-writing)
+(require 'user-org)
 (require 'user-operating-system)
 (require 'user-networking)
 (require 'user-container)

@@ -31,19 +31,9 @@
   :config
   (marginalia-mode))
 
+
 ;; Match space-seperated components
-(use-package orderless
-  :init
-  (setq completion-styles '(orderless fast)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles . (partial-completion)))))
-  :config
-  (defun orderless-fast-dispatch (word index total)
-  (and (= index 0) (= total 1) (length< word 4)
-       `(orderless-regexp . ,(concat "^" (regexp-quote word)))))
-  (orderless-define-completion-style orderless-fast
-    (orderless-style-dispatchers '(orderless-fast-dispatch))
-    (orderless-matching-styles '(orderless-literal orderless-regexp))))
+(use-package orderless)
 
 ;; Practical incremental narrowing commands.
 (use-package consult)
@@ -52,36 +42,18 @@
 (use-package corfu
   :init
   (global-corfu-mode)
-  :bind
-  (:map corfu-map
-        ("SPC" . corfu-insert-separator)
-        ("M-n" . nil))
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                 ;; Enable auto completion
-  (corfu-preselect-first nil)    ;; Popup won't interfere with further input
   (corfu-auto-delay 0)
   (corfu-auto-prefix 0)
-  (completion-styles '(orderless-fast))
   (corfu-popupinfo-mode t)       ;; Display docs or source in a popup
   (corfu-echo-mode t)            ;; Display docs or source in echo area
-  (corfu-separator ?\s)          ;; Orderless field separator
   (corfu-quit-at-boundary t)     ;; Quit at completion boundary
   (corfu-quit-no-match t)        ;; Quit if there is no match
-  (corfu-preview-current t)      ;; Disable current candidate preview
-  (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-  (corfu-scroll-margin 5)        ;; Use scroll margin
-  :config
-  (defun corfu-enable-always-in-minibuffer ()
-  "Enable Corfu in the minibuffer if Vertico/Swiper are not active."
-  (unless (or (bound-and-true-p mct--active)
-              (bound-and-true-p vertico--input)
-              (bound-and-true-p swiper--input))
-    (setq-local corfu-auto nil) ;; Enable/disable auto completion
-    (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
-                corfu-popupinfo-delay nil)
-    (corfu-mode 1)))
-  (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1))
+  (corfu-preview-current t)      ;; Show current candidate preview
+  (corfu-on-exact-match nil))    ;; Configure handling of exact matches
+
 
 ;; Corfu specific icons
 (use-package kind-icon
@@ -97,7 +69,6 @@
 
 ;; Better backend language support with corfu
 (use-package cape
-  :bind (("M-<tab>" . completion-at-point))
   :init
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-file)
@@ -118,10 +89,10 @@
   ;; :custom
   ;; (tempel-trigger-prefix "<")
   :commands (tempel-expand)
-  :bind (("M-n" . tempel-expand)
-         ("C-M-n" . tempel-insert)
-         (:map tempel-map (("M-n" . tempel-next)
-                           ("M-p" . tempel-previous))))
+  :bind (("M-+" . tempel-expand)
+         ("M-*" . tempel-insert)
+         (:map tempel-map (("C-n" . tempel-next)
+                           ("C-p" . tempel-previous))))
   :config
   (setq-default tempel-path (expand-file-name "user-snippet/*.eld" "~/.config/emacs/user-lisp")))
 

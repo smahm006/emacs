@@ -1,11 +1,18 @@
-;;; user-time-management -- Org Mode configuration.
+;;; user-org -- Org mode configuration
 
 ;;; Commentary:
 
-;; Implements time management techniques useing org mode
+;; Provides packages which enhance org mode experience
 
 ;;; Code:
 
+(require 'use-package)
 
-(provide 'user-time-management)
-;;; user-time-management.el ends here
+(use-package org
+  :ensure nil
+  :bind (("C-c a" . org-agenda)
+         ("C-c l"  . org-store-link)
+         ("C-c c" . org-capture)))
+
+(provide 'user-org)
+;;; user-org.el ends here

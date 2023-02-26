@@ -95,11 +95,8 @@
         #'command-completion-default-include-p)
 
   ;; Enable recursive minibuffers
-  (setq enable-recursive-minibuffers t)
+  (setq enable-recursive-minibuffers t))
 
-  ;; TAB cycle if there are only few candidates
-  ;;(setq completion-cycle-threshold 3)
-  (setq tab-always-indent 'complete))
 
 ;; Persist history over Emacs restarts.
 (use-package savehist

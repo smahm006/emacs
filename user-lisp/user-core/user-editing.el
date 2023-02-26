@@ -75,7 +75,7 @@
 
 ;; Add/Change/Delete pairs based on expand-region.
 (use-package embrace
-  :bind ("C-," . embrace-commander))
+  :bind ("C-\"" . embrace-commander))
 
 ;; Better `comment-dwim' supporting uncommenting.
 (use-package smart-comment
@@ -109,14 +109,14 @@
   (advice-add 'undo-tree-save-history :around 'my-undo-tree-suppress-undo-history-saved-message))
 
 ;; Focusing, dims surrounding text
-(use-package focus)
+(use-package focus
+  :bind ("C-c f" . focus-mode))
 
 ;;; Keyboard
-(global-set-key (kbd "<C-M-backsbace>") 'just-one-space)
-(global-set-key (kbd "C-c f") 'focus-mode)
-(global-set-key (kbd "M-c") 'capitalize-dwim)
-(global-set-key (kbd "M-l") 'downcase-dwim)
-(global-set-key (kbd "M-u") 'upcase-dwim)
+(global-set-key (kbd "<M-backspace>") 'just-one-space)
+(global-set-key (kbd "C-S-W c") 'capitalize-dwim)
+(global-set-key (kbd "C-S-W d") 'downcase-dwim)
+(global-set-key (kbd "C-S-W u") 'upcase-dwim)
 
 (provide 'user-editing)
 ;;; user-editing.el ends here

@@ -19,6 +19,7 @@
 
 ;; Window navigation.
 (use-package ace-window
+  :bind ((:map global-map ("M-o" . ace-window)))
   :custom
   (aw-ignore-current t)
   (aw-scope 'frame))
@@ -91,8 +92,8 @@
 (global-set-key (kbd "C-x C-b") #'bufler)
 (global-set-key (kbd "C-x b") #'bufler-switch-buffer)
 (global-set-key (kbd "<C-x o>") #'ace-window)
-;; (global-set-key (kbd "<C-M-tab>") #'next-buffer)
-;; (global-set-key (kbd "<C-M-S-iso-lefttab>") #'previous-buffer)
+(global-set-key (kbd "<C-M-tab>") #'next-buffer)
+(global-set-key (kbd "<C-M-S-iso-lefttab>") #'previous-buffer)
 (global-set-key (kbd "C-x |") 'toggle-window-split)
 
 (provide 'user-buffer)

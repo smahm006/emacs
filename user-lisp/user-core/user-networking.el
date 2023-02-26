@@ -23,20 +23,9 @@
       (format "%s\\|%s"
                     vc-ignore-dir-regexp
                     tramp-file-name-regexp))
-  (setq tramp-verbose 1)
-  :config
-  (defun basic-remote-try-completion (string table pred point)
-    (and (vertico--remote-p string)
-         (completion-basic-try-completion string table pred point)))
-  (defun basic-remote-all-completions (string table pred point)
-    (and (vertico--remote-p string)
-         (completion-basic-all-completions string table pred point)))
-  (add-to-list
-   'completion-styles-alist
-   '(basic-remote basic-remote-try-completion basic-remote-all-completions nil))
-  (setq completion-styles '(orderless basic)
-        completion-category-overrides '((file (styles basic-remote partial-completion))))
-  (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
+  (setq tramp-verbose 1))
+
+
 
 (use-package docker-tramp)
 

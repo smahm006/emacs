@@ -21,6 +21,9 @@
 
 ;; Character and line navigation.
 (use-package avy
+  :bind (:map global-map
+              ("C-l" . avy-goto-char-timer)
+              ("M-l" . goto-line-preview))
   :custom
   (avy-all-windows t)
   (avy-background t)
@@ -28,12 +31,13 @@
   (avy-style 'at))
 
 ;; Advanced search.
-(use-package swiper)
+(use-package swiper
+  :bind ("C-s" . swiper))
 
 ;; Uses ripgrep + nice results. This is replacing ag because ripgrep is faster
 ;; and the deadgrep interface is great.
 (use-package deadgrep
-  :bind ("C-c S" . deadgrep))
+  :bind ("M-s" . deadgrep))
 
 ;; anzu
 ;; Shows isearch results in mode-line and better query-replace.
@@ -56,12 +60,6 @@
                           "/elpa/.*\\'"))
   (setq recentf-save-file (user-var "recentf"))
   (recentf-mode))
-
-;;; Keyboard
-(global-set-key (kbd "C-s") 'swiper)
-(global-set-key (kbd "M-o") #'avy-goto-char-timer)
-(global-set-key (kbd "M-g l") #'avy-goto-line)
-(global-set-key (kbd "M-g g") #'goto-line-preview)
 
 (provide 'user-navigation)
 ;;; user-navigation.el ends here
