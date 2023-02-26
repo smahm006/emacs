@@ -58,7 +58,8 @@
         ("M-n" . nil))
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-  (corfu-auto nil)                 ;; Enable auto completion
+  (corfu-auto t)                 ;; Enable auto completion
+  (corfu-preselect-first nil)    ;; Popup won't interfere with further input
   (corfu-auto-delay 0)
   (corfu-auto-prefix 0)
   (completion-styles '(orderless-fast))

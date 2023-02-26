@@ -3,7 +3,7 @@ yaml-mode
 ;; General
 (setup "---\n- name: "(p "name" name) n>"hosts: "(p "hosts" hosts) n>"tasks: " n> q"")
 (lsetup "---\n- name: "(p "name" name) n>"hosts: localhost"n>"connection: local"n>"tasks: " n> q"")
-(gen "- name: "(p "name" name) n>""(p "task" task)":" n>""(p "args" args) q"")
+(gen "- name: "(p "name" name) n>""(p "task" task)":" " "(p "args" args) q"")
 ;; Tag
 (t "tags: "(p "tag" tag) q"")
 ;; Commands

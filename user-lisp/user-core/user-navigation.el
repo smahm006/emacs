@@ -59,7 +59,7 @@
 
 ;;; Keyboard
 (global-set-key (kbd "C-s") 'swiper)
-(global-set-key (kbd "C-o") #'avy-goto-char-timer)
+(global-set-key (kbd "M-o") #'avy-goto-char-timer)
 (global-set-key (kbd "M-g l") #'avy-goto-line)
 (global-set-key (kbd "M-g g") #'goto-line-preview)
 

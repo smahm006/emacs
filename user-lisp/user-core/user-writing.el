@@ -24,6 +24,7 @@
 ;; Mode for typographical editing.
 (use-package typo
   :commands typo-mode
+  :bind ("C-c t" . typo-mode)
   :config (setq-default typo-language "English"))
   ;;:init (add-hook 'text-mode-hook #'typo-mode))
 

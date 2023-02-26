@@ -20,13 +20,16 @@
   ("C-c p a" . projectile-ag)
   ("C-c p d" . projectile-dired)
   :custom
+  (projectile-enable-caching t)
+  (projectile-track-known-projects-automatically nil)
+  (projectile-require-project-root nil)
   (shell-file-name "/bin/bash")
   (projectile-completion-system 'default)
   (projectile-indexing-method 'hybrid)
   (projectile-sort-order 'recently-active)
   :config
-  (setq-default projectile-track-known-projects-automatically nil)
-  (run-with-idle-timer 0.1 nil #'projectile-cleanup-known-projects)
+  (projectile-global-mode)
+  (run-with-idle-timer 0 nil #'projectile-cleanup-known-projects)
   ;; Ensure projectile dir exists.
   (defvar my-projectile-dir (user-var "projectile"))
   (mkdir-p my-projectile-dir)

@@ -36,5 +36,5 @@
    (list (read-passwd "Enter become password: ")))
   (compile (format "ansible-playbook --extra-vars 'ansible_become_pass=%s' %s" args (filename) )))
 
-(provide 'user-language-bash)
+(provide 'user-language-ansible)
 ;;; user-language-bash.el ends here
