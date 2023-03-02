@@ -113,7 +113,7 @@
   :bind ("C-c f" . focus-mode))
 
 ;;; Keyboard
-(global-set-key (kbd "<M-backspace>") 'just-one-space)
+(global-set-key (kbd "<C-backspace>") 'just-one-space)
 (global-set-key (kbd "C-S-W c") 'capitalize-dwim)
 (global-set-key (kbd "C-S-W d") 'downcase-dwim)
 (global-set-key (kbd "C-S-W u") 'upcase-dwim)

@@ -1,1 +1,1 @@
-("~/workstation/projects/sandbox/" "~/workstation/projects/personal/debian-setup/" "~/.dotfiles/" "~/.config/emacs/")
+("~/workstation/projects/personal/debian-setup/" "~/workstation/projects/sandbox/" "~/.dotfiles/" "~/.config/emacs/")
