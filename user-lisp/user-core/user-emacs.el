@@ -54,7 +54,6 @@
         backup-by-copying t
         version-control t
         delete-old-versions t
-        delete-by-moving-to-trash t
         kept-old-versions 6
         kept-new-versions 9
         auto-save-default t
@@ -76,7 +75,7 @@
   (setq x-select-enable-clipboard t)
 
   ;; Move files to trash when deleting
-  (setq trash-directory "~/.local/share/Trash/files")
+  (setq trash-directory (expand-file-name "~/.local/share/Trash/files/"))
   (setq delete-by-moving-to-trash t)
 
   ;; When copying something from outside emacs, save to kill-ring.

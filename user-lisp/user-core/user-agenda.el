@@ -1,4 +1,4 @@
-;;; user-org -- Org mode configuration
+;;; user-agenda -- Org mode and time management suite configuration
 
 ;;; Commentary:
 
@@ -27,7 +27,7 @@
          ("C-c c" . org-capture))
   :custom
   (org-log-done 'time)
-  (org-agenda-files "~/office/agenda")
+  (org-agenda-files '("~/office/agenda"))
   (org-return-follows-link  t)
   :config
   (setq org-capture-templates
@@ -39,5 +39,5 @@
 
         )))
 
-(provide 'user-org)
-;;; user-org.el ends here
+(provide 'user-agenda)
+;;; user-agenda.el ends here

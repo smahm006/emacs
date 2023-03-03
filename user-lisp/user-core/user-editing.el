@@ -49,6 +49,8 @@
 (use-package crux
   :bind (("C-x C-r" . crux-recentf-find-file)
          ("C-a" . crux-move-beginning-of-line)
+         ("C-o" . crux-smart-open-line)
+         ("C-S-o" . crux-smart-open-line-above)
          ("C-c R" . crux-rename-buffer-and-file)
          ("C-c D" . crux-delete-buffer-and-file)
          ("s-j" . crux-top-join-line))
