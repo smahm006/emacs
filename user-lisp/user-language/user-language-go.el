@@ -18,7 +18,6 @@
   (go-mode . eglot-ensure)
   (go-mode . corfu-mode)
   (go-mode . display-line-numbers-mode)
-  (go-mode . auto-fill-mode)
   (go-mode . eldoc-mode)
   (go-mode . electric-pair-mode)
   (go-mode . hl-todo-mode)

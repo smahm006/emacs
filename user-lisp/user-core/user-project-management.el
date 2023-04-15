@@ -30,6 +30,25 @@
   :config
   (projectile-global-mode)
   (run-with-idle-timer 0 nil #'projectile-cleanup-known-projects)
+  (setq projectile-globally-ignored-directories
+        (append '(
+                  ".git"
+                  ".svn"
+                  ".pyvenv"
+                  ".vagrant"
+                  )
+                projectile-globally-ignored-directories))
+  (setq projectile-globally-ignored-files
+        (append '(
+                  ".DS_Store"
+                  "*.gz"
+                  "*.pyc"
+                  "*.jar"
+                  "*.tar.gz"
+                  "*.tgz"
+                  "*.zip"
+                  )
+                projectile-globally-ignored-files))
   ;; Ensure projectile dir exists.
   (defvar my-projectile-dir (user-var "projectile"))
   (mkdir-p my-projectile-dir)

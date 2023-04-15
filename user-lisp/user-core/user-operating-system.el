@@ -109,7 +109,7 @@
           (vterm-send-return))
       (vterm-toggle))
     (when pyvenv-virtual-env
-      (let* ((command (replace-regexp-in-string "\/.*:.*:" "" (concat "source " (concat pyvenv-virtual-env "bin/activate")))))
+      (let* ((command (concat (replace-regexp-in-string "\/.*:.*:" "" (concat "source " (concat pyvenv-virtual-env "bin/activate"))) " && history -d -3--1")))
         (vterm--goto-line -1)
         (vterm-send-string command)
         (vterm-send-return)))))

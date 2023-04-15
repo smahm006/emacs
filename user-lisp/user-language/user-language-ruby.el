@@ -18,7 +18,6 @@
   (ruby-mode . eglot-ensure)
   (ruby-mode . corfu-mode)
   (ruby-mode . display-line-numbers-mode)
-  (ruby-mode . auto-fill-mode)
   (ruby-mode . eldoc-mode)
   (ruby-mode . electric-pair-mode)
   (ruby-mode . hl-todo-mode)

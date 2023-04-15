@@ -19,9 +19,9 @@
 (set-selection-coding-system 'utf-8)
 
 ;; Auto-fill
-(setq-default comment-column 80)
+(setq-default comment-column 120)
 (setq-default comment-empty-lines t)
-(setq-default fill-column 80)
+(setq-default fill-column 120)
 
 ;; Indentation
 (setq-default indent-tabs-mode nil)

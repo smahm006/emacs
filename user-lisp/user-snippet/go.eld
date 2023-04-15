@@ -3,7 +3,8 @@ go-mode
 (imp "import " q)
 (impn "import (" n> q n ")")
 
-(pr "fmt.Printf(\"\\n" p "\\n%#v\\n\", " q ")")
+(pf "fmt.Printf(\"\\n" p "\\n%#v\\n\", " q ")")
+(p "fmt.Print(" q ")")
 (pl "fmt.Println(" q ")")
 
 (db "Debug.Printf(\"\\n" p "\\n\\n%#v\\n\", " q ")")
@@ -42,7 +43,7 @@ go-mode
 
 (range "for " p ", " p " := range " p " {" n> q n> "}")
 
-(fnc "func " p "(" p ") {" n> q n> "}")
+(fn "func " p "(" p ") {" n> q n> "}")
 
 (main "func main() {" n> q n> "}")
 

@@ -17,8 +17,7 @@
   (python-mode . eglot-ensure)
   (python-mode . corfu-mode)
   (python-mode . display-line-numbers-mode)
-  (python-mode . auto-fill-mode)
-  (python-mode . eldoc-mode)
+pip  (python-mode . eldoc-mode)
   (python-mode . electric-pair-mode)
   (python-mode . hl-todo-mode)
   (python-mode . flymake-mode)
@@ -32,11 +31,6 @@
   (setq python-indent-offset 4)
   (setq python-indent-guess-indent-offset t)
   (setq python-indent-guess-indent-offset-verbose nil))
-
-;; Major mode for editing pip requirements files
-(use-package pip-requirements
-  :config
-  (add-hook 'pip-requirements-mode-hook #'pip-requirements-auto-complete-setup))
 
 ;; Python Code Formatter
 (use-package blacken)

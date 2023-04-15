@@ -35,13 +35,13 @@
 (defun kill-all-buffers-except-toolbox ()
   "Kill all buffers except current one and toolkit (*Messages*, *scratch*). Close other windows."
   (interactive)
-  (switch-to-buffer "*scratch*")
+  (switch-to-buffer "*dashboard*")
   (mapc 'kill-buffer
         (cl-remove-if
          (lambda (x)
            (or
             (eq x (current-buffer))
-            (member (buffer-name x) '("*Messages*" "*scratch*"))))
+            (member (buffer-name x) '("*Messages*" "*scratch*" "*dashboard*"))))
          (buffer-list)))
   (delete-other-windows))
 

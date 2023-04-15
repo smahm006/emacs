@@ -16,7 +16,7 @@
 (use-package css-mode
   :mode ("\\.css\\'")
   :init
-  (add-hook 'css-mode-hook #'auto-fill-mode)
+  (add-hook 'css-mode-hook #'visual-line-mode)
   (add-hook 'css-mode-hook #'corfu-mode)
   (add-hook 'css-mode-hook #'display-line-numbers-mode)
   (add-hook 'css-mode-hook #'eldoc-mode)
@@ -35,7 +35,7 @@
 (use-package typescript-mode
   :mode ("\\.ts\\'" "\\.tsx\\'")
   :init
-  (add-hook 'typescript-mode-hook #'auto-fill-mode)
+  (add-hook 'typescript-mode-hook #'visual-line-mode)
   (add-hook 'typescript-mode-hook #'corfu-mode)
   (add-hook 'typescript-mode-hook #'display-line-numbers-mode)
   (add-hook 'typescript-mode-hook #'eldoc-mode)
@@ -63,7 +63,7 @@
   :mode "\\.vue\\'"
   :config
   (add-hook 'vue-mode-hook #'lsp-deferred)
-  (add-hook 'vue-mode-hook #'auto-fill-mode)
+  (add-hook 'vue-mode-hook #'visual-line-mode)
   (add-hook 'vue-mode-hook #'corfu-mode)
   (add-hook 'vue-mode-hook #'display-line-numbers-mode)
   (add-hook 'vue-mode-hook #'eldoc-mode)
@@ -80,7 +80,7 @@
   :mode ("\\.html?\\'" "\\.phtml\\'" "\\.tpl\\.php\\'" "\\.[agj]sp\\'"
          "\\.as[cp]x\\'" "\\.erb\\'" "\\.mustache\\'" "\\.djhtml\\'")
   :init
-  (add-hook 'web-mode-hook #'auto-fill-mode)
+  (add-hook 'web-mode-hook #'visual-line-mode)
   (add-hook 'web-mode-hook #'corfu-mode)
   (add-hook 'web-mode-hook #'display-line-numbers-mode)
   (add-hook 'web-mode-hook #'eldoc-mode)
@@ -105,7 +105,7 @@
         :hook (vue-mode . lsp-deferred)
         :mode ("\\.vue\\'" . vue-mode)
         :config
-        (add-hook 'vue-mode-hook #'auto-fill-mode)
+        (add-hook 'vue-mode-hook #'visual-line-mode)
         (add-hook 'vue-mode-hook #'corfu-mode)
         (add-hook 'vue-mode-hook #'display-line-numbers-mode)
         (add-hook 'vue-mode-hook #'eldoc-mode)

@@ -24,7 +24,6 @@
   (sh-mode . eglot-ensure)
   (sh-mode . corfu-mode)
   (sh-mode . display-line-numbers-mode)
-  (sh-mode . auto-fill-mode)
   (sh-mode . eldoc-mode)
   (sh-mode . electric-pair-mode)
   (sh-mode . hl-todo-mode)

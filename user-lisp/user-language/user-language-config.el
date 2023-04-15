@@ -24,7 +24,7 @@
          ("\\.markdown\\'" . markdown-mode)
          ("README\\.md\\'" . gfm-mode))
   :init
-  (add-hook 'markdown-mode-hook #'auto-fill-mode)
+  (add-hook 'markdown-mode-hook #'visual-line-mode)
   (add-hook 'markdown-mode-hook #'flymake-mode)
   (add-hook 'markdown-mode-hook #'flyspell-mode)
   :custom
@@ -41,7 +41,7 @@
   :mode (("\\.json\\'" . json-mode))
   :init
   (add-hook 'json-mode-hook #'aggressive-indent-mode)
-  (add-hook 'json-mode-hook #'auto-fill-mode)
+  (add-hook 'json-mode-hook #'visual-line-mode)
   (add-hook 'json-mode-hook #'display-line-numbers-mode)
   (add-hook 'json-mode-hook #'flymake-mode)
   (add-hook 'json-mode-hook #'flyspell-prog-mode)
@@ -53,7 +53,7 @@
          ("\\.libsonnet\\'" . jsonnet-mode))
   :init
   (add-hook 'jsonnet-mode-hook #'aggressive-indent-mode)
-  (add-hook 'jsonnet-mode-hook #'auto-fill-mode)
+  (add-hook 'jsonnet-mode-hook #'visual-line-mode)
   (add-hook 'jsonnet-mode-hook #'display-line-numbers-mode)
   (add-hook 'jsonnet-mode-hook #'flymake-mode)
   (add-hook 'jsonnet-mode-hook #'flyspell-prog-mode)
@@ -67,7 +67,7 @@
   (yaml-mode . eglot-ensure)
   (yaml-mode . corfu-mode)
   (yaml-mode . display-line-numbers-mode)
-  (yaml-mode . auto-fill-mode)
+  (yaml-mode . visual-line-mode)
   (yaml-mode . eldoc-mode)
   (yaml-mode . electric-pair-mode)
   (yaml-mode . hl-todo-mode)
@@ -81,7 +81,7 @@
   :mode (("\\.hcl\\'" . hcl-mode)
          ("\\.tf\\'" . hcl-mode))
   :init
-  (add-hook 'yaml-mode-hook #'auto-fill-mode)
+  (add-hook 'yaml-mode-hook #'visual-line-mode)
   (add-hook 'yaml-mode-hook #'display-line-numbers-mode)
   (add-hook 'yaml-mode-hook #'flymake-mode)
   (add-hook 'yaml-mode-hook #'flyspell-prog-mode)
@@ -93,7 +93,7 @@
   :mode (("\\.toml\\'" . toml-mode))
   :init
   (add-hook 'toml-mode-hook #'aggressive-indent-mode)
-  (add-hook 'toml-mode-hook #'auto-fill-mode)
+  (add-hook 'toml-mode-hook #'visual-line-mode)
   (add-hook 'toml-mode-hook #'display-line-numbers-mode)
   (add-hook 'toml-mode-hook #'flymake-mode)
   (add-hook 'toml-mode-hook #'flyspell-prog-mode)

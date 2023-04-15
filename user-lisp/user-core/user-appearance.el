@@ -10,9 +10,10 @@
 (add-to-list 'custom-theme-load-path "~/.config/emacs/user-lisp/user-theme")
 
 ;; Theme
-(defconst user-setting-theme-gui 'tomorrow-night-paradise)
-(defconst user-setting-theme-term 'tomorrow-night-paradise)
-(defconst user-setting-font "Menlo-14")
+(use-package darktooth-theme)
+(defconst user-setting-theme-gui 'darktooth-darker)
+(defconst user-setting-theme-term 'darktooth-darker)
+(defconst user-setting-font "Hack-14")
 
 ;; Hide messages when starting a new session.
 (setq initial-major-mode 'markdown-mode)
@@ -91,12 +92,23 @@
   :config
   (minions-mode 1))
 
+(use-package tab-bar
+  :ensure nil
+  :init
+  (tab-bar-mode)
+  :custom
+  (tab-bar-close-button-show nil)
+  :custom-face
+  )
+
 (use-package dashboard
   :config
   (dashboard-setup-startup-hook)
+  (setq dashboard-center-content t)
   (setq dashboard-startup-banner 2)
-  (setq dashboard-items '((projects . 5)
-                        (agenda . 5))))
+  (setq dashboard-items '((recents . 5)
+                          (projects . 5)
+                          (agenda . 5))))
 
 (provide 'user-appearance)
 ;;; user-appearance.el ends here

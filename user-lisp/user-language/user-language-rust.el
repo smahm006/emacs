@@ -23,7 +23,6 @@
   (rustic-mode . eglot-ensure)
   (rustic-mode . corfu-mode)
   (rustic-mode . display-line-numbers-mode)
-  (rustic-mode . auto-fill-mode)
   (rustic-mode . eldoc-mode)
   (rustic-mode . electric-pair-mode)
   (rustic-mode . hl-todo-mode)
