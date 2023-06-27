@@ -31,15 +31,6 @@
   "Gets the name of the file the current buffer is based on."
   (kill-new (buffer-file-name (window-buffer (minibuffer-selected-window)))))
 
-;; Add user modules to the load path.
-(add-to-list 'load-path (locate-user-emacs-file "user-lisp/user-core"))
-(add-to-list 'load-path (locate-user-emacs-file "user-lisp/user-language"))
-(add-to-list 'load-path (locate-user-emacs-file "user-lisp/user-snippet"))
-(add-to-list 'load-path (locate-user-emacs-file "user-lisp/user-theme"))
-
-;; Never load site-specific files
-(setq inhibit-default-init t)
-
 ;; Configure package archives
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
                          ("melpa" . "https://melpa.org/packages/")
@@ -47,6 +38,12 @@
 
 ;; Change the directory where packages are installed.
 (setq package-user-dir (locate-user-emacs-file "remote-lisp"))
+
+;; Add user modules to the load path.
+(add-to-list 'load-path (locate-user-emacs-file "user-lisp/user-core"))
+(add-to-list 'load-path (locate-user-emacs-file "user-lisp/user-language"))
+(add-to-list 'load-path (locate-user-emacs-file "user-lisp/user-snippet"))
+(add-to-list 'load-path (locate-user-emacs-file "user-lisp/user-theme"))
 
 ;; Initialise the package management system.
 (package-initialize)

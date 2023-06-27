@@ -86,7 +86,7 @@
         '(read-only t cursor-intangible t face minibuffer-prompt))
   (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
 
-  ;; Don't change cursor to block
+  ;; Don't change cursor to block in vterm
   (advice-add #'vterm--redraw :around (lambda (fun &rest args) (let ((cursor-type cursor-type)) (apply fun args))))
 
   ;; Vertico commands are hidden in normal buffers.

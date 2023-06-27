@@ -1,1 +1,1 @@
-("~/workstation/projects/personal/debian-setup/" "~/workstation/projects/personal/jenkins-kube/" "~/workstation/projects/personal/network-testing/" "~/workstation/projects/personal/devops-challenge/" "~/workstation/projects/personal/clai/" "~/workstation/projects/sandbox/tests/" "~/.dotfiles/" "~/.config/emacs/")
+("~/.dotfiles/" "~/.config/emacs/")
