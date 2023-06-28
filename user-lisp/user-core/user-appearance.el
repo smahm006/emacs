@@ -4,16 +4,12 @@
 
 ;; Provides a modern set of appearance customisations.
 
-;;; Code:
-
-(require 'use-package)
-(add-to-list 'custom-theme-load-path "~/.config/emacs/user-lisp/user-theme")
-
 ;; Theme
-(use-package darktooth-theme)
-(defconst user-setting-theme-gui 'darktooth-darker)
-(defconst user-setting-theme-term 'darktooth-darker)
-(defconst user-setting-font "Hack-14")
+(add-to-list 'custom-theme-load-path "~/.config/emacs/user-lisp/user-theme")
+(defconst user-setting-theme-gui-package 'danneskjold-theme)
+(defconst user-setting-theme-gui-name 'danneskjold)
+(defconst user-setting-theme-term 'tomorrow-night-paradise)
+(defconst user-setting-font "Menlo-14")
 
 ;; Hide messages when starting a new session.
 (setq initial-major-mode 'markdown-mode)
@@ -53,22 +49,14 @@
 
 ;; Use a custom theme in GUI.
 (when (display-graphic-p)
-  (when (require user-setting-theme-gui nil 'noerror)
-    (package-install (concat user-setting-theme-gui "-theme"))
-    (require user-setting-theme-gui))
-  (load-theme user-setting-theme-gui t))
-
-;; Use a custom theme in daemon.
-(when (daemonp)
-  (add-to-list 'default-frame-alist (cons 'font user-setting-font))
-  (add-hook 'after-make-frame-functions
-            (defun my/theme-init-daemon (frame)
-              (with-selected-frame frame
-                (load-theme user-setting-theme-term t))
-              (remove-hook 'after-make-frame-functions
-                           #'my/theme-init-daemon)
-              (fmakunbound 'my/theme-init-daemon)))
-  (load-theme user-setting-theme-term t))
+  (condition-case nil 
+    (load-theme user-setting-theme-gui-name t)
+    (error (condition-case nil 
+      (progn
+      (package-install user-setting-theme-gui-package)
+      (require user-setting-theme-gui-package)
+      (load-theme user-setting-theme-gui-name t))
+      (error (load-theme user-setting-theme-term t))))))
 
 ;; Disable frame decorations.
 (menu-bar-mode -1)
@@ -76,39 +64,21 @@
 (tool-bar-mode -1)
 
 ;; Do not use system tooltips when available.
-(when (eq window-system 'x)
-  (setq x-gtk-use-system-tooltips nil))
-
-;; Show smaller gutter fringes.
-(fringe-mode '(0 . 0))
+;; (when (eq window-system 'x)
+;;   (setq x-gtk-use-system-tooltips nil))
 
 ;; Improve the appearance of the modeline
 (use-package mood-line
   :config
   (mood-line-mode 1))
 
+;; Disable mode line in modes of choice
+(use-package hide-mode-line)
+
 ;; Implement a menu that lists enabled minor-modes
 (use-package minions
   :config
   (minions-mode 1))
-
-(use-package tab-bar
-  :ensure nil
-  :init
-  (tab-bar-mode)
-  :custom
-  (tab-bar-close-button-show nil)
-  :custom-face
-  )
-
-(use-package dashboard
-  :config
-  (dashboard-setup-startup-hook)
-  (setq dashboard-center-content t)
-  (setq dashboard-startup-banner 2)
-  (setq dashboard-items '((recents . 5)
-                          (projects . 5)
-                          (agenda . 5))))
 
 (provide 'user-appearance)
 ;;; user-appearance.el ends here

@@ -129,4 +129,3 @@
 (provide-theme 'tomorrow-night-paradise)
 
 ;;; tomorrow-night-paradise-theme.el ends here
-(setq vterm-blue-fg "#66D9EF")

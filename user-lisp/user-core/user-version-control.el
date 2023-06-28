@@ -25,9 +25,5 @@
   (magit-diff-refine-hunk 'all)
   (magit-pull-or-fetch t))
 
-;; Git forge w/ magit.
-(use-package forge
-  :after magit)
-
 (provide 'user-version-control)
 ;;; user-version-control.el ends here

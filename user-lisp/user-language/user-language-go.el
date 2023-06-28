@@ -20,7 +20,6 @@
   (go-mode . display-line-numbers-mode)
   (go-mode . eldoc-mode)
   (go-mode . electric-pair-mode)
-  (go-mode . hl-todo-mode)
   (go-mode . flymake-mode)
   (go-mode . flyspell-prog-mode)
   (go-mode . hungry-delete-mode)

@@ -16,10 +16,10 @@
 (defun emacs.d (path)
   (expand-file-name path user-emacs-directory))
 
-(defun user-var (identifier)
+(defun user-data (identifier)
   (expand-file-name identifier (emacs.d "local/data")))
 
-(defun user-etc (identifier)
+(defun user-config (identifier)
   (expand-file-name identifier (emacs.d "local/config")))
 
 (defun mkdir-p (dir-path)
@@ -34,7 +34,8 @@
 ;; Configure package archives
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
                          ("melpa" . "https://melpa.org/packages/")
-                         ("org" . "https://orgmode.org/elpa/")))
+                         ("org" . "https://orgmode.org/elpa/")
+                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 
 ;; Change the directory where packages are installed.
 (setq package-user-dir (locate-user-emacs-file "remote-lisp"))

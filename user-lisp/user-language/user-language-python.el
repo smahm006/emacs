@@ -17,9 +17,8 @@
   (python-mode . eglot-ensure)
   (python-mode . corfu-mode)
   (python-mode . display-line-numbers-mode)
-pip  (python-mode . eldoc-mode)
+  (python-mode . eldoc-mode)
   (python-mode . electric-pair-mode)
-  (python-mode . hl-todo-mode)
   (python-mode . flymake-mode)
   (python-mode . flyspell-prog-mode)
   (python-mode . hungry-delete-mode)
@@ -32,12 +31,6 @@ pip  (python-mode . eldoc-mode)
   (setq python-indent-guess-indent-offset t)
   (setq python-indent-guess-indent-offset-verbose nil))
 
-;; Python Code Formatter
-(use-package blacken)
-
-;; Robot Framework
-(use-package robot-mode)
-
 ;; Virtual environment setup
 (use-package pyvenv
   :config
@@ -48,11 +41,11 @@ pip  (python-mode . eldoc-mode)
   (interactive)
   (let* ((pdir (file-name-directory buffer-file-name)) (pvenv (concat pdir ".pyvenv")))
   (progn
-    (shell-command (concat "python3 -m venv " pvenv))
+    (shell-command (concat "python3 -m .pyvenv " pvenv))
     (compile (concat "source " pvenv "/bin/activate" " && " "pip3 install pyright black flake8" " && " "pip3 install -r requirements.txt || true"))
     (pyvenv-activate pvenv))))
 
-;; Check for venv, if none then choose default
+;; Check for .pyvenv, if none then choose default
 (defun pyvenv-autoload ()
   (unless pyvenv-mode
   (pyvenv-mode))
@@ -61,14 +54,14 @@ pip  (python-mode . eldoc-mode)
         (pyvenv-activate pvenv)
     (pyvenv-activate pyvenv-default-virtual-env-name))))
 
-(defun python-compile ()
+(defun robot-compile ()
   "Compile current buffer file with python."
   (interactive)
-  (compile (format "python %s" (filename))))
+  (compile (format "robot %s" (filename))))
 
 ;;; Keyboard
-(with-eval-after-load 'python
-  (define-key python-mode-map (kbd "C-c r r") #'python-compile))
+(with-eval-after-load 'robot
+  (define-key robot-mode-map (kbd "C-c r r") #'robot-compile))
 
   (provide 'user-language-python)
 ;;; user-language-python.el ends here

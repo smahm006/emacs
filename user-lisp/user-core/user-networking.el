@@ -16,21 +16,13 @@
   (setq tramp-default-method 'ssh)
   (setq remote-file-name-inhibit-cache nil)
   (setq vc-handled-backends '(Git))
-  (setq projectile-auto-update-cache nil)
-  (setq projectile-dynamic-mode-line nil)
-  (setq projectile-mode-line "Projectile")
   (setq vc-ignore-dir-regexp
       (format "%s\\|%s"
                     vc-ignore-dir-regexp
                     tramp-file-name-regexp))
   (setq tramp-verbose 1))
 
-
-
 (use-package docker-tramp)
-
-;; Nginx Mode
-(use-package nginx-mode)
 
 ;; Runs REST queries from a query sheet and pretty-prints responses.
 (use-package restclient

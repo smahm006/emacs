@@ -30,7 +30,10 @@
         ;;(require 'user-language-c-cpp)
         (require 'user-language-bash)
         (require 'user-language-python)
+        (require 'user-language-robotfw)
+        (require 'user-language-groovy)
         (require 'user-language-go)
+        (require 'user-language-vue)
         (require 'user-language-rust)
         (require 'user-language-ruby)
         (require 'user-language-ansible)
@@ -42,7 +45,7 @@
     )
     (progn
         (defun my-kill-emacs ()
-            "save some buffers, then exit unconditionally"
+            "save buffers, then exit unconditionally"
             (interactive)
             (save-some-buffers nil t)
             (kill-emacs)

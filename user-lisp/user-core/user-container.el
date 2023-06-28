@@ -18,18 +18,9 @@
 (use-package dockerfile-mode)
 (use-package docker-compose-mode)
 
-;; Kubernetes
-(use-package kubernetes
-  :ensure t
-  :commands (kubernetes-overview)
-  :config
-  (setq kubernetes-poll-frequency 3600
-        kubernetes-redraw-frequency 3600))
-
 ;; Vagrant
 (use-package vagrant)
 (use-package vagrant-tramp)
-
 
 (provide 'user-container)
 ;;; user-container.el ends here

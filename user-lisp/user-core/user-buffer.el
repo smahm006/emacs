@@ -8,22 +8,6 @@
 
 (require 'use-package)
 
-;; Buffer navigation.
-(use-package bufler
-  :custom
-  (bufler-columns '("Name" "VC" "Path"))
-  (bufler-reverse t)
-  (bufler-use-cache t)
-  (bufler-vc-refresh t)
-  (bufler-vc-state t))
-
-;; Window navigation.
-(use-package ace-window
-  :bind ((:map global-map ("M-o" . ace-window)))
-  :custom
-  (aw-ignore-current t)
-  (aw-scope 'frame))
-
 (defun toggle-maximize-buffer () "Maximize buffer"
   (interactive)
   (if (= 1 (length (window-list)))
@@ -35,13 +19,13 @@
 (defun kill-all-buffers-except-toolbox ()
   "Kill all buffers except current one and toolkit (*Messages*, *scratch*). Close other windows."
   (interactive)
-  (switch-to-buffer "*dashboard*")
+  (switch-to-buffer "*scratch*")
   (mapc 'kill-buffer
         (cl-remove-if
          (lambda (x)
            (or
             (eq x (current-buffer))
-            (member (buffer-name x) '("*Messages*" "*scratch*" "*dashboard*"))))
+            (member (buffer-name x) '("*Messages*" "*scratch*"))))
          (buffer-list)))
   (delete-other-windows))
 
@@ -87,10 +71,12 @@
 
 ;;; Keyboard
 (global-set-key (kbd "C-x f") #'toggle-maximize-buffer)
-(global-set-key (kbd "C-c A") #'kill-all-buffers-except-toolbox)
-(global-set-key (kbd "C-c K") #'kill-buffer-and-window)
-(global-set-key (kbd "C-x C-b") #'bufler)
-(global-set-key (kbd "C-x b") #'bufler-switch-buffer)
+(global-set-key (kbd "C-c b a") #'kill-all-buffers-except-toolbox)
+(global-set-key (kbd "C-c b k") #'kill-buffer-and-window)
+(global-set-key (kbd "C-c b k") #'kill-buffer-and-window)
+(global-set-key (kbd "C-c b r") #'crux-rename-buffer-and-file)
+(global-set-key (kbd "C-c b d") #'crux-delete-buffer-and-file)
+(global-set-key (kbd "C-x b") #'consult-buffer)
 (global-set-key (kbd "<C-x o>") #'ace-window)
 (global-set-key (kbd "<C-M-tab>") #'next-buffer)
 (global-set-key (kbd "<C-M-S-iso-lefttab>") #'previous-buffer)

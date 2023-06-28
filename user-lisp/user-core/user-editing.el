@@ -50,34 +50,13 @@
   :bind (("C-x C-r" . crux-recentf-find-file)
          ("C-a" . crux-move-beginning-of-line)
          ("C-o" . crux-smart-open-line)
-         ("C-S-o" . crux-smart-open-line-above)
-         ("C-c R" . crux-rename-buffer-and-file)
-         ("C-c D" . crux-delete-buffer-and-file)
-         ("s-j" . crux-top-join-line))
-  :config (recentf-mode t))
-
-(use-package multiple-cursors
-  :bind (("C->" . mc/mark-next-like-this)
-         ("C-<" . mc/mark-previous-like-this)
-         ("C-c C->" . mc/mark-all-like-this))
-  :custom (mc/list-file (user-var ".mc-lists.el"))
-  :custom-face
-  (mc/cursor-bar-face
-   ((t (:height 0.2 :background "#657b83"
-                :foreground "#657b83")))))
+         ("C-M-o" . crux-smart-open-line-above)
+         ("s-j" . crux-top-join-line)))
 
 ;; Visual fill mode should respect fill-column
 (use-package visual-fill-column
-  :init
-  (add-hook 'visual-line-mode-hook 'visual-fill-column-mode))
-
-;; Smart region selecter
-(use-package expand-region
-  :bind ("M-SPC" . er/expand-region))
-
-;; Add/Change/Delete pairs based on expand-region.
-(use-package embrace
-  :bind ("C-\"" . embrace-commander))
+  :hook
+  (visual-line-mode-hook . visual-fill-column-mode))
 
 ;; Better `comment-dwim' supporting uncommenting.
 (use-package smart-comment
@@ -94,6 +73,8 @@
 
 ;; Simple undo and redo system
 (use-package undo-tree
+  :custom
+  (undo-tree-history-directory-alist '(("." . "~/.config/emacs/local/data/undo-tree")))
   :config
   (global-undo-tree-mode)
   (setq undo-tree-auto-save-history t)
@@ -115,10 +96,9 @@
   :bind ("C-c f" . focus-mode))
 
 ;;; Keyboard
-(global-set-key (kbd "<C-backspace>") 'just-one-space)
-(global-set-key (kbd "C-S-W c") 'capitalize-dwim)
-(global-set-key (kbd "C-S-W d") 'downcase-dwim)
-(global-set-key (kbd "C-S-W u") 'upcase-dwim)
+(global-set-key (kbd "C-c w c") 'capitalize-dwim)
+(global-set-key (kbd "C-c w d") 'downcase-dwim)
+(global-set-key (kbd "C-c w u") 'upcase-dwim)
 
 (provide 'user-editing)
 ;;; user-editing.el ends here

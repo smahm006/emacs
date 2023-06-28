@@ -19,16 +19,16 @@
   (setq disabled-command-function nil)
 
   ;; Reduce keystroke echo delay.
-  (setq echo-keystrokes 0.001)
+  (setq echo-keystrokes 0.1)
 
   ;; Prevent accindentally killing sesesion
   (setq confirm-kill-emacs 'y-or-n-p)
 
-  ;; Enable y/n answers.
+  ;; y/n = yes/no.
   (fset 'yes-or-no-p 'y-or-n-p)
 
   ;; Don't use dialog boxes.
-  (setq use-dialog-box nil)
+  ;;(setq use-dialog-box nil)
 
   ;; Ignore case for completion.
   (setq completion-ignore-case t
@@ -47,7 +47,7 @@
   (setq byte-compile-warnings '(cl-functions))
 
   ;; Backups
-  (defvar my-backups-dir (user-var "backups"))
+  (defvar my-backups-dir (user-data "backups"))
   (mkdir-p my-backups-dir)
   (setq backup-directory-alist `(("." . "~/.config/emacs/local/data/backups"))
         make-backup-files t
@@ -63,10 +63,13 @@
         auto-save-list-file-prefix "~/.config/emacs/local/data/backups/")
 
   ;; Change bookmarks file location.
-  (setq bookmark-default-file (user-var "bookmarks"))
+  (setq bookmark-default-file (user-data "bookmarks"))
 
   ;; Change save-places file location.
-  (setq save-place-file (user-var "places"))
+  (setq save-place-file (user-data "places"))
+
+  ;; Save session
+  (desktop-save-mode 1)
 
   ;; Disable annoying lock files.b
   (setq create-lockfiles nil)
@@ -84,17 +87,7 @@
     ;; Do not allow the cursor in the minibuffer prompt
   (setq minibuffer-prompt-properties
         '(read-only t cursor-intangible t face minibuffer-prompt))
-  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
-
-  ;; Don't change cursor to block in vterm
-  (advice-add #'vterm--redraw :around (lambda (fun &rest args) (let ((cursor-type cursor-type)) (apply fun args))))
-
-  ;; Vertico commands are hidden in normal buffers.
-  (setq read-extended-command-predicate
-        #'command-completion-default-include-p)
-
-  ;; Enable recursive minibuffers
-  (setq enable-recursive-minibuffers t))
+  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode))
 
 
 ;; Persist history over Emacs restarts.
