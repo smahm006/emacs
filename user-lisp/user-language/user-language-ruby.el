@@ -20,7 +20,6 @@
   (ruby-mode . display-line-numbers-mode)
   (ruby-mode . eldoc-mode)
   (ruby-mode . electric-pair-mode)
-  (ruby-mode . hl-todo-mode)
   (ruby-mode . flymake-mode)
   (ruby-mode . flyspell-prog-mode)
   (ruby-mode . hungry-delete-mode)

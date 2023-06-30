@@ -21,7 +21,6 @@
   (emacs-lisp-mode . auto-fill-mode)
   (emacs-lisp-mode . eldoc-mode)
   (emacs-lisp-mode . electric-pair-mode)
-  (emacs-lisp-mode . hl-todo-mode)
   (emacs-lisp-mode . flymake-mode)
   (emacs-lisp-mode . flyspell-prog-mode)
   (emacs-lisp-mode . hungry-delete-mode)

@@ -8,29 +8,27 @@
 ;;; Code:
 
 (require 'use-package)
-
 (require 'user-development)
 (require 'user-editing)
 
 ;; Bash language support
-(use-package sh-mode
+(use-package sh-script
   :ensure nil
-  :mode (("\\.sh" . sh-mode))
+  :mode (("\\.sh" . sh-script))
   :bind (:map sh-mode-map
               ("C-c r s" . shell-check)
               ("C-c r m" . shell-region)
               ("C-c r r" . shell-compile))
   :hook
-  (sh-mode . eglot-ensure)
-  (sh-mode . corfu-mode)
-  (sh-mode . display-line-numbers-mode)
-  (sh-mode . eldoc-mode)
-  (sh-mode . electric-pair-mode)
-  (sh-mode . hl-todo-mode)
-  (sh-mode . flymake-mode)
-  (sh-mode . flyspell-prog-mode)
-  (sh-mode . hungry-delete-mode)
-  (sh-mode . rainbow-delimiters-mode))
+  (sh-script . eglot-ensure)
+  (sh-script . corfu-mode)
+  (sh-script . display-line-numbers-mode)
+  (sh-script . eldoc-mode)
+  (sh-script . electric-pair-mode)
+  (sh-script . flymake-mode)
+  (sh-script . flyspell-prog-mode)
+  (sh-script . hungry-delete-mode)
+  (sh-script . rainbow-delimiters-mode))
 
 (defun shell-region (start end)
   "Execute region in an inferior shell."

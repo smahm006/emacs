@@ -13,6 +13,7 @@
 
 (use-package python
   :ensure nil
+  :mode (("\\.py" . robot-mode))
   :hook
   (python-mode . eglot-ensure)
   (python-mode . corfu-mode)
@@ -30,6 +31,9 @@
   (setq python-indent-offset 4)
   (setq python-indent-guess-indent-offset t)
   (setq python-indent-guess-indent-offset-verbose nil))
+
+;; Formatter
+(use-package blacken)
 
 ;; Virtual environment setup
 (use-package pyvenv
@@ -54,14 +58,14 @@
         (pyvenv-activate pvenv)
     (pyvenv-activate pyvenv-default-virtual-env-name))))
 
-(defun robot-compile ()
+(defun python-compile ()
   "Compile current buffer file with python."
   (interactive)
-  (compile (format "robot %s" (filename))))
+  (compile (format "python3 %s" (filename))))
 
 ;;; Keyboard
-(with-eval-after-load 'robot
-  (define-key robot-mode-map (kbd "C-c r r") #'robot-compile))
+(with-eval-after-load 'python
+  (define-key python-mode-map (kbd "C-c r r") #'python-compile))
 
   (provide 'user-language-python)
 ;;; user-language-python.el ends here

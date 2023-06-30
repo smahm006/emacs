@@ -21,7 +21,7 @@
         (require 'user-editing)
         (require 'user-writing)
         (require 'user-agenda)
-        (require 'user-operating-system)
+        (require 'user-system)
         (require 'user-networking)
         (require 'user-container)
         (require 'user-project-management)

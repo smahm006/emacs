@@ -25,7 +25,6 @@
   (rustic-mode . display-line-numbers-mode)
   (rustic-mode . eldoc-mode)
   (rustic-mode . electric-pair-mode)
-  (rustic-mode . hl-todo-mode)
   (rustic-mode . flymake-mode)
   (rustic-mode . flyspell-prog-mode)
   (rustic-mode . hungry-delete-mode)

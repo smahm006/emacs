@@ -48,14 +48,14 @@
         (pyvenv-activate pvenv)
     (pyvenv-activate pyvenv-default-virtual-env-name))))
 
-(defun python-compile ()
+(defun robot-compile ()
   "Compile current buffer file with python."
   (interactive)
-  (compile (format "python %s" (filename))))
+  (compile (format "robot %s" (filename))))
 
 ;;; Keyboard
-(with-eval-after-load 'python
-  (define-key robot-mode-map (kbd "C-c r r") #'python-compile))
+(with-eval-after-load 'robot-mode
+  (define-key robot-mode-map (kbd "C-c r r") #'robot-compile))
 
-(provide 'user-language-robotfw)  
+(provide 'user-language-robotfw)
 ;;; user-language-robotfw.el ends here

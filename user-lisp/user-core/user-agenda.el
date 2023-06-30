@@ -25,9 +25,9 @@
   :hook
   (org-mode . org-indent-mode)
   (org-mode . visual-line-mode)
-  :bind (("C-c a" . org-agenda)
-         ("C-c l"  . org-store-link)
-         ("C-c c" . org-capture)
+  :bind (("C-c o a" . org-agenda)
+         ("C-c o l"  . org-store-link)
+         ("C-c o c" . org-capture)
          (:map org-mode-map (("M-<return>" . org-meta-return))))
   :custom
   (org-log-done 'time)
@@ -58,12 +58,6 @@
   )
 
 (use-package org-ql)
-
-(defun org_list ()
-  (interactive)
-  (let ((epics (org-ql-search "~/office/agenda/jira.org" `(level 2))))
-        (message epics)))
-
 
 (provide 'user-agenda)
 ;;; user-agenda.el ends here

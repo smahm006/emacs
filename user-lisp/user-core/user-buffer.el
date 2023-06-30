@@ -17,9 +17,21 @@
       (delete-other-windows))))
 
 (defun kill-all-buffers-except-toolbox ()
-  "Kill all buffers except current one and toolkit (*Messages*, *scratch*). Close other windows."
+  "Kill all buffers except toolkit (*Messages*, *scratch*). Switch to scratch."
   (interactive)
   (switch-to-buffer "*scratch*")
+  (mapc 'kill-buffer
+        (cl-remove-if
+         (lambda (x)
+           (or
+            (eq x (current-buffer))
+            (member (buffer-name x) '("*Messages*" "*scratch*"))))
+         (buffer-list)))
+  (delete-other-windows))
+
+(defun kill-all-buffers-except-toolbox-and-current-buffer ()
+  "Kill other buffers except current one and toolkit (*Messages*, *scratch*). Close other windows."
+  (interactive)
   (mapc 'kill-buffer
         (cl-remove-if
          (lambda (x)
@@ -72,14 +84,16 @@
 ;;; Keyboard
 (global-set-key (kbd "C-x f") #'toggle-maximize-buffer)
 (global-set-key (kbd "C-c b a") #'kill-all-buffers-except-toolbox)
+(global-set-key (kbd "C-c b o") #'kill-all-buffers-except-toolbox-and-current-buffer)
 (global-set-key (kbd "C-c b k") #'kill-buffer-and-window)
 (global-set-key (kbd "C-c b k") #'kill-buffer-and-window)
 (global-set-key (kbd "C-c b r") #'crux-rename-buffer-and-file)
+(global-set-key (kbd "C-c b s") #'crux-sudo-edit)
 (global-set-key (kbd "C-c b d") #'crux-delete-buffer-and-file)
 (global-set-key (kbd "C-x b") #'consult-buffer)
 (global-set-key (kbd "<C-x o>") #'ace-window)
-(global-set-key (kbd "<C-M-tab>") #'next-buffer)
-(global-set-key (kbd "<C-M-S-iso-lefttab>") #'previous-buffer)
+(global-set-key (kbd "<C-tab>") #'next-buffer)
+(global-set-key (kbd "<C-S-iso-lefttab>") #'previous-buffer)
 (global-set-key (kbd "C-x |") 'toggle-window-split)
 
 (provide 'user-buffer)

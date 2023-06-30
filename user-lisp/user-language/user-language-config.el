@@ -47,18 +47,6 @@
   (add-hook 'json-mode-hook #'flyspell-prog-mode)
   (add-hook 'json-mode-hook #'rainbow-delimiters-mode))
 
-;; JavaScript object notation data templating language
-(use-package jsonnet-mode
-  :mode (("\\.jsonnet\\'" . jsonnet-mode)
-         ("\\.libsonnet\\'" . jsonnet-mode))
-  :init
-  (add-hook 'jsonnet-mode-hook #'aggressive-indent-mode)
-  (add-hook 'jsonnet-mode-hook #'visual-line-mode)
-  (add-hook 'jsonnet-mode-hook #'display-line-numbers-mode)
-  (add-hook 'jsonnet-mode-hook #'flymake-mode)
-  (add-hook 'jsonnet-mode-hook #'flyspell-prog-mode)
-  (add-hook 'jsonnet-mode-hook #'rainbow-delimiters-mode))
-
 ;; Yet another markup language (YAML)
 (use-package yaml-mode
   :mode (("\\.yml\\'" . yaml-mode)
@@ -70,8 +58,6 @@
   (yaml-mode . visual-line-mode)
   (yaml-mode . eldoc-mode)
   (yaml-mode . electric-pair-mode)
-  (yaml-mode . hl-todo-mode)
-  (yaml-mode . flymake-mode)
   (yaml-mode . flyspell-prog-mode)
   (yaml-mode . hungry-delete-mode)
   (yaml-mode . rainbow-delimiters-mode))
@@ -85,7 +71,6 @@
   (add-hook 'yaml-mode-hook #'display-line-numbers-mode)
   (add-hook 'yaml-mode-hook #'flymake-mode)
   (add-hook 'yaml-mode-hook #'flyspell-prog-mode)
-  (add-hook 'yaml-mode-hook #'hl-todo-mode)
   (add-hook 'yaml-mode-hook #'rainbow-delimiters-mode))
 
 ;; Tom's own markup language
@@ -97,7 +82,6 @@
   (add-hook 'toml-mode-hook #'display-line-numbers-mode)
   (add-hook 'toml-mode-hook #'flymake-mode)
   (add-hook 'toml-mode-hook #'flyspell-prog-mode)
-  (add-hook 'toml-mode-hook #'hl-todo-mode)
   (add-hook 'toml-mode-hook #'rainbow-delimiters-mode))
 
 ;; Comma-separated value files

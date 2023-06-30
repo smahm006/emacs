@@ -72,24 +72,22 @@
   (setq hungry-delete-join-reluctantly t))
 
 ;; Simple undo and redo system
-(use-package undo-tree
+(use-package undo-fu
+  :bind (:map global-map
+          ("C-/" . undo-fu-only-undo)
+          ("M-_" . undo-fu-only-redo)))
+
+;; Save undo history between sessions
+(use-package undo-fu-session
+  :init
+  (undo-fu-session-global-mode 1)
   :custom
-  (undo-tree-history-directory-alist '(("." . "~/.config/emacs/local/data/undo-tree")))
-  :config
-  (global-undo-tree-mode)
-  (setq undo-tree-auto-save-history t)
-  (defun my-undo-tree-suppress-buffer-modified-message
-      (undo-tree-load-history &rest args)
-    (let ((message-log-max nil)
-          (inhibit-message t))
-      (apply undo-tree-load-history args)))
-  (defun my-undo-tree-suppress-undo-history-saved-message
-      (undo-tree-save-history &rest args)
-    (let ((message-log-max nil)
-          (inhibit-message t))
-      (apply undo-tree-save-history args)))
-  (advice-add 'undo-tree-load-history :around 'my-undo-tree-suppress-buffer-modified-message)
-  (advice-add 'undo-tree-save-history :around 'my-undo-tree-suppress-undo-history-saved-message))
+  (undo-fu-session-directory (user-data "undo-fu-session")))
+
+;; Undo-tree visualization
+(use-package vundo
+  :bind ("C-M-/" . vundo))
+
 
 ;; Focusing, dims surrounding text
 (use-package focus

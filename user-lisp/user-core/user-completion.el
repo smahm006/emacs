@@ -22,13 +22,21 @@
   :init
   (marginalia-mode))
 
+(use-package embark
+  :bind
+  (("C-." . embark-act)))
+
+(use-package embark-consult
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+
 ;; Match text in any order
 (use-package orderless
   :init
   (setq completion-styles '(orderless flex)
         completion-category-defaults nil
-        completion-category-overrides '((file (styles . (partial-completion))))))
-  
+        completion-category-overrides '((file (styles . (basic partial-completion))))))
+
 ;; Completion Overlay Region Function, company replacement
 (use-package corfu
   :custom
@@ -40,7 +48,7 @@
   (corfu-quit-no-match t)        ;; Quit if there is no match
   (corfu-preview-current t)      ;; Show current candidate preview
   (corfu-on-exact-match nil))     ;; Configure handling of exact matches
-  
+
 ;; Corfu specific icons
 (use-package kind-icon
   :ensure t
@@ -50,7 +58,7 @@
   (kind-icon-blend-background nil)  ; Have background color be the same as `corfu' face background
   (kind-icon-blend-frac 0.08) ; Use midpoint color between foreground and background colors ("blended")?
   :config
-  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))  
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 
 ;; Snippet support
 (use-package tempel
