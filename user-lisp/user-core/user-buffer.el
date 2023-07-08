@@ -87,7 +87,7 @@
 (global-set-key (kbd "C-c b o") #'kill-all-buffers-except-toolbox-and-current-buffer)
 (global-set-key (kbd "C-c b k") #'kill-buffer-and-window)
 (global-set-key (kbd "C-c b k") #'kill-buffer-and-window)
-(global-set-key (kbd "C-c b r") #'crux-rename-buffer-and-file)
+(global-set-key (kbd "C-c b r") #'crux-rename-file-and-buffer)
 (global-set-key (kbd "C-c b s") #'crux-sudo-edit)
 (global-set-key (kbd "C-c b d") #'crux-delete-buffer-and-file)
 (global-set-key (kbd "C-x b") #'consult-buffer)

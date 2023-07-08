@@ -5,14 +5,17 @@
 ;; Provides a modern set of appearance customisations.
 
 ;; Theme
-(add-to-list 'custom-theme-load-path "~/.config/emacs/user-lisp/user-theme")
-(defconst user-setting-theme-gui-package 'danneskjold-theme)
-(defconst user-setting-theme-gui-name 'danneskjold)
-(defconst user-setting-theme-term 'tomorrow-night-paradise)
-(defconst user-setting-font "Menlo-14")
+
+;; Use a custom theme in GUI.
+(use-package danneskjold-theme
+  :if (display-graphic-p)
+  :init
+  (load-theme 'danneskjold t)
+  :config
+  (set-frame-font "Menlo 14" nil t))
 
 ;; Hide messages when starting a new session.
-(setq initial-major-mode 'markdown-mode)
+(setq initial-major-mode 'org-mode)
 (setq inhibit-startup-echo-area-message "tychoish")
 (setq initial-scratch-message nil)
 (setq inhibit-splash-screen t)
@@ -39,24 +42,9 @@
 ;; Color buffer names
 (use-package rainbow-mode)
 
-;; Use a better font in graphical frames.
-(when (display-graphic-p)
-  (set-frame-font user-setting-font nil t))
-
 ;; Icon pack
 (use-package all-the-icons
   :if (display-graphic-p))
-
-;; Use a custom theme in GUI.
-(when (display-graphic-p)
-  (condition-case nil 
-    (load-theme user-setting-theme-gui-name t)
-    (error (condition-case nil 
-      (progn
-      (package-install user-setting-theme-gui-package)
-      (require user-setting-theme-gui-package)
-      (load-theme user-setting-theme-gui-name t))
-      (error (load-theme user-setting-theme-term t))))))
 
 ;; Disable frame decorations.
 (menu-bar-mode -1)
@@ -66,6 +54,9 @@
 ;; Do not use system tooltips when available.
 ;; (when (eq window-system 'x)
 ;;   (setq x-gtk-use-system-tooltips nil))
+
+;; Show no gutter fringes.
+;; (fringe-mode '(0 . 0))
 
 ;; Improve the appearance of the modeline
 (use-package mood-line

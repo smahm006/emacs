@@ -21,7 +21,9 @@
   :commands (eglot eglot-ensure)
   :config
   (setq eglot-strict-mode nil)
-  (setq eglot-confirm-server-initiated-edits nil))
+  (setq eglot-confirm-server-initiated-edits nil)
+  (add-to-list 'eglot-server-programs
+           '(vue-mode . ("vls" "--stdio"))))
 
 
 ;; Syntax Checker

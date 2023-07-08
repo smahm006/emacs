@@ -16,6 +16,7 @@
   :bind (:map rustic-mode-map
               ("C-c r t" . rustic-cargo-test)
               ("C-c r r" . rustic-cargo-run)
+              ("C-c r k" . rustic-cargo-check)
               ("C-c r b" . rustic-cargo-build)
               ("C-c r c" . rustic-cargo-clippy)
               ("C-c r f" . rustic-popup))
@@ -34,7 +35,6 @@
   (setq rustic-analyzer-command '("~/workstation/architecture/toolchains/rust/.cargo/bin/rust-analyzer"))
   (setq rustic-format-on-save t)
   (setq rustic-indent-method-chain t))
-
 
 ;; Build support
 (use-package cargo

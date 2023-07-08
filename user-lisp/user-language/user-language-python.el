@@ -13,7 +13,7 @@
 
 (use-package python
   :ensure nil
-  :mode (("\\.py" . robot-mode))
+  :mode (("\\.py" . python-mode))
   :hook
   (python-mode . eglot-ensure)
   (python-mode . corfu-mode)
