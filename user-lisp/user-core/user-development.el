@@ -23,7 +23,8 @@
   (setq eglot-strict-mode nil)
   (setq eglot-confirm-server-initiated-edits nil)
   (add-to-list 'eglot-server-programs
-           '(vue-mode . ("vls" "--stdio"))))
+               '(vue-mode . ("vls" "--stdio"))
+               '(typescript-mode . ("typescript-language-server" "--stdio"))))
 
 
 ;; Syntax Checker

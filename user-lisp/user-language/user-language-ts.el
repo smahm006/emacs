@@ -12,7 +12,18 @@
 (require 'user-editing)
 
 ;; TypeScript language support
-(use-package typescript-mode)
+(use-package typescript-mode
+  :mode (("\\.ts" . typescript-mode))
+  :hook
+  (typescript-mode . eglot-ensure)
+  (typescript-mode . corfu-mode)
+  (typescript-mode . display-line-numbers-mode)
+  (typescript-mode . eldoc-mode)
+  (typescript-mode . electric-pair-mode)
+  (typescript-mode . flymake-mode)
+  (typescript-mode . flyspell-prog-mode)
+  (typescript-mode . hungry-delete-mode)
+  (typescript-mode . rainbow-delimiters-mode))
 
 ;; Vue language support
 (use-package vue-mode

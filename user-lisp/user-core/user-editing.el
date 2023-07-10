@@ -19,9 +19,9 @@
 (set-selection-coding-system 'utf-8)
 
 ;; Auto-fill
-(setq-default comment-column 120)
+(setq-default comment-column 80)
 (setq-default comment-empty-lines t)
-(setq-default fill-column 120)
+(setq-default fill-column 80)
 
 ;; Indentation
 (setq-default indent-tabs-mode nil)
@@ -49,8 +49,8 @@
 (use-package crux
   :bind (("C-x C-r" . crux-recentf-find-file)
          ("C-a" . crux-move-beginning-of-line)
-         ("C-o" . crux-smart-open-line)
-         ("C-M-o" . crux-smart-open-line-above)
+         ("C-<return>" . crux-smart-open-line)
+         ("M-<return>" . crux-smart-open-line-above)
          ("s-j" . crux-top-join-line)))
 
 ;; Visual fill mode should respect fill-column
@@ -74,8 +74,12 @@
 ;; Simple undo and redo system
 (use-package undo-fu
   :bind (:map global-map
-          ("C-/" . undo-fu-only-undo)
-          ("M-_" . undo-fu-only-redo)))
+              ("C-/" . undo-fu-only-undo)
+              ("M-_" . undo-fu-only-redo))
+  :config
+  (setq undo-limit 67108864) ; 64mb.
+  (setq undo-strong-limit 100663296) ; 96mb.
+  (setq undo-outer-limit 1006632960)) ; 960mb
 
 ;; Save undo history between sessions
 (use-package undo-fu-session
@@ -86,14 +90,51 @@
 
 ;; Undo-tree visualization
 (use-package vundo
-  :bind ("C-M-/" . vundo))
+  :bind ("C-M-/" . vundo)
+  :config
+  (setq vundo-glyph-alist vundo-unicode-symbols))
 
 
 ;; Focusing, dims surrounding text
 (use-package focus
   :bind ("C-c f" . focus-mode))
 
+(defun move-text-internal (arg)
+   (cond
+    ((and mark-active transient-mark-mode)
+     (if (> (point) (mark))
+            (exchange-point-and-mark))
+     (let ((column (current-column))
+              (text (delete-and-extract-region (point) (mark))))
+       (forward-line arg)
+       (move-to-column column t)
+       (set-mark (point))
+       (insert text)
+       (exchange-point-and-mark)
+       (setq deactivate-mark nil)))
+    (t
+     (beginning-of-line)
+     (when (or (> arg 0) (not (bobp)))
+       (forward-line)
+       (when (or (< arg 0) (not (eobp)))
+            (transpose-lines arg))
+       (forward-line -1)))))
+
+(defun move-text-down (arg)
+   "Move region (transient-mark-mode active) or current line
+  arg lines down."
+   (interactive "*p")
+   (move-text-internal arg))
+
+(defun move-text-up (arg)
+   "Move region (transient-mark-mode active) or current line
+  arg lines up."
+   (interactive "*p")
+   (move-text-internal (- arg)))
+
 ;;; Keyboard
+(global-set-key (kbd "C-M-p") 'move-text-up)
+(global-set-key (kbd "C-M-n") 'move-text-down)
 (global-set-key (kbd "C-c w c") 'capitalize-dwim)
 (global-set-key (kbd "C-c w d") 'downcase-dwim)
 (global-set-key (kbd "C-c w u") 'upcase-dwim)

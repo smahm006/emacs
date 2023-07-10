@@ -10,7 +10,7 @@
   ;; Performance related
   (setq read-process-output-max (* 1024 1024))
   (setq gc-cons-threshold most-positive-fixnum)
-  (add-hook 'after-init-hook (lambda () (setq gc-cons-threshold 16777216)))
+  (add-hook 'after-init-hook (lambda () (setq gc-cons-threshold 800000)))
 
   ;; Never ring the bell. Never.
   (setq ring-bell-function (lambda()))

@@ -49,17 +49,6 @@
   (corfu-preview-current t)      ;; Show current candidate preview
   (corfu-on-exact-match nil))     ;; Configure handling of exact matches
 
-;; Corfu specific icons
-(use-package kind-icon
-  :ensure t
-  :after corfu
-  :custom
-  (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
-  (kind-icon-blend-background nil)  ; Have background color be the same as `corfu' face background
-  (kind-icon-blend-frac 0.08) ; Use midpoint color between foreground and background colors ("blended")?
-  :config
-  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
-
 ;; Snippet support
 (use-package tempel
   ;; Require trigger prefix before template name when completing.

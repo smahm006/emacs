@@ -16,6 +16,7 @@
   :bind (:map rustic-mode-map
               ("C-c r t" . rustic-cargo-test)
               ("C-c r r" . rustic-cargo-run)
+              ("C-c r a" . rustic-cargo-run-with-args)
               ("C-c r k" . rustic-cargo-check)
               ("C-c r b" . rustic-cargo-build)
               ("C-c r c" . rustic-cargo-clippy)
@@ -30,11 +31,18 @@
   (rustic-mode . flyspell-prog-mode)
   (rustic-mode . hungry-delete-mode)
   (rustic-mode . rainbow-delimiters-mode)
-  :config
-  (setq rustic-lsp-client 'eglot)
-  (setq rustic-analyzer-command '("~/workstation/architecture/toolchains/rust/.cargo/bin/rust-analyzer"))
-  (setq rustic-format-on-save t)
-  (setq rustic-indent-method-chain t))
+  (rustic-mode . rustic-mode-auto-save-hook)
+  :custom
+  (rustic-lsp-client 'eglot)
+  (rustic-analyzer-command '("~/workstation/architecture/toolchains/rust/.cargo/bin/rust-analyzer"))
+  (rustic-format-on-save t)
+  (rustic-format-display-method 'ignore)
+  (rustic-indent-method-chain t))
+
+(defun rustic-mode-auto-save-hook ()
+  "Enable auto-saving in rustic-mode buffers."
+  (when buffer-file-name
+    (setq-local compilation-ask-about-save nil)))
 
 ;; Build support
 (use-package cargo
