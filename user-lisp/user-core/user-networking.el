@@ -22,8 +22,6 @@
                     tramp-file-name-regexp))
   (setq tramp-verbose 1))
 
-(use-package docker-tramp)
-
 ;; Runs REST queries from a query sheet and pretty-prints responses.
 (use-package restclient
   :mode ("\\.http$" . restclient-mode))
