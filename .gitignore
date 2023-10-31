@@ -4,3 +4,4 @@ local/config/*
 local/data/*
 remote-lisp/
 elpa/
+/eln-cache/

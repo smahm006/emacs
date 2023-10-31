@@ -20,6 +20,7 @@
   "Kill all buffers except toolkit (*Messages*, *scratch*). Switch to scratch."
   (interactive)
   (switch-to-buffer "*scratch*")
+  (eglot-shutdown-all)
   (mapc 'kill-buffer
         (cl-remove-if
          (lambda (x)
@@ -32,6 +33,7 @@
 (defun kill-all-buffers-except-toolbox-and-current-buffer ()
   "Kill other buffers except current one and toolkit (*Messages*, *scratch*). Close other windows."
   (interactive)
+  (eglot-shutdown-all)
   (mapc 'kill-buffer
         (cl-remove-if
          (lambda (x)
