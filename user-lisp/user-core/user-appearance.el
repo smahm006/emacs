@@ -7,12 +7,13 @@
 ;; Theme
 
 ;; Use a custom theme in GUI.
-(use-package danneskjold-theme
+;; Or if you have use-package installed
+(use-package kaolin-themes
   :if (display-graphic-p)
   :init
-  (load-theme 'danneskjold t)
+  (load-theme 'kaolin-dark t)
   :config
-  (set-frame-font "Menlo 14" nil t))
+  (set-frame-font "Hack 14" nil t))
 
 ;; Hide messages when starting a new session.
 (setq initial-major-mode 'org-mode)

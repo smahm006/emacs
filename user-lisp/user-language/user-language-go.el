@@ -25,6 +25,7 @@
   (go-mode . hungry-delete-mode)
   (go-mode . rainbow-delimiters-mode)
   :config
+  (setq gofmt-command "goimports")
   (add-hook 'before-save-hook 'gofmt-before-save)
   :custom
   (godoc-reuse-buffer t))
