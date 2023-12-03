@@ -64,7 +64,7 @@
 
 ;; Browse-kill-ring
 (use-package browse-kill-ring
-  :bind ("M-y" . browse-kill-ring))
+  :bind ("M-Y" . browse-kill-ring))
 
 ;; Hungry deletion minor mode
 (use-package hungry-delete

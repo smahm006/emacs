@@ -8,16 +8,10 @@
 
 (require 'use-package)
 
-(use-package pomodoro
-  :bind (("C-c t t" . pomodoro-start)
-         ("C-c t s" . pomodoro-stop)
-         ("C-c t p" . pomodoro-pause)
-         ("C-c t r" . pomodoro-resume))
-  :custom
-  (pomodoro-work-cycle "🍅 ")
-  (pomodoro-work-time 45)
-  :config
-  (pomodoro-add-to-mode-line))
+(use-package jinx
+  :hook (emacs-startup . global-jinx-mode)
+  :bind (("M-$" . jinx-correct)
+         ("C-M-$" . jinx-correct-all)))
 
 (use-package org
   :ensure nil
@@ -25,6 +19,7 @@
   :hook
   (org-mode . org-indent-mode)
   (org-mode . visual-line-mode)
+  (org-mode . jinx-mode)
   :bind (("C-c o a" . org-agenda)
          ("C-c o l"  . org-store-link)
          ("C-c o c" . org-capture)
@@ -59,5 +54,5 @@
 
 (use-package org-ql)
 
-(provide 'user-agenda)
+(provide 'user-org)
 ;;; user-agenda.el ends here
