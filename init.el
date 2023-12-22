@@ -34,7 +34,6 @@
         (require 'user-language-ts)
         (require 'user-language-rust)
         (require 'user-language-ruby)
-        (require 'user-language-ansible)
         (require 'user-language-config)
         (require 'user-language-emacs-lisp)
         ;; Local and non-version-controlled customisation

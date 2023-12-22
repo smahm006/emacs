@@ -69,7 +69,7 @@
   (setq save-place-file (user-data "places"))
 
   ;; Save session
-  (desktop-save-mode 1)
+  ;; (desktop-save-mode 1)
 
   ;; Disable annoying lock files.b
   (setq create-lockfiles nil)

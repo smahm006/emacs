@@ -5,15 +5,19 @@
 ;; Provides a modern set of appearance customisations.
 
 ;; Theme
-
-;; Use a custom theme in GUI.
-;; Or if you have use-package installed
-(use-package kaolin-themes
+(use-package haki-theme
   :if (display-graphic-p)
   :init
-  (load-theme 'kaolin-dark t)
+  (load-theme 'haki t)
   :config
-  (set-frame-font "Hack 14" nil t))
+  (set-frame-font "Menlo 14" nil t))
+
+;; (use-package danneskjold-theme
+;;   :if (display-graphic-p)
+;;   :init
+;;   (load-theme 'danneskjold t)
+;;   :config
+;;   (set-frame-font "Menlo 14" nil t))
 
 ;; Hide messages when starting a new session.
 (setq initial-major-mode 'org-mode)
@@ -52,22 +56,24 @@
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
 
-;; Do not use system tooltips when available.
-;; (when (eq window-system 'x)
-;;   (setq x-gtk-use-system-tooltips nil))
-
-;; Show no gutter fringes.
-;; (fringe-mode '(0 . 0))
-
 ;; Improve the appearance of the modeline
-(use-package mood-line
+(use-package nyan-mode
   :config
-  (mood-line-mode 1))
+  (nyan-mode))
 
-;; Disable mode line in modes of choice
-(use-package hide-mode-line)
+(use-package telephone-line
+  :config
+  (setq telephone-line-lhs
+      '((accent . (telephone-line-vc-segment
+                   telephone-line-erc-modified-channels-segment))
+        (nil    . (telephone-line-buffer-segment
+                   telephone-line-nyan-segment))))
+  (setq telephone-line-rhs
+      '((nil    . (telephone-line-misc-info-segment))
+        (accent . (telephone-line-major-mode-segment))
+        (evil   . (telephone-line-airline-position-segment))))
+  (telephone-line-mode 1))
 
-;; Implement a menu that lists enabled minor-modes
 (use-package minions
   :config
   (minions-mode 1))

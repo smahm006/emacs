@@ -9,7 +9,8 @@
 (require 'use-package)
 
 (use-package jinx
-  :hook (emacs-startup . global-jinx-mode)
+  :init
+  (global-jinx-mode)
   :bind (("M-$" . jinx-correct)
          ("C-M-$" . jinx-correct-all)))
 

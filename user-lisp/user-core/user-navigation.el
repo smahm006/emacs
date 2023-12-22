@@ -29,7 +29,7 @@
 ;; Practical incremental narrowing commands.
 (use-package consult
   :config
-  (setq consult-yank-rotate 1)
+  (setq consult-yank-rotate '1)
   :bind (("C-s" . consult-line)
          ("C-M-s" . consult-ripgrep)
          ("M-y" . consult-yank-from-kill-ring)))

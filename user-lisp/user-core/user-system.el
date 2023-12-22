@@ -59,9 +59,7 @@
 (use-package eat
   :bind
   ("C-M-<return>" . eat)
-  (:map eat-semi-char-mode-map ("M-o" . ace-window))
-  :hook
-  (eat-mode . hide-mode-line-mode))
+  (:map eat-semi-char-mode-map ("M-o" . ace-window)))
 
 ;;; Keyboard
 (provide 'user-system)
