@@ -1,3 +1,5 @@
+;;; user-development -- Common software development configuration.
+
 ;; Function signature assistance
 (setq eldoc-echo-area-use-multiline-p 'truncate-sym-name-if-fit)
 (setq eldoc-timer 0)

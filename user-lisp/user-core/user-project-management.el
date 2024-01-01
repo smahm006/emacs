@@ -1,3 +1,5 @@
+;;; user-project-management -- Project management configuration.
+
 (use-package project
   :ensure nil
   :config

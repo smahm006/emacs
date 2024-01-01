@@ -54,8 +54,8 @@
         backup-by-copying t
         version-control t
         delete-old-versions t
-        kept-old-versions 6
-        kept-new-versions 9
+        kept-old-versions 0
+        kept-new-versions 100
         auto-save-default t
         auto-save-timeout 20
         auto-save-interval 200
