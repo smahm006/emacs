@@ -1,14 +1,3 @@
-;;; user-development -- Common software development configuration.
-
-;; Provides common integrated development environment functionality as
-;; well as minor modes shared between multiple programming languages.
-
-;;; Code:
-
-(require 'use-package)
-
-(require 'user-completion)
-
 ;; Function signature assistance
 (setq eldoc-echo-area-use-multiline-p 'truncate-sym-name-if-fit)
 (setq eldoc-timer 0)
@@ -23,9 +12,12 @@
   (setq eglot-strict-mode nil)
   (setq eglot-confirm-server-initiated-edits nil)
   (add-to-list 'eglot-server-programs
-               '((c++-mode c-mode) . ("clangd"))
-               '(vue-mode . ("vls" "--stdio"))))
-
+               `((c++-mode c-mode) . ("clangd"))
+               `(rustic-mode . ("rust-analyzer" :initializationOptions
+                              (:procMacro (:enable t)
+                                          :cargo (:buildScripts (:enable t)
+                                                                :features
+                                                                "all"))))))
 
 ;; Syntax Checker
 (use-package flymake)

@@ -1,18 +1,3 @@
-;;; user-language-go -- Go development environment.
-
-;;; Commentary:
-
-;; Provides an integrated development environment for Go, with most
-;; functionality provided by the language server protocol module.
-
-;;; Code:
-
-(require 'use-package)
-
-(require 'user-development)
-(require 'user-editing)
-
-;; Go language support
 (use-package go-mode
   :hook
   (go-mode . eglot-ensure)

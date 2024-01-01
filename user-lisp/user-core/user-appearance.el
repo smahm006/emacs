@@ -1,23 +1,25 @@
-;;; user-appearance -- Frame, window, buffer, and modeline appearance.
+;; user-appearance -- Frame, window, buffer, and modeline appearance.
 
-;;; Commentary:
+;; Are we home or at work?
+(setq my-location (if (string-match-p "^sm-" (system-name))
+                      "home"
+                    "work"))
 
-;; Provides a modern set of appearance customisations.
-
-;; Theme
+;; Home Theme
 (use-package haki-theme
-  :if (display-graphic-p)
+  :if (and (display-graphic-p) (string= my-location "home"))
   :init
   (load-theme 'haki t)
   :config
   (set-frame-font "Menlo 14" nil t))
 
-;; (use-package danneskjold-theme
-;;   :if (display-graphic-p)
-;;   :init
-;;   (load-theme 'danneskjold t)
-;;   :config
-;;   (set-frame-font "Menlo 14" nil t))
+;; Work Theme
+(use-package danneskjold-theme
+  :if (and (display-graphic-p) (string= my-location "work"))
+  :init
+  (load-theme 'danneskjold t)
+  :config
+  (set-frame-font "Menlo 14" nil t))
 
 ;; Hide messages when starting a new session.
 (setq initial-major-mode 'org-mode)

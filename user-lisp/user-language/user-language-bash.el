@@ -1,34 +1,22 @@
-;;; user-language-bash -- Bash development environment.
-
-;;; Commentary:
-
-;; Provides an integrated development environment for Bash, with some
-;; functionality provided by the language server protocol module.
-
-;;; Code:
-
-(require 'use-package)
-(require 'user-development)
-(require 'user-editing)
-
-;; Bash language support
-(use-package sh
+(use-package bash
   :ensure nil
-  :mode (("\\.sh" . sh-mode))
-  :bind (:map sh-mode-map
+  :mode (("\\.sh" . bash-ts-mode))
+  :init
+  (setq major-mode-remap-alist '((bash-mode . bash-ts-mode)))
+  :bind (:map bash-ts-mode
               ("C-c r s" . shell-check)
               ("C-c r m" . shell-region)
               ("C-c r r" . shell-compile))
   :hook
-  (sh-mode . eglot-ensure)
-  (sh-mode . corfu-mode)
-  (sh-mode . display-line-numbers-mode)
-  (sh-mode . eldoc-mode)
-  (sh-mode . electric-pair-mode)
-  (sh-mode . flymake-mode)
-  (sh-mode . flyspell-prog-mode)
-  (sh-mode . hungry-delete-mode)
-  (sh-mode . rainbow-delimiters-mode))
+  (bash-ts-mode . eglot-ensure)
+  (bash-ts-mode . corfu-mode)
+  (bash-ts-mode . display-line-numbers-mode)
+  (bash-ts-mode . eldoc-mode)
+  (bash-ts-mode . electric-pair-mode)
+  (bash-ts-mode . flymake-mode)
+  (bash-ts-mode . flyspell-prog-mode)
+  (bash-ts-mode . hungry-delete-mode)
+  (bash-ts-mode . rainbow-delimiters-mode))
 
 (defun shell-region (start end)
   "Execute region in an inferior shell."

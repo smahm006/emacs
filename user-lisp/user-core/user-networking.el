@@ -20,7 +20,9 @@
       (format "%s\\|%s"
                     vc-ignore-dir-regexp
                     tramp-file-name-regexp))
-  (setq tramp-verbose 1))
+  (setq tramp-verbose 0)
+  (setq tramp-chunksize 2000)
+  (setq tramp-use-ssh-controlmaster-options nil))
 
 ;; Runs REST queries from a query sheet and pretty-prints responses.
 (use-package restclient

@@ -11,7 +11,7 @@
 (defun empty-trash ()
   "Empty the trash"
   (interactive)
-  (shell-command "trash-empty"))
+  (shell-command "trash-empty -f"))
 
 ;; File Manager
 (use-package dirvish
@@ -41,15 +41,21 @@
   (dirvish-quick-access-entries
    '(("h" "~/"                                          "Home")
      ("d" "~/dump/"                                     "Downloads")
-     ("w" "~/workstation/projects/work/"                "Work Projects")
+     ("r" "~/workstation/projects/private/"             "Private Projects")
+     ("u" "~/workstation/projects/public/"              "Public Projects")
      ("s" "~/workstation/projects/sandbox/"             "Work Sandbox")
-     ("r" "~/workstation/projects/sandbox/"             "Work R0esources")
+     ("p" "~/media/pictures/"               "Pictures")
      ("m" "/mnt/"                                       "Drives")
      ("t" "~/.local/share/Trash/files/"                 "TrashCan")))
   :config
   (setf dirvish-reuse-session nil)
-  (setq dirvish-mode-line-format
-        '(:left (sort symlink) :right (omit yank index)))
+  ;; (setq dirvish-mode-line-format
+  ;;       '(:left (sort symlink) :right (omit yank index)))
+  (setq dirvish-use-header-line 'global)
+  (setq dirvish-header-line-format
+      '(:left (path) :right (free-space))
+      dirvish-mode-line-format
+      '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
   (setq dirvish-attributes
         '(all-the-icons file-time file-size collapse subtree-state vc-state git-msg))
   (setq dired-listing-switches

@@ -1,17 +1,3 @@
-;;; user-language-rust -- Rust development environment.
-
-;;; Commentary:
-
-;; Provides an integrated development environment for Rust, with most
-;; functionality provided by the language server protocol module.
-
-;;; Code:
-
-(require 'use-package)
-(require 'user-development)
-(require 'user-editing)
-
-;; Rust language support
 (use-package rustic
   :bind (:map rustic-mode-map
               ("C-c r t" . rustic-cargo-test)

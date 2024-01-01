@@ -1,17 +1,3 @@
-;;; user-language-markup -- Markup language support.
-
-;;; Commentary:
-
-;; This module adds support for documentation and configuration markup
-;; languages.
-
-;;; Code:
-
-(require 'use-package)
-
-(require 'user-editing)
-
-;; Use conf-mode where appropriate.
 (use-package conf-mode
   :mode (("\\.editorconfig$" . conf-mode)
          ("\\.conf" . conf-mode)
@@ -23,10 +9,10 @@
   :mode (("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode)
          ("README\\.md\\'" . gfm-mode))
-  :init
-  (add-hook 'markdown-mode-hook #'visual-line-mode)
-  (add-hook 'markdown-mode-hook #'flymake-mode)
-  (add-hook 'markdown-mode-hook #'flyspell-mode)
+  :hook
+  (markdown-mode . visual-line-mode)
+  (markdown-mode . flymake-mode)
+  (markdown-mode . flyspell-mode)
   :custom
   (markdown-asymmetric-header t)
   (markdown-command "multimarkdown")
@@ -36,62 +22,57 @@
   (markdown-hide-urls t)
   (markdown-italic-underscore t))
 
-;; JavaScript object notation language
+;; JavaScript object notation language (JSON)
 (use-package json-mode
-  :mode (("\\.json\\'" . json-mode))
-  :init
-  (add-hook 'json-mode-hook #'aggressive-indent-mode)
-  (add-hook 'json-mode-hook #'visual-line-mode)
-  (add-hook 'json-mode-hook #'display-line-numbers-mode)
-  (add-hook 'json-mode-hook #'flymake-mode)
-  (add-hook 'json-mode-hook #'flyspell-prog-mode)
-  (add-hook 'json-mode-hook #'rainbow-delimiters-mode))
+  :mode (("\\.json\\'" . json-ts-mode))
+  :hook
+  (json-ts-mode . visual-line-mode)
+  (json-ts-mode . display-line-numbers-mode)
+  (json-ts-mode . flymake-mode)
+  (json-ts-mode . flyspell-prog-mode)
+  (json-ts-mode . rainbow-delimiters-mode))
 
 ;; Yet another markup language (YAML)
 (use-package yaml-mode
-  :mode (("\\.yml\\'" . yaml-mode)
-         ("\\.yaml\\'" . yaml-mode))
+  :mode (("\\.yml\\'" . yaml-ts-mode)
+         ("\\.yaml\\'" . yaml-ts-mode))
   :hook
-  (yaml-mode . eglot-ensure)
-  (yaml-mode . corfu-mode)
-  (yaml-mode . display-line-numbers-mode)
-  (yaml-mode . visual-line-mode)
-  (yaml-mode . eldoc-mode)
-  (yaml-mode . electric-pair-mode)
-  (yaml-mode . flyspell-prog-mode)
-  (yaml-mode . hungry-delete-mode)
-  (yaml-mode . rainbow-delimiters-mode))
+  (yaml-ts-mode . visual-line-mode)
+  (yaml-ts-mode . display-line-numbers-mode)
+  (yaml-ts-mode . flymake-mode)
+  (yaml-ts-mode . flyspell-prog-mode)
+  (yaml-ts-mode . rainbow-delimiters-mode))
 
 ;; Hashicorp Configuration Language
 (use-package hcl-mode
   :mode (("\\.hcl\\'" . hcl-mode)
          ("\\.tf\\'" . hcl-mode))
-  :init
-  (add-hook 'yaml-mode-hook #'visual-line-mode)
-  (add-hook 'yaml-mode-hook #'display-line-numbers-mode)
-  (add-hook 'yaml-mode-hook #'flymake-mode)
-  (add-hook 'yaml-mode-hook #'flyspell-prog-mode)
-  (add-hook 'yaml-mode-hook #'rainbow-delimiters-mode))
+  :hook
+  (hcl-mode . visual-line-mode)
+  (hcl-mode . display-line-numbers-mode)
+  (hcl-mode . flymake-mode)
+  (hcl-mode . flyspell-prog-mode)
+  (hcl-mode . rainbow-delimiters-mode))
 
 ;; Tom's own markup language
 (use-package toml-mode
   :mode (("\\.toml\\'" . toml-mode))
-  :init
-  (add-hook 'toml-mode-hook #'aggressive-indent-mode)
-  (add-hook 'toml-mode-hook #'visual-line-mode)
-  (add-hook 'toml-mode-hook #'display-line-numbers-mode)
-  (add-hook 'toml-mode-hook #'flymake-mode)
-  (add-hook 'toml-mode-hook #'flyspell-prog-mode)
-  (add-hook 'toml-mode-hook #'rainbow-delimiters-mode))
+  :hook
+  (toml-mode . aggressive-indent-mode)
+  (toml-mode . visual-line-mode)
+  (toml-mode . display-line-numbers-mode)
+  (toml-mode . flymake-mode)
+  (toml-mode . flyspell-prog-mode)
+  (toml-mode . rainbow-delimiters-mode))
 
 ;; Comma-separated value files
 (use-package csv-mode
   :mode (("\\.csv\\'" . csv-mode))
-  :init
-  (add-hook 'csv-mode-hook #'display-line-numbers-mode)
-  (add-hook 'csv-mode-hook #'flymake-mode)
-  (add-hook 'csv-mode-hook #'flyspell-prog-mode)
-  (add-hook 'csv-mode-hook #'rainbow-delimiters-mode))
+  :hook
+  (csv-mode . display-line-numbers-mode)
+  (csv-mode . flymake-mode)
+  (csv-mode . flyspell-prog-mode)
+  (csv-mode . rainbow-delimiters-mode))
 
 (provide 'user-language-config)
 ;;; user-language-markup ends here
