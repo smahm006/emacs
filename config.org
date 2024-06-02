@@ -1,4 +1,4 @@
--*- mode: org; -*-
+# -*- mode: org; -*-
 #+AUTHOR: Sohaib Mahmood
 #+TITLE: GNU Emacs Configuration
 #+PROPERTY: header-args:emacs-lisp :tangle ./config.el :mkdirp yes
@@ -10,6 +10,7 @@
   - [[#packages][Packages]]
   - [[#libraries][Libraries]]
   - [[#environment][Environment]]
+  - [[#authentication][Authentication]]
   - [[#xdg-base-directory-specification][XDG Base Directory Specification]]
   - [[#saving-configuration][Saving Configuration]]
 - [[#appearance][Appearance]]
@@ -44,8 +45,12 @@
   - [[#virtualization][Virtualization]]
 - [[#org][Org]]
   - [[#defaults-3][Defaults]]
+  - [[#agenda][Agenda]]
+  - [[#capture][Capture]]
+  - [[#islam][Islam]]
   - [[#money-management][Money Management]]
   - [[#note-taking][Note Taking]]
+  - [[#faces][Faces]]
 - [[#languages][Languages]]
   - [[#defaults-4][Defaults]]
   - [[#python][Python]]
@@ -180,6 +185,14 @@ Having a good terminal emulator is vital to my flow of using Emacs. I found the 
     (add-hook 'eat-mode-hook (lambda () (setq-local global-hl-line-mode nil)))
     :bind
     ("C-c t" . eat))
+#+end_src
+** Authentication
+I use a GPG key stored in a Yubikey for most of my authentication
+#+begin_src emacs-lisp
+  (use-package epa-file
+    :straight (:type built-in)
+    :init
+    (epa-file-enable))
 #+end_src
 ** XDG Base Directory Specification
 To keep the user’s home and the ~/.config/emacs folder as clean as possible, I follow the XDG base directory specification. Be careful that GNU Emacs will not create the appropriate folders if they do not exist. Therefore, it is necessary to create them yourself.
@@ -533,7 +546,7 @@ package, I can easily do that.
 
 #+begin_src emacs-lisp
   (use-package winner
-    :ensure nil
+    :straight (:type built-in)
     :config (winner-mode))
 #+end_src
 
@@ -676,13 +689,7 @@ It is important to have file backups available with GNU Emacs. The following con
 
 [[https://github.com/lewang/backup-walker][backup-walker]] allows us to view the diff between backups and selectively restore one
 #+begin_src emacs-lisp
-  (setq-default
-   auto-save-default t                           ; Enable auto-save
-   auto-save-timeout 30                          ; Auto-save if idle for 30 seconds
-   auto-save-interval 300)                       ; Auto-save after having typed 300 characters
-  (let ((dir (expand-file-name (file-name-as-directory (expand-file-name (format "%s/emacs/auto-save/" xdg-cache))))))
-    (my/mkdir dir)
-    (setq auto-save-file-name-transforms `((".*" ,dir t))))
+  (use-package backup-walker)
 #+end_src
 
 *** Saving
@@ -920,40 +927,24 @@ Some sensible defaults for editing
 ** Whitespace
 #+begin_src emacs-lisp
   (use-package simple
-    :straight (:type built-in)
-    :delight (auto-fill-function)
-    :preface
-    (defun my/kill-region-or-line ()
-      "When called interactively with no active region, kill the whole line."
-      (interactive)
-      (if current-prefix-arg
-          (progn
-            (kill-new (buffer-string))
-            (delete-region (point-min) (point-max)))
-        (progn (if (use-region-p)
-                   (kill-region (region-beginning) (region-end) t)
-                 (kill-region (line-beginning-position) (line-beginning-position
-                                                         2))))))
-    (defun my/smart-kill-line-backwards ()
-      "Insert an empty line above the current line.
-        Position the cursor at it's beginning, according to the current mode."
-      (interactive)
-      (kill-line 0)
-      (indent-according-to-mode))
-    (defun my/smart-kill-whole-line (&optional arg)
-      "A simple wrapper around `kill-whole-line' that respects indentation."
-      (interactive "P")
-      (kill-whole-line arg)
-      (back-to-indentation))
-    :hook ((before-save . delete-trailing-whitespace)
-           ((prog-mode text-mode) . turn-on-auto-fill))
-    :config
-    (global-set-key (kbd "C-i") 'universal-argument)
-    (define-key universal-argument-map (kbd "C-i") 'universal-argument-more)
-    :bind (("C-<backspace>" . my/smart-kill-whole-line)
-           ("C-u" . my/smart-kill-line-backwards)
-           ("C-w" . backward-kill-word))
-    :custom (set-mark-command-repeat-pop t))
+	:straight (:type built-in)
+	:delight (auto-fill-function)
+	:preface
+	(defun my/kill-region-or-line ()
+	  "When called interactively with no active region, kill the whole line."
+	  (interactive)
+	  (if current-prefix-arg
+		  (progn
+			(kill-new (buffer-string))
+			(delete-region (point-min) (point-max)))
+		(progn (if (use-region-p)
+				   (kill-region (region-beginning) (region-end) t)
+				 (kill-region (line-beginning-position) (line-beginning-position
+														 2))))))
+	:hook ((before-save . delete-trailing-whitespace)
+		   ((prog-mode text-mode) . turn-on-auto-fill))
+	:bind ([remap kill-region] . my/kill-region-or-line)
+	:custom (set-mark-command-repeat-pop t))
 #+end_src
 
 Finally, I also like is to be able to delete every consecutive space characters
@@ -998,8 +989,8 @@ We also want to match pairs properly
 	:hook ((minibuffer-setup-hook . turn-on-smartparens-strict-mode))
 	:config
 	(require 'smartparens-config)
-	:bind (("M-'" . sp-backward-sexp)
-		   ("M-\\" . sp-forward-sexp)
+	:bind (("C-M-b" . sp-backward-sexp)
+		   ("C-M-f" . sp-forward-sexp)
 		   ("M-(" . sp-wrap-round)
 		   ("M-[" . sp-wrap-curly))
 	:custom (sp-escape-quotes-after-insert nil))
@@ -1021,6 +1012,11 @@ Let's start with some useful functions that improve on existing Emacs navigation
         (back-to-indentation)
         (when (= orig-point (point))
           (move-beginning-of-line 1))))
+    (defun my/smart-kill-whole-line (&optional arg)
+      "A simple wrapper around `kill-whole-line' that respects indentation."
+      (interactive "P")
+      (kill-whole-line arg)
+      (back-to-indentation))
     (defun my/move-line-up ()
       "Move up the current line."
       (interactive)
@@ -1048,10 +1044,20 @@ Let's start with some useful functions that improve on existing Emacs navigation
       (newline-and-indent)
       (forward-line -1)
       (indent-according-to-mode))
+    (defun my/smart-kill-line-backwards ()
+      "Insert an empty line above the current line.
+        Position the cursor at it's beginning, according to the current mode."
+      (interactive)
+      (kill-line 0)
+      (indent-according-to-mode))
     :bind (("M-p" . my/move-line-up)
            ("M-n" . my/move-line-down)
+
            ("C-<return>" . my/smart-open-line-below)
-           ("M-<return>" . my/smart-open-line-above)))
+           ("M-<return>" . my/smart-open-line-above)
+           ("M-<backspace>" . my/smart-kill-line-backwards)
+           ("C-a" . my/smarter-move-beginning-of-line)
+           ([remap kill-whole-line] . my/smart-kill-whole-line)))
 #+end_src
 
 [[https://github.com/abo-abo/avy][Avy]] is an amazing package that allows one to go truly mouseless and navigate via links
@@ -1352,41 +1358,131 @@ I use docker quite extensively so the following package is a staple for me
 (use-package docker)
 #+end_src
 * Org
+Org short for organization of my life mainly by using org-mode
 ** Defaults
 Org Mode is a really good package for note taking and organization.
 #+begin_src emacs-lisp
   (use-package org
     :straight (:type built-in)
     :mode (("\\.org\\'" . org-mode))
+    :bind (:map org-mode-map
+                ("C-M-p" . org-shiftmetaleft)
+                ("C-M-n" . org-shiftmetaright))
     :hook
     (org-mode . org-indent-mode)
     (org-mode . visual-line-mode)
-    (org-mode . jinx-mode))
-
+    (org-mode . jinx-mode)
+    :custom
+    (org-directory "~/org")
+    (org-archive-location "~/org/archives/%s::")
+    (org-confirm-babel-evaluate nil)
+    (org-log-done 'time)
+    (org-return-follows-link t)
+    (org-hide-emphasis-markers t)
+    :config
+    (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode)))
   (use-package org-contrib)
 #+end_src
 
-Let's add prettier bullets in Org Mode with [[https://github.com/integral-dw/org-superstar-mode][org-superstar]].
-#+begin_src emacs-lisp
-  (use-package org-superstar
-	:hook
-	(org-mode . org-superstar-mode)
-	:config
-	(setq org-superstar-remove-leading-stars t)
-	(setq org-superstar-headline-bullets-list '("◉" "☯" "○" "☯" "✸" "☯" "✿" "☯" "✜" "☯" "◆" "☯" "▶"))
-	(setq org-superstar-item-bullet-alist
-		  '((?+ . ?•)
-			(?* . ?➤)
-			(?- . ?–))))
-#+end_src
-
-If like me you want to automatically update the tables of contents of your =.org=
+If like me you want to automatically update the tables of contents of your org
 files, [[https://github.com/snosov1/toc-org][toc-org]] is the ideal package. To automate these tables of contents, you
 only need to use the =:TOC:= tag in the first heading of these tables of contents.
 #+begin_src emacs-lisp
   (use-package toc-org
     :after org
     :hook (org-mode . toc-org-enable))
+#+end_src
+
+We can add a menu for org options as well
+#+begin_src emacs-lisp
+  (pretty-hydra-define hydra-org
+    (:hint nil :color teal :quit-key "q" :title (with-faicon "nf-fa-pen" "Org" 1 -0.05))
+    ("Action"
+     (("A" my/org-archive-done-tasks "archive")
+      ("a" org-agenda "agenda")
+      ("c" org-capture "capture")
+      ("l" my/org-open-current-ledger "ledger")
+      ("d" org-decrypt-entry "decrypt")
+      ("i" org-insert-link-global "insert-link")
+      ("j" org-capture-goto-last-stored "jump-capture")
+      ("k" org-cut-subtree "cut-subtree")
+      ("o" org-open-at-point-global "open-link")
+      ("r" org-refile "refile")
+      ("s" org-store-link "store-link")
+      ("t" org-show-todo-tree "todo-tree"))))
+  (global-set-key (kbd "C-c o") 'hydra-org/body)
+#+end_src
+** Agenda
+Nowadays, it is crucial to be organized. Even more than before. That is why it
+is important to take the time to make a configuration that is simple to use and
+that makes your life easier. The org-agenda
+built-in package allows me to be organized in my daily tasks. As a result, I can
+use my time to the fullest.
+#+begin_src emacs-lisp
+  (use-package org-agenda
+    :straight (:type built-in)
+    :bind (:map org-agenda-mode-map
+                ("C-n" . org-agenda-next-item)
+                ("C-p" . org-agenda-previous-item)
+                ("j" . org-agenda-goto)
+                ("X" . my/org-agenda-mark-done-next)
+                ("x" . my/org-agenda-mark-done))
+    :custom
+    (org-agenda-files '("~/org/todos")))
+#+end_src
+** Capture
+Org-capture templates saves you a lot of time when adding new entries. I use
+it to quickly record tasks, ledger entries, notes and other semi-structured
+information.
+#+begin_src emacs-lisp
+  (use-package org-capture
+    :straight (:type built-in)
+    :custom
+    (org-todo-keywords
+     (quote ((sequence "TODO(t)""|" "NEXT(n)""|" "DONE(d)")
+             (sequence "WAITING(w@/!)" "LATER(l@/!)""|" "NOPE(x@/!)"))))
+    (org-capture-templates
+     `(("p" "Personal To-Do"
+        entry (file+headline "~/org/todos/personal.org" "General Tasks")
+        "* TODO [#B] %?\n:Created: %T\n "
+        :empty-lines 0))))
+#+end_src
+** Islam
+*** Hijri Calendar
+By default GNU Emacs fills in too many dates and most of the ones I am
+interested in are not included
+#+begin_src emacs-lisp
+  (use-package holidays
+    :straight (:type built-in)
+    :custom
+    (holiday-bahai-holidays nil)
+    (holiday-hebrew-holidays nil)
+    (holiday-oriental-holidays nil)
+    (holiday-general-holidays nil)
+    (holiday-local-holidays nil)
+    (holiday-islamic-holidays
+     '((holiday-fixed 3 11 "Ramadan")
+       (holiday-fixed 4 10 "Eid ul-Fitr")
+       (holiday-fixed 6 13 "Hajj")
+       (holiday-fixed 6 16 "Arafah")
+       (holiday-fixed 6 28 "Eid ul-Adha"))))
+#+end_src
+*** Prayer
+#+begin_src emacs-lisp
+  (use-package awqat
+    :straight (awqat :type git :host github :repo "zkry/awqat")
+    :commands (awqat-display-prayer-time-mode
+               awqat-times-for-day)
+    :init
+    (awqat-display-prayer-time-mode)
+    :custom
+    (calendar-latitude 45.350912)
+    (calendar-longitude -75.9529472)
+    (awqat-mode-line-format "   ${prayer} (${hours}h${minutes}m) ")
+    :config
+    (setq awqat-asr-hanafi nil)
+    (awqat-set-preset-midnight)
+    (awqat-set-preset-isna))
 #+end_src
 ** Money Management
 Good money management is a skill to be acquired as soon as possible. Fortunately
@@ -1415,6 +1511,17 @@ Org (7.01+) has built-in support for ledger entries using Babel.
    'org-babel-load-languages
    '((ledger . t)))
 #+end_src
+
+We can also define a function to open the current years ledger file
+#+begin_src emacs-lisp
+  (defun my/org-open-current-ledger ()
+    "Open the ledger file corresponding to the current year."
+    (interactive)
+    (let* ((current-year (format-time-string "%Y"))
+           (ledger-file (format "~/org/ledger/%s.org.gpg" current-year)))
+      (find-file ledger-file)))
+#+end_src
+
 ** Note Taking
 #+begin_src emacs-lisp
   (use-package org-roam
@@ -1444,6 +1551,33 @@ And a menu for org-roam
     ("T" org-roam-dailies-goto-tomorrow "tomorrow")
     ("y" org-roam-dailies-goto-yesterday "yesterday"))))
 (global-set-key (kbd "C-c n") 'hydra-notes/body)
+#+end_src
+** Faces
+Let's add prettier bullets in Org Mode with [[https://github.com/integral-dw/org-superstar-mode][org-superstar]].
+#+begin_src emacs-lisp
+  (use-package org-faces
+    :straight (:type built-in)
+    :custom
+    (org-todo-keyword-faces
+      (quote (("TODO" :foreground "red" :weight bold)
+              ("NEXT" :foreground "blue" :weight bold)
+              ("DONE" :foreground "forest green" :weight bold)
+              ("WAITING" :foreground "orange" :weight bold)
+              ("LATER" :foreground "magenta" :weight bold)
+              ("NOPE" :foreground "grey" :weight bold)))))
+#+end_src
+Let's add prettier bullets in Org Mode with [[https://github.com/integral-dw/org-superstar-mode][org-superstar]].
+#+begin_src emacs-lisp
+  (use-package org-superstar
+	:hook
+	(org-mode . org-superstar-mode)
+	:config
+	(setq org-superstar-remove-leading-stars t)
+	(setq org-superstar-headline-bullets-list '("◉" "☯" "○" "☯" "✸" "☯" "✿" "☯" "✜" "☯" "◆" "☯" "▶"))
+	(setq org-superstar-item-bullet-alist
+		  '((?+ . ?•)
+			(?* . ?➤)
+			(?- . ?–))))
 #+end_src
 * Languages
 ** Defaults
@@ -1614,7 +1748,7 @@ python-mode python-ts-mode
 (with_statement "from __future__ import with_statement")
 #+end_src
 *** Menu
-We can add a menu for python specific functions
+We can add a menu for python specific functionsn
 #+begin_src emacs-lisp
   (pretty-hydra-define hydra-python
 	(:hint nil :forein-keys warn :quit-key "q" :title (with-faicon "nf-fa-python" "Python" 1 -0.05))
