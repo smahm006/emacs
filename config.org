@@ -34,6 +34,7 @@
   - [[#navigation][Navigation]]
   - [[#search-and-replace][Search and Replace]]
   - [[#linguistics][Linguistics]]
+  - [[#multi-edit][Multi-Edit]]
   - [[#undoredo][Undo/Redo]]
   - [[#sudo][Sudo]]
 - [[#development][Development]]
@@ -1153,30 +1154,6 @@ Let's start with some useful functions that improve on existing Emacs navigation
     :bind (([remap query-replace] . anzu-query-replace)
            ([remap query-replace-regexp] . anzu-query-replace-regexp)))
 #+end_src
-
-[[https://github.com/corytertel/macrursors][macrursors]] is a package that allows you to edit multiple lines at once and is really nifty once you kinda get the hang of it.
-#+begin_src emacs-lisp
-  (use-package macrursors
-    :straight (macrursor :type git :host github :repo "corytertel/macrursors")
-    :config
-    (dolist (mode '(corfu-mode beacon-mode))
-      (add-hook 'macrursors-pre-finish-hook mode)
-      (add-hook 'macrursors-post-finish-hook mode))
-    (define-prefix-command 'macrursors-mark-map)
-    (global-set-key (kbd "C-c SPC") #'macrursors-select)
-    (global-set-key (kbd "C->") #'macrursors-mark-next-instance-of)
-    (global-set-key (kbd "C-<") #'macrursors-mark-previous-instance-of)
-    (global-set-key (kbd "C-;") 'macrursors-mark-map)
-    (define-key macrursors-mark-map (kbd "C-;") #'macrursors-mark-all-lines-or-instances)
-    (define-key macrursors-mark-map (kbd ";") #'macrursors-mark-all-lines-or-instances)
-    (define-key macrursors-mark-map (kbd "l") #'macrursors-mark-all-lists)
-    (define-key macrursors-mark-map (kbd "s") #'macrursors-mark-all-symbols)
-    (define-key macrursors-mark-map (kbd "e") #'macrursors-mark-all-sexps)
-    (define-key macrursors-mark-map (kbd "f") #'macrursors-mark-all-defuns)
-    (define-key macrursors-mark-map (kbd "n") #'macrursors-mark-all-numbers)
-    (define-key macrursors-mark-map (kbd ".") #'macrursors-mark-all-sentences)
-    (define-key macrursors-mark-map (kbd "r") #'macrursors-mark-all-lines))
-#+end_src
 ** Linguistics
 [[https://github.com/minad/jinx][Jinx]] powered by libenchant seems to be the best spell checker today
 #+begin_src emacs-lisp
@@ -1236,6 +1213,16 @@ We can add a menu for language options as well
       ("d" downcase-dwim "downcase")
       ("c" capitalize-dwim "capitalize"))))
   (global-set-key (kbd "C-c j") 'hydra-lang/body)
+#+end_src
+** Multi-Edit
+[[https://github.com/magnars/multiple-cursors.el][multiple-cursors]] is a package that allows you to edit multiple lines at once and is really nifty once you kinda get the hang of it.
+#+begin_src emacs-lisp
+  (use-package multiple-cursors)
+  (pretty-hydra-define hydra-multiple-cursors
+    (:hint nil :color teal :quit-key "q" :title (with-mdicon "nf-md-multicast" "Multiple Cursors" 1 -0.05))
+    ("Multilpe Cursors"
+     (("r" mc/mark-all-in-region-regexp "regex"))))
+  (global-set-key (kbd "C-c m") 'hydra-multiple-cursors/body)
 #+end_src
 ** Undo/Redo
 [[https://github.com/casouri/vundo][Vundo]] is a really cool package that show your undo history and allows you traverse this tree
