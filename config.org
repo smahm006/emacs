@@ -29,7 +29,7 @@
   - [[#projects][Projects]]
 - [[#editing][Editing]]
   - [[#defaults-2][Defaults]]
-  - [[#whitespace][Whitespace]]
+  - [[#deletion][Deletion]]
   - [[#visual-clarity][Visual Clarity]]
   - [[#navigation][Navigation]]
   - [[#search-and-replace][Search and Replace]]
@@ -45,19 +45,21 @@
   - [[#virtualization][Virtualization]]
 - [[#org][Org]]
   - [[#defaults-3][Defaults]]
+  - [[#faces][Faces]]
   - [[#agenda][Agenda]]
   - [[#capture][Capture]]
+  - [[#note-taking][Note Taking]]
+  - [[#time-management][Time Management]]
   - [[#islam][Islam]]
   - [[#money-management][Money Management]]
-  - [[#note-taking][Note Taking]]
-  - [[#faces][Faces]]
 - [[#languages][Languages]]
   - [[#defaults-4][Defaults]]
+  - [[#yaml][Yaml]]
   - [[#python][Python]]
   - [[#cc][C/C++]]
   - [[#go][Go]]
+  - [[#rust][Rust]]
   - [[#bash][Bash]]
-  - [[#yaml][Yaml]]
 
 * About
 My personal emacs configuration.
@@ -112,6 +114,11 @@ Some useful global functions that we will use across the configuration
     (interactive)
     (load-file (expand-file-name "init.el" user-emacs-directory)))
   (global-set-key (kbd "<f5>") 'my/reload-config)
+
+  (defun my/revert-buffer-no-confirm ()
+    "Revert buffer without confirmation."
+    (interactive)
+    (revert-buffer :ignore-auto :noconfirm))
 
 #+end_src
 ** Packages
@@ -183,6 +190,8 @@ Having a good terminal emulator is vital to my flow of using Emacs. I found the 
   (use-package eat
     :config
     (add-hook 'eat-mode-hook (lambda () (setq-local global-hl-line-mode nil)))
+    (define-key eat-semi-char-mode-map (kbd "M-o") nil)
+    (define-key eat-semi-char-mode-map (kbd "M-u") nil)
     :bind
     ("C-c t" . eat))
 #+end_src
@@ -301,10 +310,15 @@ Sensible default values that I use.
 ** Theme
 I switch themes quite often but usually I prefer high contrast dark themes.
 #+begin_src emacs-lisp
-  (use-package flatland-black-theme
-	:if (and (display-graphic-p) (string= (my/location) "home"))
-	:init
-	(load-theme 'flatland-black t))
+  (use-package doom-themes
+    :if (and (display-graphic-p) (string= (my/location) "home"))
+    :custom
+    (doom-themes-enable-bold t)
+    (doom-themes-enable-italic t)
+    :config
+    (doom-themes-visual-bell-config)
+    :init
+    (load-theme 'doom-homage-black t))
 #+end_src
 
 Since we do not do things by halves, it is also interesting to visually
@@ -396,18 +410,19 @@ to with projectile. To our delight the [[https://github.com/emacs-dashboard/emac
 and more.
 
 #+begin_src emacs-lisp
-  (use-package dashboard
-	:custom
-	(dashboard-banner-logo-title "Get Busy Living Or Get Busy Dying!")
-	(dashboard-center-content t)
-	(dashboard-items '((projects . 5)
-					   (recents   . 5)))
-	(dashboard-set-file-icons t)
-	(dashboard-set-footer nil)
-	(dashboard-set-heading-icons t)
-	(dashboard-set-navigator t)
-	(dashboard-startup-banner 'logo)
-	:config (dashboard-setup-startup-hook))
+    (use-package dashboard
+      :custom
+      (dashboard-banner-logo-title "Get Busy Living Or Get Busy Dying!")
+      (dashboard-center-content t)
+      (dashboard-items '((agenda)
+                         (projects . 3)
+                         (recents   . 3)))
+      (dashboard-set-file-icons t)
+      (dashboard-set-footer nil)
+      (dashboard-set-heading-icons t)
+      (dashboard-set-navigator t)
+      (dashboard-startup-banner 'logo)
+      :config (dashboard-setup-startup-hook))
 #+end_src
 * Management
 Section dedicated to managing buffers, windows, the minibuffer, files and projects on GNU Emacs to provide a more pleasant experience.
@@ -526,7 +541,7 @@ Most of the time, I want to split a window and put the focus on it to perform an
 			(set-window-buffer w2 w1b)))
 		:bind (("C-x 2" . my/vsplit-last-window)
 			   ("C-x 3" . my/hsplit-last-window)
-			   ("C-l" . my/toggle-fullscreen-window)))
+			   ("M-u" . my/toggle-fullscreen-window)))
 #+end_src
 
 The way I move between several windows in GNU Emacs is by indicating the number
@@ -770,68 +785,59 @@ The following tools are also recommended to use with dirvish:
 - mediainfo for audio/video metadata generation
 - tar and unzip for archive files preview
 #+begin_src emacs-lisp
-  (use-package dirvish
-    :init
-    (dirvish-override-dired-mode)
-    :custom
-    (dirvish-quick-access-entries
-     '(("h" "~/"                                          "Home")
-       ("d" "~/dump/"                                     "Downloads")
-       ("w" "~/workstation"                               "Workstation")
-       ("p" "~/media/pictures/"                           "Pictures")
-       ("m" "/mnt/"                                       "Drives")
-       ("t" "~/.local/share/Trash/files/"                 "TrashCan")))
-    :config
-    (setf dirvish-reuse-session nil)
-    ;; (setq dirvish-mode-line-format
-    ;;       '(:left (sort symlink) :right (omit yank index)))
-    (setq dirvish-use-header-line 'global)
-    (setq dirvish-header-line-format
-          '(:left (path) :right (free-space))
-          dirvish-mode-line-format
-          '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
-    (setq dirvish-attributes
-      '(vc-state subtree-state nerd-icons collapse git-msg file-time file-size))
-    (setq dirvish-subtree-state-style 'nerd)
-    (setq dired-listing-switches
-          "-l --almost-all --human-readable --group-directories-first --no-group")
-    :bind
-    (("<f1>" . dirvish-side)
-     :map dirvish-mode-map
-     ("M-p" . dired-up-directory)
-     ("M-n" . dired-find-file)
-     ("M-d" . empty-trash)
-     ("a"   . dirvish-quick-access)
-     ("f"   . dirvish-file-info-menu)
-     ("y"   . dirvish-yank-menu)
-     ("N"   . dirvish-narrow)
-     ("^"   . dirvish-history-last)
-     ("h"   . dirvish-history-jump)
-     ("s"   . dirvish-quicksort)
-     ("TAB" . dirvish-subtree-toggle)
-     ("M-f" . dirvish-history-go-forward)
-     ("M-b" . dirvish-history-go-backward)))
+    (use-package dirvish
+      :init
+      (dirvish-override-dired-mode)
+      :custom
+      (dirvish-quick-access-entries
+       '(("h" "~/"                                          "Home")
+         ("d" "~/dump/"                                     "Downloads")
+         ("w" "~/workstation"                               "Workstation")
+         ("p" "~/media/pictures/"                           "Pictures")
+         ("m" "/mnt/"                                       "Drives")
+         ("t" "~/.local/share/Trash/files/"                 "TrashCan")
+         ("r" "/"                                           "Root")))
+      :config
+      (setf dirvish-reuse-session nil)
+      ;; (setq dirvish-mode-line-format
+      ;;       '(:left (sort symlink) :right (omit yank index)))
+      (setq dirvish-use-header-line 'global)
+      (setq dirvish-header-line-format
+            '(:left (path) :right (free-space))
+            dirvish-mode-line-format
+            '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
+      (setq dirvish-attributes
+        '(vc-state subtree-state nerd-icons collapse git-msg file-time file-size))
+      (setq dirvish-subtree-state-style 'nerd)
+      (setq dired-listing-switches
+            "-l --almost-all --human-readable --group-directories-first --no-group")
+      :bind
+      (("<f1>" . dirvish-side)
+       :map dirvish-mode-map
+       ("M-p" . dired-up-directory)
+       ("M-n" . dired-find-file)
+       ("M-d" . empty-trash)
+       ("a"   . dirvish-quick-access)
+       ("f"   . dirvish-file-info-menu)
+       ("y"   . dirvish-yank-menu)
+       ("N"   . dirvish-narrow)
+       ("^"   . dirvish-history-last)
+       ("h"   . dirvish-history-jump)
+       ("s"   . dirvish-quicksort)
+       ("TAB" . dirvish-subtree-toggle)
+       ("M-f" . dirvish-history-go-forward)
+       ("M-b" . dirvish-history-go-backward)))
 #+end_src
 *** Menu
 We can add a menu for file options as well
 #+begin_src emacs-lisp
   (defun my/find-file-with-default-path (path)
+    (interactive)
     (let ((file-name-as-directory path))
       (call-interactively 'find-file)))
   (pretty-hydra-define hydra-file
     (:hint nil :color teal :quit-key "q" :title (with-octicon "nf-oct-file_symlink_file" "Files" 1 -0.05))
-    ("Home"
-     (("hd" (my/find-file-with-default-path "~/dump") "downloads")
-      ("ho" (my/find-file-with-default-path "~/org") "org")
-      ("hwr" (my/find-file-with-default-path "~/workstation/resources") "resources")
-      ("hwa" (my/find-file-with-default-path "~/workstation/architecture") "architecture")
-      ("hws" (my/find-file-with-default-path "~/workstation/projects/sandbox") "sandbox")
-      ("hwpr" (my/find-file-with-default-path "~/workstation/projects/private") "private")
-      ("hwpu" (my/find-file-with-default-path "~/workstation/projects/public") "public")
-      ("hmp" (my/find-file-with-default-path "~/media/pictures") "pictures")
-      ("hmv" (my/find-file-with-default-path "~/media/video") "video")
-      ("hma" (my/find-file-with-default-path "~/media/audio") "audio"))
-     "Sandbox"
+    ("Sandbox"
      (("sp" (find-file "~/workstation/projects/sandbox/python/main.py") "python")
       ("sc" (find-file "~/workstation/projects/sandbox/c/main.c") "C")
       ("sb" (find-file "~/workstation/projects/sandbox/bash/main.sh") "bash")
@@ -924,27 +930,69 @@ Some sensible defaults for editing
   (set-terminal-coding-system 'utf-8)
   (set-selection-coding-system 'utf-8)
 #+end_src
-** Whitespace
+** Deletion
 #+begin_src emacs-lisp
   (use-package simple
-	:straight (:type built-in)
-	:delight (auto-fill-function)
-	:preface
-	(defun my/kill-region-or-line ()
-	  "When called interactively with no active region, kill the whole line."
-	  (interactive)
-	  (if current-prefix-arg
-		  (progn
-			(kill-new (buffer-string))
-			(delete-region (point-min) (point-max)))
-		(progn (if (use-region-p)
-				   (kill-region (region-beginning) (region-end) t)
-				 (kill-region (line-beginning-position) (line-beginning-position
-														 2))))))
-	:hook ((before-save . delete-trailing-whitespace)
-		   ((prog-mode text-mode) . turn-on-auto-fill))
-	:bind ([remap kill-region] . my/kill-region-or-line)
-	:custom (set-mark-command-repeat-pop t))
+    :straight (:type built-in)
+    :delight (auto-fill-function)
+    :preface
+    (defun my/kill-region-or-line ()
+      "When called interactively with no active region, kill the whole line."
+      (interactive)
+      (if current-prefix-arg
+          (progn
+            (kill-new (buffer-string))
+            (delete-region (point-min) (point-max)))
+        (progn (if (use-region-p)
+                   (kill-region (region-beginning) (region-end) t)
+                 (kill-region (line-beginning-position) (line-beginning-position
+                                                         2))))))
+    (defun my/delete-surround-at-point--find-brackets (pos)
+      "Return a pair of buffer positions for the opening & closing bracket positions.
+  Or nil when nothing is found."
+      (save-excursion
+        (goto-char pos)
+        (when
+            (or
+             (when
+                 (and
+                  (eq (syntax-class (syntax-after pos)) 4)
+                  (= (logand (skip-syntax-backward "/\\") 1) 0))
+               (forward-char 1)
+               (if (and (ignore-errors (backward-up-list 1) t) (eq (point) pos))
+                   t
+                 (goto-char pos)
+                 nil))
+             (ignore-errors (backward-up-list 1) t))
+          (list (point)
+                (progn
+                  (forward-list)
+                  (1- (point)))))))
+    (defun my/delete-surround-at-point ()
+      "https://emacs.stackexchange.com/a/54679"
+      (interactive)
+      (let ((range (my/delete-surround-at-point--find-brackets (point))))
+        (unless range
+          (user-error "No surrounding brackets"))
+        (pcase-let ((`(,beg ,end) range))
+          (let ((lines (count-lines beg end))
+                (beg-char (char-after beg))
+                (end-char (char-after end)))
+            (save-excursion
+              (goto-char end)
+              (delete-char 1)
+              (goto-char beg)
+              (delete-char 1))
+            (message
+             "Delete surrounding \"%c%c\"%s" beg-char end-char
+             (if (> lines 1)
+                 (format " across %d lines" lines)
+               ""))))))
+    :hook ((before-save . delete-trailing-whitespace)
+           ((prog-mode text-mode) . turn-on-auto-fill))
+    :bind (("C-M-d" . my/delete-surround-at-point)
+           ([remap kill-region] . my/kill-region-or-line))
+    :custom (set-mark-command-repeat-pop t))
 #+end_src
 
 Finally, I also like is to be able to delete every consecutive space characters
@@ -1050,13 +1098,25 @@ Let's start with some useful functions that improve on existing Emacs navigation
       (interactive)
       (kill-line 0)
       (indent-according-to-mode))
+    (defun my/unpop-to-mark ()
+      "Unpop off mark ring. Does nothing if mark ring is empty."
+      (interactive)
+      (when mark-ring
+        (let ((pos (marker-position (car (last mark-ring)))))
+          (if (not (= (point) pos))
+              (goto-char pos)
+            (setq mark-ring (cons (copy-marker (mark-marker)) mark-ring))
+            (set-marker (mark-marker) pos)
+            (setq mark-ring (nbutlast mark-ring))
+            (goto-char (marker-position (car (last mark-ring))))))))
     :bind (("M-p" . my/move-line-up)
            ("M-n" . my/move-line-down)
-
+           ("C-a" . my/smarter-move-beginning-of-line)
            ("C-<return>" . my/smart-open-line-below)
            ("M-<return>" . my/smart-open-line-above)
            ("M-<backspace>" . my/smart-kill-line-backwards)
-           ("C-a" . my/smarter-move-beginning-of-line)
+           ("C-<" . pop-global-mark)
+           ("C->" . my/unpop-to-mark)
            ([remap kill-whole-line] . my/smart-kill-whole-line)))
 #+end_src
 
@@ -1221,7 +1281,7 @@ Currently though there is no clean way to implement tree-sitter for all language
     :custom
     (treesit-auto-install 'prompt)
     :config
-    (treesit-auto-add-to-auto-mode-alist 'all)
+    (setq treesit-auto-langs '(python))
     (global-treesit-auto-mode))
 #+end_src
 ** Version Control
@@ -1367,7 +1427,8 @@ Org Mode is a really good package for note taking and organization.
     :mode (("\\.org\\'" . org-mode))
     :bind (:map org-mode-map
                 ("C-M-p" . org-shiftmetaleft)
-                ("C-M-n" . org-shiftmetaright))
+                ("C-M-n" . org-shiftmetaright)
+                ("M-<return>" . org-meta-return))
     :hook
     (org-mode . org-indent-mode)
     (org-mode . visual-line-mode)
@@ -1412,6 +1473,38 @@ We can add a menu for org options as well
       ("t" org-show-todo-tree "todo-tree"))))
   (global-set-key (kbd "C-c o") 'hydra-org/body)
 #+end_src
+** Faces
+Let's add prettier bullets in Org Mode with [[https://github.com/integral-dw/org-superstar-mode][org-superstar]].
+#+begin_src emacs-lisp
+  (use-package org-faces
+    :straight (:type built-in)
+    :custom
+    (org-todo-keyword-faces
+      (quote (("TODO" :foreground "red" :weight bold)
+              ("NEXT" :foreground "blue" :weight bold)
+              ("DONE" :foreground "forest green" :weight bold)
+              ("WAITING" :foreground "orange" :weight bold)
+              ("LATER" :foreground "magenta" :weight bold)
+              ("NOPE" :foreground "grey" :weight bold)))))
+#+end_src
+
+Let's add prettier bullets in Org Mode with [[https://github.com/integral-dw/org-superstar-mode][org-superstar]].
+#+begin_src emacs-lisp
+  (use-package org-superstar
+    :hook
+    (org-mode . org-superstar-mode)
+    :config
+    (dolist (face '((org-level-1 . 1.35)
+                    (org-level-2 . 1.3)
+                    (org-level-3 . 1.2)
+                    (org-level-4 . 1.1)
+                    (org-level-5 . 1.1)
+                    (org-level-6 . 1.1)
+                    (org-level-7 . 1.1)
+                    (org-level-8 . 1.1))))
+    (setq org-superstar-remove-leading-stars t)
+    (setq org-superstar-headline-bullets-list '("☰" "☷" "☵" "☲"  "☳" "☴"  "☶"  "☱" )))
+#+end_src
 ** Agenda
 Nowadays, it is crucial to be organized. Even more than before. That is why it
 is important to take the time to make a configuration that is simple to use and
@@ -1446,6 +1539,40 @@ information.
         entry (file+headline "~/org/todos/personal.org" "General Tasks")
         "* TODO [#B] %?\n:Created: %T\n "
         :empty-lines 0))))
+#+end_src
+** Note Taking
+#+begin_src emacs-lisp
+  (use-package org-roam
+    :custom
+    (org-roam-directory (file-truename "~/org/notes"))
+    :config
+    ;; If you're using a vertical completion framework, you might want a more informative completion interface
+    (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+    (org-roam-db-autosync-mode))
+#+end_src
+
+And a menu for org-roam
+#+begin_src emacs-lisp
+(pretty-hydra-define hydra-notes
+  (:hint nil :color teal :quit-key "q" :title (with-octicon "nf-oct-pencil" "Notes" 1 -0.05))
+  ("Notes"
+   (("c" org-roam-dailies-capture-today "capture")
+    ("C" org-roam-dailies-capture-tomorrow "capture tomorrow")
+    ("g" org-roam-graph "graph")
+    ("f" org-roam-node-find "find")
+    ("i" org-roam-node-insert "insert"))
+   "Go To"
+   ((">" org-roam-dailies-goto-next-note "next note")
+    ("<" org-roam-dailies-goto-previous-note "previous note")
+    ("d" org-roam-dailies-goto-date "date")
+    ("t" org-roam-dailies-goto-today "today")
+    ("T" org-roam-dailies-goto-tomorrow "tomorrow")
+    ("y" org-roam-dailies-goto-yesterday "yesterday"))))
+(global-set-key (kbd "C-c n") 'hydra-notes/body)
+#+end_src
+
+** Time Management
+#+begin_src emacs-lisp
 #+end_src
 ** Islam
 *** Hijri Calendar
@@ -1521,64 +1648,6 @@ We can also define a function to open the current years ledger file
            (ledger-file (format "~/org/ledger/%s.org.gpg" current-year)))
       (find-file ledger-file)))
 #+end_src
-
-** Note Taking
-#+begin_src emacs-lisp
-  (use-package org-roam
-    :custom
-    (org-roam-directory (file-truename "~/org/notes"))
-    :config
-    ;; If you're using a vertical completion framework, you might want a more informative completion interface
-    (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
-    (org-roam-db-autosync-mode))
-#+end_src
-
-And a menu for org-roam
-#+begin_src emacs-lisp
-(pretty-hydra-define hydra-notes
-  (:hint nil :color teal :quit-key "q" :title (with-octicon "nf-oct-pencil" "Notes" 1 -0.05))
-  ("Notes"
-   (("c" org-roam-dailies-capture-today "capture")
-    ("C" org-roam-dailies-capture-tomorrow "capture tomorrow")
-    ("g" org-roam-graph "graph")
-    ("f" org-roam-node-find "find")
-    ("i" org-roam-node-insert "insert"))
-   "Go To"
-   ((">" org-roam-dailies-goto-next-note "next note")
-    ("<" org-roam-dailies-goto-previous-note "previous note")
-    ("d" org-roam-dailies-goto-date "date")
-    ("t" org-roam-dailies-goto-today "today")
-    ("T" org-roam-dailies-goto-tomorrow "tomorrow")
-    ("y" org-roam-dailies-goto-yesterday "yesterday"))))
-(global-set-key (kbd "C-c n") 'hydra-notes/body)
-#+end_src
-** Faces
-Let's add prettier bullets in Org Mode with [[https://github.com/integral-dw/org-superstar-mode][org-superstar]].
-#+begin_src emacs-lisp
-  (use-package org-faces
-    :straight (:type built-in)
-    :custom
-    (org-todo-keyword-faces
-      (quote (("TODO" :foreground "red" :weight bold)
-              ("NEXT" :foreground "blue" :weight bold)
-              ("DONE" :foreground "forest green" :weight bold)
-              ("WAITING" :foreground "orange" :weight bold)
-              ("LATER" :foreground "magenta" :weight bold)
-              ("NOPE" :foreground "grey" :weight bold)))))
-#+end_src
-Let's add prettier bullets in Org Mode with [[https://github.com/integral-dw/org-superstar-mode][org-superstar]].
-#+begin_src emacs-lisp
-  (use-package org-superstar
-	:hook
-	(org-mode . org-superstar-mode)
-	:config
-	(setq org-superstar-remove-leading-stars t)
-	(setq org-superstar-headline-bullets-list '("◉" "☯" "○" "☯" "✸" "☯" "✿" "☯" "✜" "☯" "◆" "☯" "▶"))
-	(setq org-superstar-item-bullet-alist
-		  '((?+ . ?•)
-			(?* . ?➤)
-			(?- . ?–))))
-#+end_src
 * Languages
 ** Defaults
 Sensible default programming modes that I use.
@@ -1590,75 +1659,119 @@ Sensible default programming modes that I use.
   (add-hook 'prog-mode-hook #'smartparens-mode)
   (add-hook 'prog-mode-hook #'jinx-mode)
   (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+  (remove-hook 'prog-mode-hook 'turn-on-auto-fill)
 #+end_src
+** Yaml
+Yaml development environment.
+*** Config
+#+begin_src emacs-lisp
+  (use-package yaml-mode
+    :mode (("\\.yml\\'" . yaml-mode)
+           ("\\.yaml\\'" . yaml-mode))
+    :interpreter ("yaml" . yaml-mode)
+    :hook
+    (yaml-mode . yaml-pro-mode)
+    :preface
+    (defun my/yaml-format ()
+      "Compile current buffer file with yaml."
+      (interactive)
+      (compile (format "yamlfmt %s" buffer-file-name)))
+    (defun my/yaml-check ()
+      "Compile current buffer file with yaml."
+      (interactive)
+      (compile (format "yamllint %s" buffer-file-name))))
+#+end_src
+*** Snippets
+Yaml specific snippets for tempel
+#+begin_src emacs-lisp
+#+end_src
+*** Menu
+We can add a menu for python specific functions
+#+begin_src emacs-lisp
+  (pretty-hydra-define hydra-yaml
+    (:hint nil :forein-keys warn :quit-key "q" :title (with-octicon "nf-oct-terminal" "yaml" 1 -0.05))
+    ("Format"
+     (("f" my/yaml-format "format")
+      ("c" my/yaml-check "check"))))
+  (with-eval-after-load "yaml-mode"
+    (define-key yaml-mode-map (kbd "C-c r") 'hydra-yaml/body))
+#+end_src
+
 ** Python
 Python development environment.
 *** Config
 #+begin_src emacs-lisp
-  (use-package python
-    :straight (:type built-in)
-    :mode (("\\.py\\'" . python-ts-mode))
-    :interpreter ("python" . python-ts-mode)
-    :hook
-    (python-ts-mode . eglot-ensure)
-    :init
-    (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
-    :preface
-    (defun my/pyrightconfig-write (virtualenv)
-      "From https://robbmann.io/posts/emacs-eglot-pyrightconfig/
-       Write a `pyrightconfig.json' file at the Git root of a project
-       with `venvPath' and `venv' set to the absolute path of
-       `virtualenv'.  When run interactively, prompts for a directory to
-       select."
-      (interactive "DEnv: ")
-      ;; Naming convention for venvPath matches the field for pyrightconfig.json
-      (let* ((venv-dir (tramp-file-local-name (file-truename virtualenv)))
-             (venv-file-name (directory-file-name venv-dir))
-             (venvPath (file-name-directory venv-file-name))
-             (venv (file-name-base venv-file-name))
-             (base-dir (vc-git-root default-directory))
-             (out-file (expand-file-name "pyrightconfig.json" base-dir))
-             (out-contents (json-encode (list :venvPath venvPath :venv venv))))
-        (with-temp-file out-file (insert out-contents))
-        (message (concat "Configured `" out-file "` to use environment `" venv-dir))))
-    (defun my/pyvenv-setup ()
-      "Install .pyvenv virtual environment at the root of the project.
-  Additionally installed libraries from requirements.txt if it exists."
-      (interactive)
-      (let* ((base-dir (vc-git-root default-directory)) (venv-dir (concat base-dir ".pyvenv")))
-        (progn
-          (save-window-excursion
-            (shell-command (s-concat "python3 -m venv " venv-dir))
-            (when (file-exists-p (concat base-dir "requirements.txt"))
-              (shell-command (s-concat "source " venv-dir "/bin/activate && pip3 install -r " base-dir "requirements.txt")))
-            (my/pyrightconfig-write venv-dir)))
-        (message (concat "Created " venv-dir))))
-    (defun my/python-run ()
-      "Compile current buffer file with python."
-      (interactive)
-      (compile (format "python3 %s" buffer-file-name)))
-    (defun my/python-format ()
-      "Compile current buffer file with python."
-      (interactive)
-      (compile (format "ruff format %s" buffer-file-name)))
-    (defun my/python-check ()
-      "Compile current buffer file with python."
-      (interactive)
-      (compile (format "ruff check %s" buffer-file-name)))
-    :config
-    ;; Error message support for pyright in a *Compilation* buffer
-    (with-eval-after-load 'compile
-      (add-to-list 'compilation-error-regexp-alist-alist
-                   '(pyright "^[[:blank:]]+\\(.+\\):\\([0-9]+\\):\\([0-9]+\\).*$" 1 2 3))
-      (add-to-list 'compilation-error-regexp-alist 'pyright))
-    (setq python-check-command "ruff check"))
+    (use-package python
+      :straight (:type built-in)
+      :mode (("\\.py\\'" . python-ts-mode))
+      :interpreter ("python" . python-ts-mode)
+      :hook
+      (python-ts-mode . eglot-ensure)
+      :init
+      (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
+      :preface
+      (defun my/pyrightconfig-write (virtualenv)
+        "From https://robbmann.io/posts/emacs-eglot-pyrightconfig/
+         Write a `pyrightconfig.json' file at the Git root of a project
+         with `venvPath' and `venv' set to the absolute path of
+         `virtualenv'.  When run interactively, prompts for a directory to
+         select."
+        (interactive "DEnv: ")
+        ;; Naming convention for venvPath matches the field for pyrightconfig.json
+        (let* ((venv-dir (tramp-file-local-name (file-truename virtualenv)))
+               (venv-file-name (directory-file-name venv-dir))
+               (venvPath (file-name-directory venv-file-name))
+               (venv (file-name-base venv-file-name))
+               (base-dir (vc-git-root default-directory))
+               (out-file (expand-file-name "pyrightconfig.json" base-dir))
+               (out-contents (json-encode (list :venvPath venvPath :venv venv))))
+          (with-temp-file out-file (insert out-contents))
+          (message (concat "Configured `" out-file "` to use environment `" venv-dir))))
+      (defun my/python-venv-setup ()
+        "Install .pyvenv virtual environment at the root of the project.
+    Additionally installed libraries from requirements.txt if it exists."
+        (interactive)
+        (let* ((base-dir (vc-git-root default-directory)) (venv-dir (concat base-dir ".venv")))
+          (progn
+            (save-window-excursion
+              (shell-command (s-concat "python3 -m venv " venv-dir))
+              (when (file-exists-p (concat base-dir "requirements.txt"))
+                (shell-command (s-concat "source " venv-dir "/bin/activate && pip3 install -r " base-dir "requirements.txt")))
+              (my/pyrightconfig-write venv-dir)))
+          (message (concat "Created " venv-dir))))
+      (defun my/python-run ()
+        "Compile current buffer file with python."
+        (interactive)
+        (compile (format "python3 %s" buffer-file-name)))
+      (defun my/python-format ()
+        "Compile current buffer file with python."
+        (interactive)
+        (compile (format "ruff format %s" buffer-file-name))
+        (my/revert-buffer-no-confirm))
+      (defun my/python-check ()
+        "Compile current buffer file with python."
+        (interactive)
+        (compile (format "ruff check %s" buffer-file-name)))
+      :config
+      ;; Error message support for pyright in a *Compilation* buffer
+      (with-eval-after-load 'compile
+        (add-to-list 'compilation-error-regexp-alist-alist
+                     '(pyright "^[[:blank:]]+\\(.+\\):\\([0-9]+\\):\\([0-9]+\\).*$" 1 2 3))
+        (add-to-list 'compilation-error-regexp-alist 'pyright))
+      (setq python-check-command "NO_COLOR=1 ruff check"))
+    ;; ruff mode to format on save
+    (use-package reformatter)
+    (use-package ruff-format
+      :after reformatter
+      :hook
+      (python-ts-mode . ruff-format-on-save-mode))
 #+end_src
 *** Snippets
 Python specific snippets for tempel
 #+begin_src lisp-data :tangle snippets/python.eld :mkdirp yes
 python-mode python-ts-mode
 (__contains__ "def __contains__(self, el):" n> p n> "pass")
-(__enter__ "def __enter__(self):" n> p n> "return self")
+(__enternn__ "def __enter__(self):" n> p n> "return self")
 (__eq__ "def __eq__(self, other):" n> "return self." p " == other." q)
 (__exit__ "def __exit__(self, type, value, traceback):" n> p n> "pass")
 (__getitem__ "def __len__(self):" n> p n> "pass")
@@ -1711,7 +1824,8 @@ python-mode python-ts-mode
 (tr & "import " p "; " p ".set_trace()" q)
 (parser "parser = argparse.ArgumentParser(description='" p "')" n> q)
 (pass "pass")
-(print "print(" p ")")
+(p "print(\"" p "\")")
+(pf "print(f\"" p "\")")
 (prop "def " p "():"
       n> "doc = \"\"\"" p "\"\"\""
       n> "def fget(self):"
@@ -1754,7 +1868,7 @@ We can add a menu for python specific functionsn
 	(:hint nil :forein-keys warn :quit-key "q" :title (with-faicon "nf-fa-python" "Python" 1 -0.05))
 	("Venv"
 	 (("v" my/pyrightconfig-write "set venv")
-	  ("V" my/pyvenv-setup "create venv"))
+	  ("V" my/python-venv-setup "create venv"))
 	 "Run"
 	 (("r" my/python-run "run"))
 	 "Format"
@@ -1837,25 +1951,41 @@ We can add a menu for c and c++ specific functions
 Golang development environment.
 *** Config
 #+begin_src emacs-lisp
-  (use-package go
-	:straight (:type built-in)
-	:mode (("\\.go\\'" . go-ts-mode))
-	:interpreter ("go" . go-ts-mode)
-	:hook
-	(go-ts-mode . eglot-ensure)
-	:preface
-	(defun my/go-run ()
-	  "Compile current buffer file with go."
-	  (interactive)
-	  (compile (format "go run %s" buffer-file-name)))
-	(defun my/go-format ()
-	  "Compile current buffer file with go."
-	  (interactive)
-	  (compile (format "gofmt -w %s" buffer-file-name)))
-	(defun my/go-check ()
-	  "Compile current buffer file with go."
-	  (interactive)
-	  (compile (format "gofmt -e %s" buffer-file-name))))
+  (use-package go-mode
+    :commands go-mode
+    :mode ("\\.go\\'" . go-mode)
+    :interpreter ("go" . go-mode)
+    :hook
+    (go-mode . eglot-ensure)
+    (go-mode . go-eldoc-setup)
+    (before-save . gofmt-before-save)
+    :preface
+    (defun my/go-run ()
+      "Compile current buffer file with go."
+      (interactive)
+      (compile (format "go run %s" buffer-file-name)))
+    (defun my/go-format ()
+      "Format current buffer file with goimports."
+      (interactive)
+      (compile (format "goimports -w %s && gofumpt -w %s" buffer-file-name buffer-file-name))
+      (my/revert-buffer-no-confirm))
+    (defun my/go-check ()
+      "Check current buffer file with goimports."
+      (interactive)
+      (compile (format "gofumpt -e %s" buffer-file-name)))
+    :config
+    (add-hook 'go-mode-hook
+              (lambda ()
+                (setq-local eglot-workspace-configuration
+                            '((:gopls .
+                                      ((staticcheck . t)
+                                       (matcher . "CaseSensitive")))))))
+    :custom
+    (gofmt-command "goimports"))
+
+  (use-package go-eldoc
+    :requires go-mode
+    :hook go-mode)
 #+end_src
 *** Snippets
 Go specific snippets for tempel
@@ -1899,8 +2029,54 @@ We can add a menu for python specific functions
 	 "Format"
 	 (("f" my/go-format "format")
 	  ("c" my/go-check "check"))))
-  (with-eval-after-load "go-ts-mode"
-	(define-key go-ts-mode-map (kbd "C-c r") 'hydra-go/body))
+  (with-eval-after-load "go-mode"
+	(define-key go-mode-map (kbd "C-c r") 'hydra-go/body))
+#+end_src
+** Rust
+Rust development environment.
+*** Config
+#+begin_src emacs-lisp
+  (use-package rust-mode
+    :commands rust-mode
+    :mode ("\\.rs\\'" . rust-mode)
+    :interpreter ("rust" . rust-mode)
+    :hook
+    (rust-mode . eglot-ensure)
+    :preface
+    (defun my/rust-run ()
+      "Compile current buffer file with rust."
+      (interactive)
+      (compile (format "rustc %s" buffer-file-name)))
+    (defun my/rust-format ()
+      "Format current buffer file with rustimports."
+      (interactive)
+      (compile (format "rustfmt --color never %s" buffer-file-name buffer-file-name))
+      (my/revert-buffer-no-confirm))
+    (defun my/rust-check ()
+      "Check current buffer file with rustimports."
+      (interactive)
+      (compile (format "rustfmt --color never --check %s" buffer-file-name)))
+    :custom
+    (rust-format-save t))
+#+end_src
+*** Snippets
+Rust specific snippets for tempel
+#+begin_src lisp-data :tangle snippets/rust.eld :mkdirp yes
+rust-mode rust-ts-mode
+
+#+end_src
+*** Menu
+We can add a menu for python specific functions
+#+begin_src emacs-lisp
+  (pretty-hydra-define hydra-rust
+    (:hint nil :forein-keys warn :quit-key "q" :title (with-mdicon "nf-md-language_rust" "Rust" 1 -0.05))
+    ("Run"
+     (("r" my/rust-run "run"))
+     "Format"
+     (("f" my/rust-format "format")
+      ("c" my/rust-check "check"))))
+  (with-eval-after-load "rust-mode"
+    (define-key rust-mode-map (kbd "C-c r") 'hydra-rust/body))
 #+end_src
 ** Bash
 Bash development environment.
@@ -1950,42 +2126,4 @@ We can add a menu for python specific functions
 	  ("c" my/sh-check "check"))))
   (with-eval-after-load "sh-script"
 	(define-key bash-ts-mode-map (kbd "C-c r") 'hydra-sh/body))
-#+end_src
-** Yaml
-Yaml development environment.
-*** Config
-#+begin_src emacs-lisp
-  (use-package yaml
-    :straight (:type built-in)
-    :mode (("\\.yml\\'" . yaml-ts-mode)
-           ("\\.yaml\\'" . yaml-ts-mode))
-    :interpreter ("yaml" . yaml-ts-mode)
-    :hook
-    (yaml-ts-mode . eglot-ensure)
-    :init
-    (add-to-list 'eglot-server-programs '((yaml-ts-mode) . ("yaml-language-server" "--stdio")))
-    :preface
-    (defun my/yaml-format ()
-      "Compile current buffer file with yaml."
-      (interactive)
-      (compile (format "yamlfmt %s" buffer-file-name)))
-    (defun my/yaml-check ()
-      "Compile current buffer file with yaml."
-      (interactive)
-      (compile (format "yamllint %s" buffer-file-name))))
-#+end_src
-*** Snippets
-Yaml specific snippets for tempel
-#+begin_src emacs-lisp
-#+end_src
-*** Menu
-We can add a menu for python specific functions
-#+begin_src emacs-lisp
-  (pretty-hydra-define hydra-yaml
-    (:hint nil :forein-keys warn :quit-key "q" :title (with-octicon "nf-oct-terminal" "yaml" 1 -0.05))
-    ("Format"
-     (("f" my/yaml-format "format")
-      ("c" my/yaml-check "check"))))
-  (with-eval-after-load "yaml-ts-mode"
-    (define-key yaml-ts-mode-map (kbd "C-c r") 'hydra-yaml/body))
 #+end_src
