@@ -1873,14 +1873,14 @@ C/C++ development environment.
     :mode (("\\.c" . c-ts-mode))
     :interpreter ("c" . c-ts-mode)
     :hook
-    (c++-ts-mode . eglot-ensure)
+    (c-ts-mode . eglot-ensure)
     :init
     (add-to-list 'eglot-server-programs '((c-mode c-ts-mode) . ("clangd" "-j=8" "--log=error" "--malloc-trim" "--background-index" "--clang-tidy" "--all-scopes-completion" "--completion-style=detailed" "--pch-storage=memory" "--header-insertion=never" "--header-insertion-decorators=0")))
     :preface
     (defun my/c-run ()
       "Compile current buffer file with c."
       (interactive)
-      (compile (format "clang -Wall %s -o %s.out && ./%s.out" buffer-file-name)))
+      (compile (format "clang -Wall %s -o %s.out && %s.out" buffer-file-name buffer-file-name buffer-file-name)))
     (defun my/c-cpp-format ()
       "Compile current buffer file with c."
       (interactive)
@@ -1891,22 +1891,29 @@ C/C++ development environment.
       (compile (format "clang-check %s" buffer-file-name))))
 #+end_src
 #+begin_src emacs-lisp
-  (use-package c++
-    :straight (:type built-in)
-    :mode (("\\.cc\\'" . c++-ts-mode)
-           ("\\.cpp\\'" . c++-ts-mode))
-    :interpreter ("c++" . c++-ts-mode)
-    :hook
-    (c++-ts-mode . eglot-ensure)
-    :init
-    (add-to-list 'eglot-server-programs '((c++-mode cc-mode c++-ts-mode) . ("clangd" "-j=8" "--log=error" "--malloc-trim" "--background-index" "--clang-tidy" "--all-scopes-completion" "--completion-style=detailed" "--pch-storage=memory" "--header-insertion=never" "--header-insertion-decorators=0")))
-    :preface
-    (defun my/cpp-run ()
-      "Compile current buffer file with c."
-      (interactive)
-      (compile (format "clang++ -Wall -std=c++17 %s -o %s.out && ./%s.out" buffer-file-name)))
-    :config
-    (add-to-list 'eglot-server-programs '((c-ts-mode c++-ts-mode c-mode c++-mode) . ("clangd" "-j=8" "--log=error" "--malloc-trim" "--background-index" "--clang-tidy" "--all-scopes-completion" "--completion-style=detailed" "--pch-storage=memory" "--header-insertion=never" "--header-insertion-decorators=0"))))
+    (use-package c++
+      :straight (:type built-in)
+      :mode (("\\.cc\\'" . c++-ts-mode)
+             ("\\.cpp\\'" . c++-ts-mode))
+      :interpreter ("c++" . c++-ts-mode)
+      :hook
+      (c++-ts-mode . eglot-ensure)
+      :init
+      (add-to-list 'eglot-server-programs '((c++-mode cc-mode c++-ts-mode) . ("clangd" "-j=8" "--log=error" "--malloc-trim" "--background-index" "--clang-tidy" "--all-scopes-completion" "--completion-style=detailed" "--pch-storage=memory" "--header-insertion=never" "--header-insertion-decorators=0")))
+      :preface
+      (defun my/c-run ()
+        "Compile current buffer file with c."
+        (interactive)
+        (compile (format "clang++ -Wall %s -o %s.out && %s.out" buffer-file-name buffer-file-name buffer-file-name)))
+      (defun my/c-cpp-format ()
+        "Compile current buffer file with c."
+        (interactive)
+        (compile (format "clang-format -style=Google -i %s" buffer-file-name))
+        (my/revert-buffer-no-confirm))
+      (defun my/c-cpp-check ()
+        "Compile current buffer file with c."
+        (interactive)
+        (compile (format "clang-check --analyze %s" buffer-file-name))))
 #+end_src
 *** Snippets
 C specific snippets for tempel
@@ -1915,24 +1922,17 @@ C specific snippets for tempel
 *** Menu
 We can add a menu for c and c++ specific functions
 #+begin_src emacs-lisp
-  (pretty-hydra-define hydra-c
-	(:hint nil :forein-keys warn :quit-key "q" :title (with-mdicon "nf-md-language_c" "C" 1 -0.05))
+  (pretty-hydra-define hydra-c-cpp
+	(:hint nil :forein-keys warn :quit-key "q" :title (with-mdicon "nf-md-language_c" "C/C++" 1 -0.05))
 	("Run"
 	 (("r" my/c-run "run"))
 	 "Format"
 	 (("f" my/c-cpp-format "format")
 	  ("c" my/c-cpp-check "check"))))
-  (pretty-hydra-define hydra-cpp
-	(:hint nil :forein-keys warn :quit-key "q" :title (with-mdicon "nf-md-language_c" "C++" 1 -0.05))
-	("Run"
-	 (("r" my/cpp-run "run"))
-	 "Format"
-	 (("f" my/c-cp--format "format")
-	  ("c" my/c-cpp-check "check"))))
   (with-eval-after-load "c-ts-mode"
-	(define-key c-ts-mode-map (kbd "C-c r") 'hydra-c/body))
+	(define-key c-ts-mode-map (kbd "C-c r") 'hydra-c-cpp/body))
   (with-eval-after-load "c-ts-mode"
-	(define-key c++-ts-mode-map (kbd "C-c r") 'hydra-cpp/body))
+	(define-key c++-ts-mode-map (kbd "C-c r") 'hydra-c-cpp/body))
 #+end_src
 ** Go
 Golang development environment.
