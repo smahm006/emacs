@@ -128,13 +128,27 @@ To install packages, it is useful to configure the package sources.
   (setq package-archives '(("elpa" . "https://elpa.gnu.org/packages/")
                            ("melpa" . "https://melpa.org/packages/")
                            ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+  ;; Highest number gets priority (what is not mentioned has priority 0)
+  (setq package-archive-priorities
+        '(("gnu-elpa" . 3)
+          ("melpa" . 2)
+          ("nongnu" . 1)))
 #+end_src
 *** Package Management
 Contrary to what some users might think, use-package is not a package
 manager. To download and use packages that are not available in package sources,
+#+begin_src emacs-lisp
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+  ;; Since Emacs version 29 use-package is built-in, so the previous
+  ;; three lines can be avoided, but still keeping as it's harmless
+  (require 'use-package)
+#+end_src
 *** Package Configuration
 To manage the package configurations with use-package, we add some required libraries
 #+begin_src emacs-lisp
+  (setq use-package-always-ensure t)
   (use-package delight) ;; Used to customise the mode names displayed in the mode line
   (use-package s) ;; Used for more string manipulation functions
 #+end_src
@@ -439,7 +453,7 @@ In addition, some buffers may contain useful temporary information that should n
                 (member (buffer-name x) protected-buffers)))
              (buffer-list)))
       (delete-other-windows))
-    :bind (([remap kill-buffer] . kill-this-buffer))
+    :bind (([remap kill-buffer] . kill-current-buffer))
     :init (my/protected-buffers))
 #+end_src
 In addition we can override eamcs default mechanism for making buffer name unique
@@ -535,7 +549,7 @@ We can add a menu for window options as well
 	(:hint nil :forein-keys warn :quit-key "q" :title (with-faicon "nf-fa-windows" "Windows" 1 -0.05))
 	("Window"
 	 (("b" balance-windows "balance")
-	  ("c" centered-window-mode "center")
+	  ("c" recenter-top-bottom "center")
 	  ("t" my/transpose-windows "transpose")
 	  ("i" enlarge-window "heighten")
 	  ("j" shrink-window-horizontally "narrow")
@@ -635,10 +649,10 @@ And finally, [[https://github.com/justbur/emacs-which-key][which-key]] helps sho
 files (e.g., for renaming, deleting and copying) through your completion system
 without having to go through dired.
 #+begin_src emacs-lisp
-  (use-package embark
-	:bind ("C-." . embark-act))
   (use-package embark-consult
     :bind ("C-." . embark-act))
+  (use-package embark
+  	:bind ("C-." . embark-act))
 #+end_src
 ** Files
 *** Backups
@@ -912,7 +926,7 @@ Some sensible defaults for editing
                    (kill-region (region-beginning) (region-end) t)
                  (kill-region (line-beginning-position) (line-beginning-position
                                                          2))))))
-    (defun my/delete-surround-at-point--find-brackets (pos)
+    (defun my/delete-surround-at-point-find-brackets (pos)
       "Return a pair of buffer positions for the opening & closing bracket positions.
   Or nil when nothing is found."
       (save-excursion
@@ -936,7 +950,7 @@ Some sensible defaults for editing
     (defun my/delete-surround-at-point ()
       "https://emacs.stackexchange.com/a/54679"
       (interactive)
-      (let ((range (my/delete-surround-at-point--find-brackets (point))))
+      (let ((range (my/delete-surround-at-point-find-brackets (point))))
         (unless range
           (user-error "No surrounding brackets"))
         (pcase-let ((`(,beg ,end) range))
@@ -1063,26 +1077,22 @@ Let's start with some useful functions that improve on existing Emacs navigation
       (interactive)
       (kill-line 0)
       (indent-according-to-mode))
-    (defun my/unpop-to-mark ()
-      "Unpop off mark ring. Does nothing if mark ring is empty."
-      (interactive)
-      (when mark-ring
-        (let ((pos (marker-position (car (last mark-ring)))))
-          (if (not (= (point) pos))
-              (goto-char pos)
-            (setq mark-ring (cons (copy-marker (mark-marker)) mark-ring))
-            (set-marker (mark-marker) pos)
-            (setq mark-ring (nbutlast mark-ring))
-            (goto-char (marker-position (car (last mark-ring))))))))
     :bind (("M-p" . my/move-line-up)
            ("M-n" . my/move-line-down)
            ("C-a" . my/smarter-move-beginning-of-line)
            ("C-<return>" . my/smart-open-line-below)
            ("M-<return>" . my/smart-open-line-above)
            ("M-<backspace>" . my/smart-kill-line-backwards)
-           ("C-<" . pop-global-mark)
-           ("C->" . my/unpop-to-mark)
            ([remap kill-whole-line] . my/smart-kill-whole-line)))
+#+end_src
+
+back-button
+#+begin_src emacs-lisp
+  (use-package back-button
+    :bind (("C-M-<" . back-button-global-backward)
+           ("C-M->" . back-button-global-forward)
+           ("C-<" . back-button-local-backward)
+           ("C->" . back-button-local-forward)))
 #+end_src
 
 [[https://github.com/abo-abo/avy][Avy]] is an amazing package that allows one to go truly mouseless and navigate via links
@@ -1103,20 +1113,25 @@ Let's start with some useful functions that improve on existing Emacs navigation
 #+end_src
 
 ** Search and Replace
-[[https://github.com/bbatsov/emacs-anzu][Anzu]] shows your replace changes live as you type which is neat.
+[[https://github.com/szermatt/visual-replace][visual-replace]] shows your replace changes live as you type which is neat.
 #+begin_src emacs-lisp
-  ;; (use-package anzu
-  ;;   :config
-  ;;   (set-face-attribute 'anzu-mode-line nil
-  ;;                       :foreground "yellow" :weight 'bold)
-  ;;   (custom-set-variables
-  ;;    '(anzu-mode-lighter "")
-  ;;    '(anzu-deactivate-region t)
-  ;;    '(anzu-search-threshold 1000)
-  ;;    '(anzu-replace-threshold 50)
-  ;;    '(anzu-replace-to-string-separator " => "))
-  ;;   :bind (([remap query-replace] . anzu-query-replace)
-  ;;          ([remap query-replace-regexp] . anzu-query-replace-regexp)))
+  (use-package visual-replace
+    :init
+    (visual-replace-global-mode 1)
+    :bind ([remap query-replace] . my/visual-query-replace))
+
+  (pretty-hydra-define hydra-python
+    (:hint nil :forein-keys warn :quit-key "q" :title (with-faicon "nf-fa-python" "Python" 1 -0.05))
+    ("Venv"
+     (("v" my/pyrightconfig-write "set venv")
+  	("V" my/python-venv-setup "create venv"))
+     "Run"
+     (("r" my/python-run "run"))
+     "Format"
+     (("f" my/python-format "format")
+  	("c" my/python-check "check"))))
+  (with-eval-after-load "python"
+    (define-key python-mode-map (kbd "C-c x") 'hydra-python/body))
 #+end_src
 ** Linguistics
 [[https://github.com/minad/jinx][Jinx]] powered by libenchant seems to be the best spell checker today
@@ -1710,12 +1725,6 @@ Python development environment.
                      '(pyright "^[[:blank:]]+\\(.+\\):\\([0-9]+\\):\\([0-9]+\\).*$" 1 2 3))
         (add-to-list 'compilation-error-regexp-alist 'pyright))
       (setq python-check-command "NO_COLOR=1 ruff check"))
-    ;; ruff mode to format on save
-    (use-package reformatter)
-    (use-package ruff-format
-      :after reformatter
-      :hook
-      (python-mode . ruff-format-on-save-mode))
 #+end_src
 *** Snippets
 Python specific snippets for tempel
@@ -1826,7 +1835,7 @@ We can add a menu for python specific functionsn
 	 (("f" my/python-format "format")
 	  ("c" my/python-check "check"))))
   (with-eval-after-load "python"
-	(define-key python-mode-map (kbd "C-c r") 'hydra-python/body))
+	(define-key python-mode-map (kbd "C-c x") 'hydra-python/body))
 #+end_src
 ** C/C++
 C/C++ development environment.
@@ -1894,9 +1903,9 @@ We can add a menu for c and c++ specific functions
 	 (("f" my/c-cpp-format "format")
 	  ("c" my/c-cpp-check "check"))))
   (with-eval-after-load "c-mode"
-	(define-key c-mode-map (kbd "C-c r") 'hydra-c-cpp/body))
+	(define-key c-mode-map (kbd "C-c x") 'hydra-c-cpp/body))
   (with-eval-after-load "c-mode"
-	(define-key c++-ts-mode-map (kbd "C-c r") 'hydra-c-cpp/body))
+	(define-key c++-ts-mode-map (kbd "C-c x") 'hydra-c-cpp/body))
 #+end_src
 ** Go
 Golang development environment.
@@ -1981,7 +1990,7 @@ We can add a menu for python specific functions
 	 (("f" my/go-format "format")
 	  ("c" my/go-check "check"))))
   (with-eval-after-load "go-mode"
-	(define-key go-mode-map (kbd "C-c r") 'hydra-go/body))
+	(define-key go-mode-map (kbd "C-c x") 'hydra-go/body))
 #+end_src
 ** Rust
 Rust development environment.
@@ -2027,7 +2036,7 @@ We can add a menu for python specific functions
      (("f" my/rust-format "format")
       ("c" my/rust-check "check"))))
   (with-eval-after-load "rust-mode"
-    (define-key rust-mode-map (kbd "C-c r") 'hydra-rust/body))
+    (define-key rust-mode-map (kbd "C-c x") 'hydra-rust/body))
 #+end_src
 ** Bash
 Bash development environment.
@@ -2076,5 +2085,5 @@ We can add a menu for python specific functions
 	 (("f" my/sh-format "format")
 	  ("c" my/sh-check "check"))))
   (with-eval-after-load "sh-script"
-	(define-key bash-mode-map (kbd "C-c r") 'hydra-sh/body))
+	(define-key sh-mode-map (kbd "C-c x") 'hydra-sh/body))
 #+end_src
