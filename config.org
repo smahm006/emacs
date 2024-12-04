@@ -62,7 +62,7 @@
   - [[#bash][Bash]]
 
 * About
-My personal emacs configuration.
+My personal Emacs configuration.
 
 This configuration is inspired by the following repositories:
 - https://github.com/brett-lempereur/.emacs.d
@@ -153,7 +153,7 @@ To manage the package configurations with use-package, we add some required libr
   (use-package s) ;; Used for more string manipulation functions
 #+end_src
 ** Environment
-By default not all environment variables are copied to Emacs. This package ensures proper syncronization between the two.
+By default not all environment variables are copied to Emacs. This package ensures proper synchronization between the two.
 #+begin_src emacs-lisp
 (use-package exec-path-from-shell
   :custom
@@ -1116,22 +1116,19 @@ back-button
 [[https://github.com/szermatt/visual-replace][visual-replace]] shows your replace changes live as you type which is neat.
 #+begin_src emacs-lisp
   (use-package visual-replace
-    :init
-    (visual-replace-global-mode 1)
-    :bind ([remap query-replace] . my/visual-query-replace))
-
-  (pretty-hydra-define hydra-python
-    (:hint nil :forein-keys warn :quit-key "q" :title (with-faicon "nf-fa-python" "Python" 1 -0.05))
-    ("Venv"
-     (("v" my/pyrightconfig-write "set venv")
-  	("V" my/python-venv-setup "create venv"))
-     "Run"
-     (("r" my/python-run "run"))
-     "Format"
-     (("f" my/python-format "format")
-  	("c" my/python-check "check"))))
-  (with-eval-after-load "python"
-    (define-key python-mode-map (kbd "C-c x") 'hydra-python/body))
+    :preface
+    (defun my/visual-query-replace ()
+      "Check if region is active, then call `visual-replace-selected` or `query-replace`."
+      (interactive)
+      (if (use-region-p)
+          (visual-replace-selected)
+        (call-interactively 'visual-replace)))
+    :config
+    (define-key visual-replace-mode-map (kbd "M-%")
+                visual-replace-secondary-mode-map)
+    :bind (([remap query-replace] . my/visual-query-replace)
+           :map isearch-mode-map
+           ("M-%" . visual-replace-from-isearch)))
 #+end_src
 ** Linguistics
 [[https://github.com/minad/jinx][Jinx]] powered by libenchant seems to be the best spell checker today
@@ -1142,7 +1139,7 @@ back-button
 
 Occasionally, I would like to have a summary of a term directly on GNU Emacs,
 before that I would like to know more about this term. The [[https://github.com/jozefg/wiki-summary.el][wiki-summary]] package
-allows this behavior.
+allows this behaviour.
 #+begin_src emacs-lisp
   (use-package wiki-summary
 	:commands (wiki-summary wiki-summary-insert)
@@ -1243,12 +1240,12 @@ Tree-sitter (as far as my understanding goes) is basically the LSP of languages 
 
 Currently though there is no clean way to implement tree-sitter for all languages so this package helps to alleviate some of those paint points.
 #+begin_src emacs-lisp
-  (use-package treesit-auto
-    :custom
-    (treesit-auto-install 'prompt)
-    :config
-    (setq treesit-auto-langs '(python))
-    (global-treesit-auto-mode))
+  ;; (use-package treesit-auto
+  ;;   :custom
+  ;;   (treesit-auto-install 'prompt)
+  ;;   :config
+  ;;   (setq treesit-auto-langs '(python go))
+  ;;   (global-treesit-auto-mode))
 #+end_src
 ** Version Control
 No surprises here magit is the best git interface to ever exist.
@@ -1632,11 +1629,12 @@ Yaml development environment.
 *** Config
 #+begin_src emacs-lisp
   (use-package yaml-mode
-    :mode (("\\.yml\\'" . yaml-mode)
-           ("\\.yaml\\'" . yaml-mode))
-    :interpreter ("yaml" . yaml-mode)
+    :mode (("\\.yml\\'" . yaml-ts-mode)
+           ("\\.yaml\\'" . yaml-ts-mode))
     :hook
     (yaml-mode . yaml-pro-mode)
+    :init
+    (add-to-list 'eglot-server-programs '((yaml-ts-mode) . ("yaml-language-server" "start")))
     :preface
     (defun my/yaml-format ()
       "Compile current buffer file with yaml."
@@ -1660,7 +1658,7 @@ We can add a menu for python specific functions
      (("f" my/yaml-format "format")
       ("c" my/yaml-check "check"))))
   (with-eval-after-load "yaml-mode"
-    (define-key yaml-mode-map (kbd "C-c r") 'hydra-yaml/body))
+    (define-key yaml-ts-mode-map (kbd "C-c r") 'hydra-yaml/body))
 #+end_src
 
 ** Python
@@ -1669,12 +1667,12 @@ Python development environment.
 #+begin_src emacs-lisp
     (use-package python
       :ensure nil
-      :mode (("\\.py\\'" . python-mode))
-      :interpreter ("python" . python-mode)
+      :mode (("\\.py\\'" . python-ts-mode))
+      :interpreter ("python" . python-ts-mode)
       :hook
-      (python-mode . eglot-ensure)
+      (python-ts-mode . eglot-ensure)
       :init
-      (add-to-list 'eglot-server-programs '((python-mode) . ("pyright-langserver" "--stdio")))
+      (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
       :preface
       (defun my/pyrightconfig-write (virtualenv)
         "From https://robbmann.io/posts/emacs-eglot-pyrightconfig/
@@ -1729,7 +1727,7 @@ Python development environment.
 *** Snippets
 Python specific snippets for tempel
 #+begin_src lisp-data :tangle snippets/python.eld :mkdirp yes
-python-mode python-mode
+python-ts-mode python-ts-mode
 (__contains__ "def __contains__(self, el):" n> p n> "pass")
 (__enternn__ "def __enter__(self):" n> p n> "return self")
 (__eq__ "def __eq__(self, other):" n> "return self." p " == other." q)
@@ -1822,7 +1820,7 @@ python-mode python-mode
 (with_statement "from __future__ import with_statement")
 #+end_src
 *** Menu
-We can add a menu for python specific functionsn
+We can add a menu for python specific functions
 #+begin_src emacs-lisp
   (pretty-hydra-define hydra-python
 	(:hint nil :forein-keys warn :quit-key "q" :title (with-faicon "nf-fa-python" "Python" 1 -0.05))
@@ -1835,7 +1833,7 @@ We can add a menu for python specific functionsn
 	 (("f" my/python-format "format")
 	  ("c" my/python-check "check"))))
   (with-eval-after-load "python"
-	(define-key python-mode-map (kbd "C-c x") 'hydra-python/body))
+	(define-key python-ts-mode-map (kbd "C-c r") 'hydra-python/body))
 #+end_src
 ** C/C++
 C/C++ development environment.
@@ -1903,22 +1901,20 @@ We can add a menu for c and c++ specific functions
 	 (("f" my/c-cpp-format "format")
 	  ("c" my/c-cpp-check "check"))))
   (with-eval-after-load "c-mode"
-	(define-key c-mode-map (kbd "C-c x") 'hydra-c-cpp/body))
+	(define-key c-mode-map (kbd "C-c r") 'hydra-c-cpp/body))
   (with-eval-after-load "c-mode"
-	(define-key c++-ts-mode-map (kbd "C-c x") 'hydra-c-cpp/body))
+	(define-key c++-ts-mode-map (kbd "C-c r") 'hydra-c-cpp/body))
 #+end_src
 ** Go
 Golang development environment.
 *** Config
 #+begin_src emacs-lisp
-  (use-package go-mode
-    :commands go-mode
-    :mode ("\\.go\\'" . go-mode)
-    :interpreter ("go" . go-mode)
+  (use-package go
+    :ensure nil
+    :mode ("\\.go\\'" . go-ts-mode)
+    :interpreter ("go" . go-ts-mode)
     :hook
-    (go-mode . eglot-ensure)
-    (go-mode . go-eldoc-setup)
-    (before-save . gofmt-before-save)
+    (go-ts-mode . eglot-ensure)
     :preface
     (defun my/go-run ()
       "Compile current buffer file with go."
@@ -1934,23 +1930,17 @@ Golang development environment.
       (interactive)
       (compile (format "gofumpt -e %s" buffer-file-name)))
     :config
-    (add-hook 'go-mode-hook
+    (add-hook 'go-ts-mode-hook
               (lambda ()
                 (setq-local eglot-workspace-configuration
                             '((:gopls .
                                       ((staticcheck . t)
-                                       (matcher . "CaseSensitive")))))))
-    :custom
-    (gofmt-command "goimports"))
-
-  (use-package go-eldoc
-    :requires go-mode
-    :hook go-mode)
+                                       (matcher . "CaseSensitive"))))))))
 #+end_src
 *** Snippets
 Go specific snippets for tempel
 #+begin_src lisp-data :tangle snippets/go.eld :mkdirp yes
-go-mode go-mode
+go-ts-mode go-ts-mode
 (imp "import " q)
 (impn "import (" n> q n ")")
 (pr "fmt.Printf(\"\\n" p "\\n%#v\\n\", " q ")")
@@ -1989,19 +1979,20 @@ We can add a menu for python specific functions
 	 "Format"
 	 (("f" my/go-format "format")
 	  ("c" my/go-check "check"))))
-  (with-eval-after-load "go-mode"
-	(define-key go-mode-map (kbd "C-c x") 'hydra-go/body))
+  (with-eval-after-load "go-ts-mode"
+	(define-key go-ts-mode-map (kbd "C-c r") 'hydra-go/body))
 #+end_src
 ** Rust
 Rust development environment.
 *** Config
 #+begin_src emacs-lisp
-  (use-package rust-mode
-    :commands rust-mode
-    :mode ("\\.rs\\'" . rust-mode)
-    :interpreter ("rust" . rust-mode)
+  (use-package rust
+    :ensure nil
+    :commands rust-ts-mode
+    :mode ("\\.rs\\'" . rust-ts-mode)
+    :interpreter ("rust" . rust-ts-mode)
     :hook
-    (rust-mode . eglot-ensure)
+    (rust-ts-mode . eglot-ensure)
     :preface
     (defun my/rust-run ()
       "Compile current buffer file with rust."
@@ -2022,7 +2013,7 @@ Rust development environment.
 *** Snippets
 Rust specific snippets for tempel
 #+begin_src lisp-data :tangle snippets/rust.eld :mkdirp yes
-rust-mode rust-mode
+rust-ts-mode rust-ts-mode
 
 #+end_src
 *** Menu
@@ -2035,21 +2026,21 @@ We can add a menu for python specific functions
      "Format"
      (("f" my/rust-format "format")
       ("c" my/rust-check "check"))))
-  (with-eval-after-load "rust-mode"
-    (define-key rust-mode-map (kbd "C-c x") 'hydra-rust/body))
+  (with-eval-after-load "rust-ts-mode"
+    (define-key rust-ts-mode-map (kbd "C-c r") 'hydra-rust/body))
 #+end_src
 ** Bash
 Bash development environment.
 *** Config
 #+begin_src emacs-lisp
-  (use-package sh
+  (use-package bash
     :ensure nil
-    :mode (("\\.sh\\'" . bash-mode))
-    :interpreter ("sh" . bash-mode)
+    :mode (("\\.sh\\'" . bash-ts-mode))
+    :interpreter ("sh" . bash-ts-mode)
     :hook
-    (bash-mode . eglot-ensure)
+    (bash-ts-mode . eglot-ensure)
     :init
-    (add-to-list 'eglot-server-programs '((bash-mode) . ("bash-language-server" "start")))
+    (add-to-list 'eglot-server-programs '((bash-ts-mode) . ("bash-language-server" "start")))
     :preface
     (defun my/sh-run ()
       "Compile current buffer file with sh."
@@ -2058,7 +2049,8 @@ Bash development environment.
     (defun my/sh-format ()
       "Compile current buffer file with sh."
       (interactive)
-      (compile (format "shfmt -w %s" buffer-file-name)))
+      (compile (format "shfmt -w %s" buffer-file-name))
+    (my/revert-buffer-no-confirm))
     (defun my/sh-check ()
       "Compile current buffer file with sh."
       (interactive)
@@ -2067,7 +2059,7 @@ Bash development environment.
 *** Snippets
 Bash specific snippets for tempel
 #+begin_src lisp-data :tangle snippets/sh.eld :mkdirp yes
-  sh-mode bash-mode
+  sh-mode bash-ts-mode
   (! & "#!/usr/bin/env bash" n q)
   (if "if [ " p " ]" n "  then " p n "fi" q)
   (ife "if [ " p " ]" n "  then " p n "else" p n "fi" q)
@@ -2084,6 +2076,5 @@ We can add a menu for python specific functions
 	 "Format"
 	 (("f" my/sh-format "format")
 	  ("c" my/sh-check "check"))))
-  (with-eval-after-load "sh-script"
-	(define-key sh-mode-map (kbd "C-c x") 'hydra-sh/body))
+	(define-key bash-ts-mode-map (kbd "C-c r") 'hydra-sh/body)
 #+end_src
