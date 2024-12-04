@@ -4,8 +4,8 @@
 
 List of files:
 
-* [`config.org`](https://github.com/rememberYou/.emacs.d/blob/master/config.org/):
+* [`config.org`](https://github.com/smahm006/emacs/blob/main/config.org):
   main configuration file.
 
-* [`init.el`](https://github.com/rememberYou/.emacs.d/blob/master/init.el/):
+* [`init.el`](https://github.com/smahm006/emacs/blob/main/init.el):
   generated configuration file.

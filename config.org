@@ -8,7 +8,6 @@
   - [[#defaults][Defaults]]
   - [[#functions][Functions]]
   - [[#packages][Packages]]
-  - [[#libraries][Libraries]]
   - [[#environment][Environment]]
   - [[#authentication][Authentication]]
   - [[#xdg-base-directory-specification][XDG Base Directory Specification]]
@@ -63,7 +62,7 @@
   - [[#bash][Bash]]
 
 * About
-My personal emacs configuration.
+My personal Emacs configuration.
 
 This configuration is inspired by the following repositories:
 - https://github.com/brett-lempereur/.emacs.d
@@ -115,7 +114,6 @@ Some useful global functions that we will use across the configuration
     (interactive)
     (load-file (expand-file-name "init.el" user-emacs-directory)))
   (global-set-key (kbd "<f5>") 'my/reload-config)
-
   (defun my/revert-buffer-no-confirm ()
     "Revert buffer without confirmation."
     (interactive)
@@ -123,60 +121,39 @@ Some useful global functions that we will use across the configuration
 
 #+end_src
 ** Packages
-To manage packages, I use the [[https://github.com/jwiegley/use-package/][use-package]] + [[https://github.com/raxod502/straight.el][straight]] combo.
+To manage packages, I use [[https://github.com/jwiegley/use-package/][use-package]].
 *** Package Sources
 To install packages, it is useful to configure the package sources.
 #+begin_src emacs-lisp
   (setq package-archives '(("elpa" . "https://elpa.gnu.org/packages/")
                            ("melpa" . "https://melpa.org/packages/")
                            ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+  ;; Highest number gets priority (what is not mentioned has priority 0)
+  (setq package-archive-priorities
+        '(("gnu-elpa" . 3)
+          ("melpa" . 2)
+          ("nongnu" . 1)))
 #+end_src
 *** Package Management
 Contrary to what some users might think, use-package is not a package
 manager. To download and use packages that are not available in package sources,
-I use [[https://github.com/raxod502/straight.el][straight]] replacing the default package.el.The snippet below takes care of installing straight.
-
 #+begin_src emacs-lisp
-  ;; Disable package.el in favor of straight.el
-  (setq package-enable-at-startup nil)
-  ;; Bootstrap straight
-  (defvar bootstrap-version)
-  (let ((bootstrap-file
-         (expand-file-name
-          "straight/repos/straight.el/bootstrap.el"
-          (or (bound-and-true-p straight-base-dir)
-              user-emacs-directory)))
-        (bootstrap-version 7))
-    (unless (file-exists-p bootstrap-file)
-      (with-current-buffer
-          (url-retrieve-synchronously "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-           'silent 'inhibit-cookies)
-        (goto-char (point-max))
-        (eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage))
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+  ;; Since Emacs version 29 use-package is built-in, so the previous
+  ;; three lines can be avoided, but still keeping as it's harmless
+  (require 'use-package)
 #+end_src
 *** Package Configuration
-To manage the package configurations with use-package, you must install it with the following code snippet.
+To manage the package configurations with use-package, we add some required libraries
 #+begin_src emacs-lisp
-  ;; Integrates `straight' directly into the `use-package' package through the
-  ;; `:straight' expression.
-  (straight-use-package 'use-package)
-  (setq use-package-always-ensure nil)
-  (setq use-package-verbose 'debug)
-  ;; From this point on we should be able to use `use-package
-  (use-package straight
-    :custom
-    (straight-use-package-by-default t)
-    :config
-    (use-package delight :ensure t))
-#+end_src
-** Libraries
-A useful Emacs string manipulation library.
-#+begin_src emacs-lisp
-(use-package s)
+  (setq use-package-always-ensure t)
+  (use-package delight) ;; Used to customise the mode names displayed in the mode line
+  (use-package s) ;; Used for more string manipulation functions
 #+end_src
 ** Environment
-By default not all environment variables are copied to Emacs. This package ensures proper syncronization between the two.
+By default not all environment variables are copied to Emacs. This package ensures proper synchronization between the two.
 #+begin_src emacs-lisp
 (use-package exec-path-from-shell
   :custom
@@ -191,8 +168,8 @@ Having a good terminal emulator is vital to my flow of using Emacs. I found the 
   (use-package eat
     :config
     (add-hook 'eat-mode-hook (lambda () (setq-local global-hl-line-mode nil)))
-    (define-key eat-semi-char-mode-map (kbd "M-o") nil)
-    (define-key eat-semi-char-mode-map (kbd "M-u") nil)
+    (define-key eat-semi-char-mode-map (kbd "M-o") nil) ;; M-o used to switch windows
+    (define-key eat-semi-char-mode-map (kbd "M-u") nil) ;; M-u used to fullscreen buffer
     :bind
     ("C-c t" . eat))
 #+end_src
@@ -200,7 +177,7 @@ Having a good terminal emulator is vital to my flow of using Emacs. I found the 
 I use a GPG key stored in a Yubikey for most of my authentication
 #+begin_src emacs-lisp
   (use-package epa-file
-    :straight (:type built-in)
+    :ensure nil
     :init
     (epa-file-enable))
 #+end_src
@@ -432,7 +409,7 @@ Buffers can quickly become a mess to manage. To manage them better, I use the ib
 In addition, some buffers may contain useful temporary information that should not be killed by accident. I make sure to set the buffers *scratch* and *Messages* to read-only.
 #+begin_src emacs-lisp
   (use-package ibuffer
-    :straight (:type built-in)
+    :ensure nil
     :preface
     (defvar protected-buffers '("*scratch*" "*Messages*")
       "Buffer that cannot be killed.")
@@ -476,13 +453,13 @@ In addition, some buffers may contain useful temporary information that should n
                 (member (buffer-name x) protected-buffers)))
              (buffer-list)))
       (delete-other-windows))
-    :bind (([remap kill-buffer] . kill-this-buffer))
+    :bind (([remap kill-buffer] . kill-current-buffer))
     :init (my/protected-buffers))
 #+end_src
 In addition we can override eamcs default mechanism for making buffer name unique
 #+begin_src emacs-lisp
   (use-package uniquify
-    :straight (:type built-in)
+    :ensure nil
     :config
     (setq uniquify-buffer-name-style 'forward)
     (setq uniquify-separator "/")
@@ -508,7 +485,7 @@ Most of the time, I want to split a window and put the focus on it to perform an
 
 #+begin_src emacs-lisp
 	  (use-package window
-		:straight (:type built-in)
+		:ensure nil
 		:preface
 		(defun my/hsplit-last-window ()
 		  "Focus to the last created horizontal window."
@@ -562,7 +539,7 @@ package, I can easily do that.
 
 #+begin_src emacs-lisp
   (use-package winner
-    :straight (:type built-in)
+    :ensure nil
     :config (winner-mode))
 #+end_src
 
@@ -572,7 +549,7 @@ We can add a menu for window options as well
 	(:hint nil :forein-keys warn :quit-key "q" :title (with-faicon "nf-fa-windows" "Windows" 1 -0.05))
 	("Window"
 	 (("b" balance-windows "balance")
-	  ("c" centered-window-mode "center")
+	  ("c" recenter-top-bottom "center")
 	  ("t" my/transpose-windows "transpose")
 	  ("i" enlarge-window "heighten")
 	  ("j" shrink-window-horizontally "narrow")
@@ -645,6 +622,7 @@ We can enhance buffer/minibuffer completion by adding a small completion popup w
 And finally, [[https://github.com/justbur/emacs-which-key][which-key]] helps show available commands in the minibuffer
 #+begin_src emacs-lisp
   (use-package which-key
+    :ensure nil
     :init
     (which-key-mode))
 #+end_src
@@ -671,10 +649,10 @@ And finally, [[https://github.com/justbur/emacs-which-key][which-key]] helps sho
 files (e.g., for renaming, deleting and copying) through your completion system
 without having to go through dired.
 #+begin_src emacs-lisp
-  (use-package embark
-	:bind ("C-." . embark-act))
   (use-package embark-consult
     :bind ("C-." . embark-act))
+  (use-package embark
+  	:bind ("C-." . embark-act))
 #+end_src
 ** Files
 *** Backups
@@ -725,7 +703,7 @@ version of this file.
 
 #+begin_src emacs-lisp
   (use-package autorevert
-    :straight (:type built-in)
+    :ensure nil
     :delight auto-revert-mode
     :bind ("C-x R" . revert-buffer)
     :custom (auto-revert-verbose nil)
@@ -738,7 +716,7 @@ again later.
 
 #+begin_src emacs-lisp
   (use-package savehist
-    :straight (:type built-in)
+    :ensure nil
     :custom
     (history-delete-duplicates t)
     (history-length 25)
@@ -749,7 +727,7 @@ again later.
 It is also useful to have easy access to recently modified files.
 #+begin_src emacs-lisp
   (use-package recentf
-    :straight (:type built-in)
+    :ensure nil
     :bind ("C-x r" . recentf-open-files)
     :init (recentf-mode)
     :custom
@@ -865,7 +843,7 @@ We can add a menu for file options as well
 I have found the built-in project.el a suitable replacement now for projectile.
 #+begin_src emacs-lisp
   (use-package project
-    :straight (:type built-in)
+    :ensure nil
     :config
     (customize-set-variable 'project-find-functions (list #'project-try-vc #'my/project-try-local))
     (cl-defmethod project-root ((project (head local)))
@@ -934,7 +912,7 @@ Some sensible defaults for editing
 ** Deletion
 #+begin_src emacs-lisp
   (use-package simple
-    :straight (:type built-in)
+    :ensure nil
     :delight (auto-fill-function)
     :preface
     (defun my/kill-region-or-line ()
@@ -948,7 +926,7 @@ Some sensible defaults for editing
                    (kill-region (region-beginning) (region-end) t)
                  (kill-region (line-beginning-position) (line-beginning-position
                                                          2))))))
-    (defun my/delete-surround-at-point--find-brackets (pos)
+    (defun my/delete-surround-at-point-find-brackets (pos)
       "Return a pair of buffer positions for the opening & closing bracket positions.
   Or nil when nothing is found."
       (save-excursion
@@ -972,7 +950,7 @@ Some sensible defaults for editing
     (defun my/delete-surround-at-point ()
       "https://emacs.stackexchange.com/a/54679"
       (interactive)
-      (let ((range (my/delete-surround-at-point--find-brackets (point))))
+      (let ((range (my/delete-surround-at-point-find-brackets (point))))
         (unless range
           (user-error "No surrounding brackets"))
         (pcase-let ((`(,beg ,end) range))
@@ -1016,7 +994,7 @@ Managing parentheses can be painful. One of the first things you want to do is
 to change the appearance of the highlight of the parentheses pairs.
 #+begin_src emacs-lisp
   (use-package faces
-    :straight (:type built-in)
+    :ensure nil
     :custom (show-paren-delay 0)
     :config
     (set-face-background 'show-paren-match "#161719")
@@ -1048,7 +1026,7 @@ We also want to match pairs properly
 Let's start with some useful functions that improve on existing Emacs navigation
 #+begin_src emacs-lisp
   (use-package navigation
-    :straight (:type built-in)
+    :ensure nil
     :preface
     (defun my/smarter-move-beginning-of-line (arg)
       "Move point back to indentation of beginning of line."
@@ -1099,26 +1077,22 @@ Let's start with some useful functions that improve on existing Emacs navigation
       (interactive)
       (kill-line 0)
       (indent-according-to-mode))
-    (defun my/unpop-to-mark ()
-      "Unpop off mark ring. Does nothing if mark ring is empty."
-      (interactive)
-      (when mark-ring
-        (let ((pos (marker-position (car (last mark-ring)))))
-          (if (not (= (point) pos))
-              (goto-char pos)
-            (setq mark-ring (cons (copy-marker (mark-marker)) mark-ring))
-            (set-marker (mark-marker) pos)
-            (setq mark-ring (nbutlast mark-ring))
-            (goto-char (marker-position (car (last mark-ring))))))))
     :bind (("M-p" . my/move-line-up)
            ("M-n" . my/move-line-down)
            ("C-a" . my/smarter-move-beginning-of-line)
            ("C-<return>" . my/smart-open-line-below)
            ("M-<return>" . my/smart-open-line-above)
            ("M-<backspace>" . my/smart-kill-line-backwards)
-           ("C-<" . pop-global-mark)
-           ("C->" . my/unpop-to-mark)
            ([remap kill-whole-line] . my/smart-kill-whole-line)))
+#+end_src
+
+back-button
+#+begin_src emacs-lisp
+  (use-package back-button
+    :bind (("C-M-<" . back-button-global-backward)
+           ("C-M->" . back-button-global-forward)
+           ("C-<" . back-button-local-backward)
+           ("C->" . back-button-local-forward)))
 #+end_src
 
 [[https://github.com/abo-abo/avy][Avy]] is an amazing package that allows one to go truly mouseless and navigate via links
@@ -1139,20 +1113,22 @@ Let's start with some useful functions that improve on existing Emacs navigation
 #+end_src
 
 ** Search and Replace
-[[https://github.com/bbatsov/emacs-anzu][Anzu]] shows your replace changes live as you type which is neat.
+[[https://github.com/szermatt/visual-replace][visual-replace]] shows your replace changes live as you type which is neat.
 #+begin_src emacs-lisp
-  (use-package anzu
+  (use-package visual-replace
+    :preface
+    (defun my/visual-query-replace ()
+      "Check if region is active, then call `visual-replace-selected` or `query-replace`."
+      (interactive)
+      (if (use-region-p)
+          (visual-replace-selected)
+        (call-interactively 'visual-replace)))
     :config
-    (set-face-attribute 'anzu-mode-line nil
-                        :foreground "yellow" :weight 'bold)
-    (custom-set-variables
-     '(anzu-mode-lighter "")
-     '(anzu-deactivate-region t)
-     '(anzu-search-threshold 1000)
-     '(anzu-replace-threshold 50)
-     '(anzu-replace-to-string-separator " => "))
-    :bind (([remap query-replace] . anzu-query-replace)
-           ([remap query-replace-regexp] . anzu-query-replace-regexp)))
+    (define-key visual-replace-mode-map (kbd "M-%")
+                visual-replace-secondary-mode-map)
+    :bind (([remap query-replace] . my/visual-query-replace)
+           :map isearch-mode-map
+           ("M-%" . visual-replace-from-isearch)))
 #+end_src
 ** Linguistics
 [[https://github.com/minad/jinx][Jinx]] powered by libenchant seems to be the best spell checker today
@@ -1163,7 +1139,7 @@ Let's start with some useful functions that improve on existing Emacs navigation
 
 Occasionally, I would like to have a summary of a term directly on GNU Emacs,
 before that I would like to know more about this term. The [[https://github.com/jozefg/wiki-summary.el][wiki-summary]] package
-allows this behavior.
+allows this behaviour.
 #+begin_src emacs-lisp
   (use-package wiki-summary
 	:commands (wiki-summary wiki-summary-insert)
@@ -1264,12 +1240,12 @@ Tree-sitter (as far as my understanding goes) is basically the LSP of languages 
 
 Currently though there is no clean way to implement tree-sitter for all languages so this package helps to alleviate some of those paint points.
 #+begin_src emacs-lisp
-  (use-package treesit-auto
-    :custom
-    (treesit-auto-install 'prompt)
-    :config
-    (setq treesit-auto-langs '(python))
-    (global-treesit-auto-mode))
+  ;; (use-package treesit-auto
+  ;;   :custom
+  ;;   (treesit-auto-install 'prompt)
+  ;;   :config
+  ;;   (setq treesit-auto-langs '(python go))
+  ;;   (global-treesit-auto-mode))
 #+end_src
 ** Version Control
 No surprises here magit is the best git interface to ever exist.
@@ -1282,7 +1258,7 @@ To make sure that the summary and the body of the commits respect the
 conventions, the [[https://github.com/magit/magit/blob/master/lisp/git-commit.el][git-commit]] package from magit is perfect.
 #+begin_src emacs-lisp
   (use-package git-commit
-    :straight (:type built-in)
+    :ensure nil
     :preface
     (defun my/git-commit-auto-fill-everywhere ()
       "Ensure that the commit body does not exceed 72 characters."
@@ -1329,7 +1305,7 @@ Emacs has a lot of great LSP clients namely eglot, lsp-mode and lsp-bridge. Eglo
     (setq eglot-ignored-server-capabilities '( :documentHighlightProvider)))
   (use-package eglot-booster
     :after eglot
-    :straight (eglot-booster :type git :host github :repo "jdtsmith/eglot-booster")
+    :vc (:url "https://github.com/jdtsmith/eglot-booster" :branch "main")
     :config
     (eglot-booster-mode))
 #+end_src
@@ -1338,7 +1314,7 @@ Eldoc shows function arguments in the echo area
 #+begin_src emacs-lisp
   (use-package eldoc
     :after eglot
-    :straight (:type built-in)
+    :ensure nil
     :config
     (with-eval-after-load 'eglot
       (add-hook 'eglot-managed-mode-hook
@@ -1354,7 +1330,7 @@ Eglot has built-in support for flymake so that is what we will use as our syntax
 checker
 #+begin_src emacs-lisp
   (use-package flymake
-    :straight (:type built-in)
+    :ensure nil
     :config
     (custom-set-variables
      '(help-at-pt-timer-delay 1)
@@ -1410,7 +1386,7 @@ Org short for organization of my life mainly by using org-mode
 Org Mode is a really good package for note taking and organization.
 #+begin_src emacs-lisp
   (use-package org
-    :straight (:type built-in)
+    :ensure nil
     :mode (("\\.org\\'" . org-mode))
     :bind (:map org-mode-map
                 ("C-M-p" . org-shiftmetaleft)
@@ -1464,7 +1440,7 @@ We can add a menu for org options as well
 Let's add prettier bullets in Org Mode with [[https://github.com/integral-dw/org-superstar-mode][org-superstar]].
 #+begin_src emacs-lisp
   (use-package org-faces
-    :straight (:type built-in)
+    :ensure nil
     :custom
     (org-todo-keyword-faces
       (quote (("TODO" :foreground "red" :weight bold)
@@ -1500,7 +1476,7 @@ built-in package allows me to be organized in my daily tasks. As a result, I can
 use my time to the fullest.
 #+begin_src emacs-lisp
   (use-package org-agenda
-    :straight (:type built-in)
+    :ensure nil
     :bind (:map org-agenda-mode-map
                 ("C-n" . org-agenda-next-item)
                 ("C-p" . org-agenda-previous-item)
@@ -1516,7 +1492,7 @@ it to quickly record tasks, ledger entries, notes and other semi-structured
 information.
 #+begin_src emacs-lisp
   (use-package org-capture
-    :straight (:type built-in)
+    :ensure nil
     :custom
     (org-todo-keywords
      (quote ((sequence "TODO(t)""|" "NEXT(n)""|" "DONE(d)")
@@ -1567,7 +1543,7 @@ By default GNU Emacs fills in too many dates and most of the ones I am
 interested in are not included
 #+begin_src emacs-lisp
   (use-package holidays
-    :straight (:type built-in)
+    :ensure nil
     :custom
     (holiday-bahai-holidays nil)
     (holiday-hebrew-holidays nil)
@@ -1584,7 +1560,7 @@ interested in are not included
 *** Prayer
 #+begin_src emacs-lisp
   (use-package awqat
-    :straight (awqat :type git :host github :repo "zkry/awqat")
+    :vc (:url "https://github.com/zkry/awqat" :branch "main")
     :commands (awqat-display-prayer-time-mode
                awqat-times-for-day)
     :init
@@ -1653,11 +1629,12 @@ Yaml development environment.
 *** Config
 #+begin_src emacs-lisp
   (use-package yaml-mode
-    :mode (("\\.yml\\'" . yaml-mode)
-           ("\\.yaml\\'" . yaml-mode))
-    :interpreter ("yaml" . yaml-mode)
+    :mode (("\\.yml\\'" . yaml-ts-mode)
+           ("\\.yaml\\'" . yaml-ts-mode))
     :hook
     (yaml-mode . yaml-pro-mode)
+    :init
+    (add-to-list 'eglot-server-programs '((yaml-ts-mode) . ("yaml-language-server" "start")))
     :preface
     (defun my/yaml-format ()
       "Compile current buffer file with yaml."
@@ -1681,7 +1658,7 @@ We can add a menu for python specific functions
      (("f" my/yaml-format "format")
       ("c" my/yaml-check "check"))))
   (with-eval-after-load "yaml-mode"
-    (define-key yaml-mode-map (kbd "C-c r") 'hydra-yaml/body))
+    (define-key yaml-ts-mode-map (kbd "C-c r") 'hydra-yaml/body))
 #+end_src
 
 ** Python
@@ -1689,7 +1666,7 @@ Python development environment.
 *** Config
 #+begin_src emacs-lisp
     (use-package python
-      :straight (:type built-in)
+      :ensure nil
       :mode (("\\.py\\'" . python-ts-mode))
       :interpreter ("python" . python-ts-mode)
       :hook
@@ -1746,17 +1723,11 @@ Python development environment.
                      '(pyright "^[[:blank:]]+\\(.+\\):\\([0-9]+\\):\\([0-9]+\\).*$" 1 2 3))
         (add-to-list 'compilation-error-regexp-alist 'pyright))
       (setq python-check-command "NO_COLOR=1 ruff check"))
-    ;; ruff mode to format on save
-    (use-package reformatter)
-    (use-package ruff-format
-      :after reformatter
-      :hook
-      (python-ts-mode . ruff-format-on-save-mode))
 #+end_src
 *** Snippets
 Python specific snippets for tempel
 #+begin_src lisp-data :tangle snippets/python.eld :mkdirp yes
-python-mode python-ts-mode
+python-ts-mode python-ts-mode
 (__contains__ "def __contains__(self, el):" n> p n> "pass")
 (__enternn__ "def __enter__(self):" n> p n> "return self")
 (__eq__ "def __eq__(self, other):" n> "return self." p " == other." q)
@@ -1849,7 +1820,7 @@ python-mode python-ts-mode
 (with_statement "from __future__ import with_statement")
 #+end_src
 *** Menu
-We can add a menu for python specific functionsn
+We can add a menu for python specific functions
 #+begin_src emacs-lisp
   (pretty-hydra-define hydra-python
 	(:hint nil :forein-keys warn :quit-key "q" :title (with-faicon "nf-fa-python" "Python" 1 -0.05))
@@ -1869,13 +1840,13 @@ C/C++ development environment.
 *** Config
 #+begin_src emacs-lisp
   (use-package c
-    :straight (:type built-in)
-    :mode (("\\.c" . c-ts-mode))
-    :interpreter ("c" . c-ts-mode)
+    :ensure nil
+    :mode (("\\.c" . c-mode))
+    :interpreter ("c" . c-mode)
     :hook
-    (c-ts-mode . eglot-ensure)
+    (c-mode . eglot-ensure)
     :init
-    (add-to-list 'eglot-server-programs '((c-mode c-ts-mode) . ("clangd" "-j=8" "--log=error" "--malloc-trim" "--background-index" "--clang-tidy" "--all-scopes-completion" "--completion-style=detailed" "--pch-storage=memory" "--header-insertion=never" "--header-insertion-decorators=0")))
+    (add-to-list 'eglot-server-programs '((c-mode c-mode) . ("clangd" "-j=8" "--log=error" "--malloc-trim" "--background-index" "--clang-tidy" "--all-scopes-completion" "--completion-style=detailed" "--pch-storage=memory" "--header-insertion=never" "--header-insertion-decorators=0")))
     :preface
     (defun my/c-run ()
       "Compile current buffer file with c."
@@ -1892,7 +1863,7 @@ C/C++ development environment.
 #+end_src
 #+begin_src emacs-lisp
     (use-package c++
-      :straight (:type built-in)
+      :ensure nil
       :mode (("\\.cc\\'" . c++-ts-mode)
              ("\\.cpp\\'" . c++-ts-mode))
       :interpreter ("c++" . c++-ts-mode)
@@ -1929,23 +1900,21 @@ We can add a menu for c and c++ specific functions
 	 "Format"
 	 (("f" my/c-cpp-format "format")
 	  ("c" my/c-cpp-check "check"))))
-  (with-eval-after-load "c-ts-mode"
-	(define-key c-ts-mode-map (kbd "C-c r") 'hydra-c-cpp/body))
-  (with-eval-after-load "c-ts-mode"
+  (with-eval-after-load "c-mode"
+	(define-key c-mode-map (kbd "C-c r") 'hydra-c-cpp/body))
+  (with-eval-after-load "c-mode"
 	(define-key c++-ts-mode-map (kbd "C-c r") 'hydra-c-cpp/body))
 #+end_src
 ** Go
 Golang development environment.
 *** Config
 #+begin_src emacs-lisp
-  (use-package go-mode
-    :commands go-mode
-    :mode ("\\.go\\'" . go-mode)
-    :interpreter ("go" . go-mode)
+  (use-package go
+    :ensure nil
+    :mode ("\\.go\\'" . go-ts-mode)
+    :interpreter ("go" . go-ts-mode)
     :hook
-    (go-mode . eglot-ensure)
-    (go-mode . go-eldoc-setup)
-    (before-save . gofmt-before-save)
+    (go-ts-mode . eglot-ensure)
     :preface
     (defun my/go-run ()
       "Compile current buffer file with go."
@@ -1961,23 +1930,17 @@ Golang development environment.
       (interactive)
       (compile (format "gofumpt -e %s" buffer-file-name)))
     :config
-    (add-hook 'go-mode-hook
+    (add-hook 'go-ts-mode-hook
               (lambda ()
                 (setq-local eglot-workspace-configuration
                             '((:gopls .
                                       ((staticcheck . t)
-                                       (matcher . "CaseSensitive")))))))
-    :custom
-    (gofmt-command "goimports"))
-
-  (use-package go-eldoc
-    :requires go-mode
-    :hook go-mode)
+                                       (matcher . "CaseSensitive"))))))))
 #+end_src
 *** Snippets
 Go specific snippets for tempel
 #+begin_src lisp-data :tangle snippets/go.eld :mkdirp yes
-go-mode go-ts-mode
+go-ts-mode go-ts-mode
 (imp "import " q)
 (impn "import (" n> q n ")")
 (pr "fmt.Printf(\"\\n" p "\\n%#v\\n\", " q ")")
@@ -2016,19 +1979,20 @@ We can add a menu for python specific functions
 	 "Format"
 	 (("f" my/go-format "format")
 	  ("c" my/go-check "check"))))
-  (with-eval-after-load "go-mode"
-	(define-key go-mode-map (kbd "C-c r") 'hydra-go/body))
+  (with-eval-after-load "go-ts-mode"
+	(define-key go-ts-mode-map (kbd "C-c r") 'hydra-go/body))
 #+end_src
 ** Rust
 Rust development environment.
 *** Config
 #+begin_src emacs-lisp
-  (use-package rust-mode
-    :commands rust-mode
-    :mode ("\\.rs\\'" . rust-mode)
-    :interpreter ("rust" . rust-mode)
+  (use-package rust
+    :ensure nil
+    :commands rust-ts-mode
+    :mode ("\\.rs\\'" . rust-ts-mode)
+    :interpreter ("rust" . rust-ts-mode)
     :hook
-    (rust-mode . eglot-ensure)
+    (rust-ts-mode . eglot-ensure)
     :preface
     (defun my/rust-run ()
       "Compile current buffer file with rust."
@@ -2049,7 +2013,7 @@ Rust development environment.
 *** Snippets
 Rust specific snippets for tempel
 #+begin_src lisp-data :tangle snippets/rust.eld :mkdirp yes
-rust-mode rust-ts-mode
+rust-ts-mode rust-ts-mode
 
 #+end_src
 *** Menu
@@ -2062,15 +2026,15 @@ We can add a menu for python specific functions
      "Format"
      (("f" my/rust-format "format")
       ("c" my/rust-check "check"))))
-  (with-eval-after-load "rust-mode"
-    (define-key rust-mode-map (kbd "C-c r") 'hydra-rust/body))
+  (with-eval-after-load "rust-ts-mode"
+    (define-key rust-ts-mode-map (kbd "C-c r") 'hydra-rust/body))
 #+end_src
 ** Bash
 Bash development environment.
 *** Config
 #+begin_src emacs-lisp
-  (use-package sh
-    :straight (:type built-in)
+  (use-package bash
+    :ensure nil
     :mode (("\\.sh\\'" . bash-ts-mode))
     :interpreter ("sh" . bash-ts-mode)
     :hook
@@ -2085,7 +2049,8 @@ Bash development environment.
     (defun my/sh-format ()
       "Compile current buffer file with sh."
       (interactive)
-      (compile (format "shfmt -w %s" buffer-file-name)))
+      (compile (format "shfmt -w %s" buffer-file-name))
+    (my/revert-buffer-no-confirm))
     (defun my/sh-check ()
       "Compile current buffer file with sh."
       (interactive)
@@ -2111,6 +2076,5 @@ We can add a menu for python specific functions
 	 "Format"
 	 (("f" my/sh-format "format")
 	  ("c" my/sh-check "check"))))
-  (with-eval-after-load "sh-script"
-	(define-key bash-ts-mode-map (kbd "C-c r") 'hydra-sh/body))
+	(define-key bash-ts-mode-map (kbd "C-c r") 'hydra-sh/body)
 #+end_src
