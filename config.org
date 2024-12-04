@@ -50,7 +50,6 @@
   - [[#capture][Capture]]
   - [[#note-taking][Note Taking]]
   - [[#time-management][Time Management]]
-  - [[#islam][Islam]]
   - [[#money-management][Money Management]]
 - [[#languages][Languages]]
   - [[#defaults-4][Defaults]]
@@ -1116,17 +1115,10 @@ back-button
 [[https://github.com/szermatt/visual-replace][visual-replace]] shows your replace changes live as you type which is neat.
 #+begin_src emacs-lisp
   (use-package visual-replace
-    :preface
-    (defun my/visual-query-replace ()
-      "Check if region is active, then call `visual-replace-selected` or `query-replace`."
-      (interactive)
-      (if (use-region-p)
-          (visual-replace-selected)
-        (call-interactively 'visual-replace)))
     :config
     (define-key visual-replace-mode-map (kbd "M-%")
                 visual-replace-secondary-mode-map)
-    :bind (([remap query-replace] . my/visual-query-replace)
+    :bind (([remap query-replace] . visual-replace)
            :map isearch-mode-map
            ("M-%" . visual-replace-from-isearch)))
 #+end_src
@@ -1166,7 +1158,7 @@ This function saves me time to find the definition of a word
   (interactive)
   (let ((word (thing-at-point 'word)))
     (if word
-        (browse-url (concat "https://www.duckduckgo.com/search?q=" word))
+        (browse-url (concat "https://www.google.com/search?q=" word))
       (message "No word found at point."))))
 #+end_src
 
@@ -1195,9 +1187,14 @@ We can add a menu for language options as well
 #+begin_src emacs-lisp
   (use-package multiple-cursors)
   (pretty-hydra-define hydra-multiple-cursors
-    (:hint nil :color teal :quit-key "q" :title (with-mdicon "nf-md-multicast" "Multiple Cursors" 1 -0.05))
+    (:hint nil :color blue :title (with-mdicon "nf-md-multicast" "Multiple Cursors" 1 -0.05))
     ("Multilpe Cursors"
-     (("r" mc/mark-all-in-region-regexp "regex"))))
+     (("r" mc/mark-all-in-region-regexp "regex")
+  	("b" mc/edit-beginnings-of-lines "beginnings")
+  	("e" mc/edit-ends-of-lines "ends")
+  	(">" mc/mark-next-like-this "next" :color pink)
+  	("<" mc/mark-previous-like-this "previous" :color pink)
+  	("q" nil "quit" :color blue))))
   (global-set-key (kbd "C-c m") 'hydra-multiple-cursors/body)
 #+end_src
 ** Undo/Redo
@@ -1536,43 +1533,6 @@ And a menu for org-roam
 
 ** Time Management
 #+begin_src emacs-lisp
-#+end_src
-** Islam
-*** Hijri Calendar
-By default GNU Emacs fills in too many dates and most of the ones I am
-interested in are not included
-#+begin_src emacs-lisp
-  (use-package holidays
-    :ensure nil
-    :custom
-    (holiday-bahai-holidays nil)
-    (holiday-hebrew-holidays nil)
-    (holiday-oriental-holidays nil)
-    (holiday-general-holidays nil)
-    (holiday-local-holidays nil)
-    (holiday-islamic-holidays
-     '((holiday-fixed 3 11 "Ramadan")
-       (holiday-fixed 4 10 "Eid ul-Fitr")
-       (holiday-fixed 6 13 "Hajj")
-       (holiday-fixed 6 16 "Arafah")
-       (holiday-fixed 6 28 "Eid ul-Adha"))))
-#+end_src
-*** Prayer
-#+begin_src emacs-lisp
-  (use-package awqat
-    :vc (:url "https://github.com/zkry/awqat" :branch "main")
-    :commands (awqat-display-prayer-time-mode
-               awqat-times-for-day)
-    :init
-    (awqat-display-prayer-time-mode)
-    :custom
-    (calendar-latitude 45.350912)
-    (calendar-longitude -75.9529472)
-    (awqat-mode-line-format "   ${prayer} (${hours}h${minutes}m) ")
-    :config
-    (setq awqat-asr-hanafi nil)
-    (awqat-set-preset-midnight)
-    (awqat-set-preset-isna))
 #+end_src
 ** Money Management
 Good money management is a skill to be acquired as soon as possible. Fortunately
