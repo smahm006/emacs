@@ -1,6 +1,7 @@
+# Ignore everything
 *
-!*/
-/elpa/
+
+# Except the following files
 !README.md
 !.gitignore
 !config.org

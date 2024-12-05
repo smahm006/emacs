@@ -117,6 +117,10 @@ Some useful global functions that we will use across the configuration
     "Revert buffer without confirmation."
     (interactive)
     (revert-buffer :ignore-auto :noconfirm))
+  (defun smahm/temporary-buffer ()
+    (interactive)
+    (switch-to-buffer (make-temp-name "tmp")))
+  (global-set-key (kbd "C-x t") 'smahm/temporary-buffer)
 
 #+end_src
 ** Packages
@@ -137,11 +141,12 @@ To install packages, it is useful to configure the package sources.
 Contrary to what some users might think, use-package is not a package
 manager. To download and use packages that are not available in package sources,
 #+begin_src emacs-lisp
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
-  ;; Since Emacs version 29 use-package is built-in, so the previous
-  ;; three lines can be avoided, but still keeping as it's harmless
+  ;; Since Emacs version 29 use-package is built-in
+  (when (< emacs-major-version 29)
+    (unless (package-installed-p 'use-package)
+      (unless package-archive-contents
+        (package-refresh-contents))
+      (package-install 'use-package)))
   (require 'use-package)
 #+end_src
 *** Package Configuration
@@ -469,7 +474,7 @@ In addition we can override eamcs default mechanism for making buffer name uniqu
 We can add a menu for buffer options as well
 #+begin_src emacs-lisp
   (pretty-hydra-define hydra-buffer
-    (:hint nil :forein-keys warn :quit-key "q" :title (with-faicon "nf-fa-buffer" "Buffers" 1 -0.05))
+    (:hint nil :forein-keys warn :quit-key "C-g" :title (with-faicon "nf-fa-buffer" "Buffers" 1 -0.05))
     ("Buffer"
      (("a" ibuffer "all")
       ("r" smahm/rename-file-and-buffer "rename")
@@ -545,7 +550,7 @@ package, I can easily do that.
 We can add a menu for window options as well
 #+begin_src emacs-lisp
   (pretty-hydra-define hydra-windows
-	(:hint nil :forein-keys warn :quit-key "q" :title (with-faicon "nf-fa-windows" "Windows" 1 -0.05))
+	(:hint nil :forein-keys warn :quit-key "C-g" :title (with-faicon "nf-fa-windows" "Windows" 1 -0.05))
 	("Window"
 	 (("b" balance-windows "balance")
 	  ("c" recenter-top-bottom "center")
@@ -623,9 +628,8 @@ From https://github.com/doomemacs/doomemacs/blob/master/lisp/doom-keybinds.el#L1
 #+begin_src emacs-lisp
   (defvar smahm-escape-hook nil
     "A hook run when C-g is pressed (or ESC in normal mode, for evil users).
-
-      More specifically, when `smahm/escape' is pressed. If any hook returns non-nil,
-      all hooks after it are ignored.")
+     More specifically, when `smahm/escape' is pressed. If any hook returnsg
+     non-nil, all hooks after it are ignored.")
 
   (defun smahm/escape (&optional interactive)
     "Run `smahm-escape-hook'."
@@ -736,7 +740,7 @@ version of this file.
     :delight auto-revert-mode
     :bind ("C-x R" . revert-buffer)
     :custom (auto-revert-verbose nil)
-    :config (global-auto-revert-mode))
+    :init (global-auto-revert-mode))
 #+end_src
 
 There are times when it is necessary to remember a command. The savehist
@@ -775,13 +779,18 @@ It is also useful to have easy access to recently modified files.
 *** Trash
 I'd like files to be trashed instead of permanently deleted
 #+begin_src emacs-lisp
-  (defun empty-trash ()
-    "Empty the trash"
-    (interactive)
-    (shell-command "trash-empty -f"))
-
-  (setq trash-directory (expand-file-name (format "%s/Trash/files" xdg-data)))
-  (setq delete-by-moving-to-trash t)
+  (use-package trashed
+    :commands (trashed)
+    :init
+    (setq delete-by-moving-to-trash t)
+    :config
+    (setq trashed-action-confirmer 'y-or-n-p)
+    (setq trashed-use-header-line t)
+    (setq trashed-sort-key '("Date deleted" . t))
+    (setq trashed-date-format "%Y-%m-%d %H:%M:%S")
+    :bind (:map trashed-mode-map
+                ("<f2>" . quit-window))
+    :bind (("<f2>" . trashed)))
 #+end_src
 *** Dired
 Dirvish is an improved version built on Emacs's builtin file manager Dired.
@@ -844,7 +853,7 @@ We can add a menu for file options as well
     (let ((file-name-as-directory path))
       (call-interactively 'find-file)))
   (pretty-hydra-define hydra-file
-    (:hint nil :color teal :quit-key "q" :title (with-octicon "nf-oct-file_symlink_file" "Files" 1 -0.05))
+    (:hint nil :color teal :quit-key "C-g" :title (with-octicon "nf-oct-file_symlink_file" "Files" 1 -0.05))
     ("Sandbox"
      (("sp" (find-file "~/workstation/projects/sandbox/python/main.py") "python")
       ("sc" (find-file "~/workstation/projects/sandbox/c/main.c") "C")
@@ -861,10 +870,8 @@ We can add a menu for file options as well
       ("ce" (find-file (format "%s/emacs/config.org" xdg-config)) "emacs")
       ("ci" (find-file (format "%s/i3/config" xdg-config)) "i3")
       ("cp" (find-file (format "%s/polybar/config.ini" xdg-config)) "polybar")
-      ("ca" (find-file (format "%s/alacritty/alacritty.toml" xdg-config)) "alacritty")
       ("cg" (find-file (format "%s/git/config" xdg-config)) "git")
-      ("cs" (find-file (format "%s/ssh/config" xdg-config)) "ssh")
-      ("cz" (find-file (format "%s/zathura/zathurarc" xdg-config)) "zathura"))))
+      ("cs" (find-file (format "%s/ssh/config" xdg-config)) "ssh"))))
   (global-set-key (kbd "C-x f") 'find-file)
   (global-set-key (kbd "C-c f") 'hydra-file/body)
 #+end_src
@@ -874,16 +881,22 @@ I have found the built-in project.el a suitable replacement now for projectile.
   (use-package project
     :ensure nil
     :config
-    (customize-set-variable 'project-find-functions (list #'project-try-vc #'smahm/project-try-local))
-    (cl-defmethod project-root ((project (head local)))
-      "Return root directory of current PROJECT."
-      (cdr project))
-    (defun smahm/project-try-local (dir)
-      "Determine if DIR is a non-Git project.
-       DIR must include a .project file to be considered a project."
-      (let ((root (locate-dominating-file dir ".project")))
-        (when root
-          (cons 'local root))))
+    (defcustom project-root-markers
+    	'(".project" ".git" "requirements.txt" "go.mod" "Cargo.toml" "compile_commands.json" "compile_flags.txt")
+    	"Files or directories that indicate the root of a project."
+    	:type '(repeat string)
+    	:group 'project)
+    (defun project-root-p (path)
+  	"Check if the current PATH has any of the project root markers."
+  	(catch 'found
+        (dolist (marker project-root-markers)
+  		(when (file-exists-p (concat path marker))
+            (throw 'found marker)))))
+    (defun project-find-root (path)
+  	"Search up the PATH for `project-root-markers'."
+  	(when-let ((root (locate-dominating-file path #'project-root-p)))
+  	  (cons 'transient (expand-file-name root))))
+    (customize-set-variable 'project-find-functions (list #'project-try-vc #'project-find-root))
     (defun smahm/project-save-all-buffers (&optional proj arg)
       "Save all file-visiting buffers in PROJ without asking."
       (interactive)
@@ -902,7 +915,7 @@ I have found the built-in project.el a suitable replacement now for projectile.
 We can add a menu for project options as well
 #+begin_src emacs-lisp
 (pretty-hydra-define hydra-project
-  (:hint nil :color teal :quit-key "q" :title (with-faicon "nf-fa-rocket" "Projectile" 1 -0.05))
+  (:hint nil :color teal :quit-key "C-g" :title (with-faicon "nf-fa-rocket" "Projectile" 1 -0.05))
   ("Buffers"
    (("b" project-switch-to-buffer "list")
     ("k" project-kill-buffers "kill all")
@@ -911,11 +924,9 @@ We can add a menu for project options as well
    (("d" project-find-dir "directory")
     ("D" project-dired "root")
     ("f" project-find-file "file"))
-   "Other"
-   (("i" projectile-invalidate-cache "reset cache"))
    "Search"
    (("r" project-query-replace-regexp "regexp replace")
-    ("s" consult-ripgrep "search"))))
+    ("s" project-search "search"))))
   (global-set-key (kbd "C-c p") 'hydra-project/body)
 #+end_src
 * Editing
@@ -1195,7 +1206,7 @@ This function saves me time to find the definition of a word
 We can add a menu for language options as well
 #+begin_src emacs-lisp
   (pretty-hydra-define hydra-lang
-    (:hint nil :color teal :quit-key "q" :title (with-faicon "nf-fa-magic" "Spelling" 1 -0.05))
+    (:hint nil :color teal :quit-key "C-g" :title (with-faicon "nf-fa-magic" "Spelling" 1 -0.05))
     ("Spell Check"
      (("<" jinx-previous "previous" :color pink)
       (">" jinx-next "next" :color pink)
@@ -1299,33 +1310,46 @@ I like to know the modified lines of a file while I edit it.
 Finally, some quality of life functions
 #+begin_src emacs-lisp
   (defun smahm/open-on-github ()
-    "Open current file in github"
+    "Open the current file in GitHub."
     (interactive)
-    (let
-        ((repo-url (magit-git-string "remote" "get-url" "--push" "origin"))
-         (commit-hash (magit-git-string "rev-parse" "HEAD"))
-         (start-line (if (use-region-p)
-                         (line-number-at-pos (region-beginning))
-                       (line-number-at-pos)))
-         (end-line (if (use-region-p) (line-number-at-pos (region-end)))))
-      (unless repo-url (error  "not in a git repo"))
-      (browse-url
-       (concat
-        (substring repo-url 0 -4)
-        "/blob/"
-        commit-hash
-        "/"
-        (substring buffer-file-name (length (projectile-project-root)))
-        "#L" (number-to-string start-line)
-        (if (and (use-region-p) (< 0 (- end-line start-line)))
-            (concat "..L" (number-to-string end-line)))
-        ))))
+    (let* ((root-pair (project-find-root default-directory)) ; Get project root cons
+           (base-dir (if root-pair (cdr root-pair) nil)) ; Extract root directory from the pair
+           (repo-url (magit-git-string "remote" "get-url" "--push" "origin")) ; Get the remote origin url
+           (branch-name (magit-git-string "rev-parse" "--abbrev-ref" "HEAD")) ; Get the branch name
+  		 ;; Get start and end line numbers
+           (start-line (if (use-region-p)
+                           (line-number-at-pos (region-beginning))
+                         (line-number-at-pos)))
+           (end-line (if (use-region-p) (line-number-at-pos (region-end))))
+           ;; Calculate relative path
+           (relative-path (if base-dir
+                              (file-relative-name buffer-file-name base-dir)
+                            (error "Could not determine project root")))
+           ;; Convert SSH repo URL to HTTPS
+           (https-repo-url (if (string-prefix-p "git@" repo-url)
+                               (concat "https://"
+                                       (replace-regexp-in-string
+                                        ":" "/" (substring repo-url 4)))
+                             repo-url))
+           ;; Construct the final URL
+           (github-url (concat
+                        (substring https-repo-url 0 -4) ; Remove `.git` suffix
+                        "/blob/"
+                        branch-name
+                        "/"
+                        relative-path
+                        "#L" (number-to-string start-line)
+                        (if (and (use-region-p) (< 0 (- end-line start-line)))
+                            (concat "..L" (number-to-string end-line)))))) ; Final URL
+      (unless repo-url
+        (error "No remote repository found"))
+      (browse-url github-url)))
 #+end_src
 
 We can add a menu for git options as well
 #+begin_src emacs-lisp
     (pretty-hydra-define hydra-magit
-  	(:hint nil :color teal :quit-key "q" :title (with-octicon "nf-oct-mark_github" "Magit" 1 -0.05))
+  	(:hint nil :color teal :quit-key "C-g" :title (with-octicon "nf-oct-mark_github" "Magit" 1 -0.05))
   	("Action"
   	 (("g" smahm/open-on-github "open")
   	  ("b" magit-blame "blame")
@@ -1389,7 +1413,7 @@ Eglot has built-in support for flymake so that is what we will use as our syntax
 checker
 #+begin_src emacs-lisp
   (pretty-hydra-define hydra-flymake
-    (:hint nil :color teal :quit-key "q" :title (with-faicon "nf-fa-plane" "Flymake" 1 -0.05))
+    (:hint nil :color teal :quit-key "C-g" :title (with-faicon "nf-fa-plane" "Flymake" 1 -0.05))
     ("Checker"
      (("s" flymake-start "syntax")
       ("m" flymake-mode "mode" :toggle t))
@@ -1468,7 +1492,7 @@ only need to use the =:TOC:= tag in the first heading of these tables of content
 We can add a menu for org options as well
 #+begin_src emacs-lisp
   (pretty-hydra-define hydra-org
-    (:hint nil :color teal :quit-key "q" :title (with-faicon "nf-fa-pen" "Org" 1 -0.05))
+    (:hint nil :color teal :quit-key "C-g" :title (with-faicon "nf-fa-pen" "Org" 1 -0.05))
     ("Action"
      (("A" smahm/org-archive-done-tasks "archive")
       ("a" org-agenda "agenda")
@@ -1565,7 +1589,7 @@ information.
 And a menu for org-roam
 #+begin_src emacs-lisp
 (pretty-hydra-define hydra-notes
-  (:hint nil :color teal :quit-key "q" :title (with-octicon "nf-oct-pencil" "Notes" 1 -0.05))
+  (:hint nil :color teal :quit-key "C-g" :title (with-octicon "nf-oct-pencil" "Notes" 1 -0.05))
   ("Notes"
    (("c" org-roam-dailies-capture-today "capture")
     ("C" org-roam-dailies-capture-tomorrow "capture tomorrow")
@@ -1664,7 +1688,7 @@ Yaml specific snippets for tempel
 We can add a menu for python specific functions
 #+begin_src emacs-lisp
   (pretty-hydra-define hydra-yaml
-    (:hint nil :forein-keys warn :quit-key "q" :title (with-octicon "nf-oct-terminal" "yaml" 1 -0.05))
+    (:hint nil :forein-keys warn :quit-key "C-g" :title (with-octicon "nf-oct-terminal" "yaml" 1 -0.05))
     ("Format"
      (("f" smahm/yaml-format "format")
       ("c" smahm/yaml-check "check"))))
@@ -1834,7 +1858,7 @@ python-ts-mode python-ts-mode
 We can add a menu for python specific functions
 #+begin_src emacs-lisp
   (pretty-hydra-define hydra-python
-	(:hint nil :forein-keys warn :quit-key "q" :title (with-faicon "nf-fa-python" "Python" 1 -0.05))
+	(:hint nil :forein-keys warn :quit-key "C-g" :title (with-faicon "nf-fa-python" "Python" 1 -0.05))
 	("Venv"
 	 (("v" smahm/pyrightconfig-write "set venv")
 	  ("V" smahm/python-venv-setup "create venv"))
@@ -1905,7 +1929,7 @@ C specific snippets for tempel
 We can add a menu for c and c++ specific functions
 #+begin_src emacs-lisp
   (pretty-hydra-define hydra-c-cpp
-	(:hint nil :forein-keys warn :quit-key "q" :title (with-mdicon "nf-md-language_c" "C/C++" 1 -0.05))
+	(:hint nil :forein-keys warn :quit-key "C-g" :title (with-mdicon "nf-md-language_c" "C/C++" 1 -0.05))
 	("Run"
 	 (("r" smahm/c-run "run"))
 	 "Format"
@@ -1984,7 +2008,7 @@ go-ts-mode go-ts-mode
 We can add a menu for python specific functions
 #+begin_src emacs-lisp
   (pretty-hydra-define hydra-go
-	(:hint nil :forein-keys warn :quit-key "q" :title (with-mdicon "nf-md-language_go" "Go" 1 -0.05))
+	(:hint nil :forein-keys warn :quit-key "C-g" :title (with-mdicon "nf-md-language_go" "Go" 1 -0.05))
 	("Run"
 	 (("r" smahm/go-run "run"))
 	 "Format"
@@ -1999,9 +2023,12 @@ Rust development environment.
 #+begin_src emacs-lisp
   (use-package rust
     :ensure nil
-    :commands rust-ts-mode
     :mode ("\\.rs\\'" . rust-ts-mode)
     :interpreter ("rust" . rust-ts-mode)
+    :init
+    (add-to-list 'eglot-server-programs
+  			   '((rust-ts-mode rust-mode) .
+  				 ("rust-analyzer" :initializationOptions (:check (:command "clippy")))))
     :hook
     (rust-ts-mode . eglot-ensure)
     :preface
@@ -2017,9 +2044,7 @@ Rust development environment.
     (defun smahm/rust-check ()
       "Check current buffer file with rustimports."
       (interactive)
-      (compile (format "rustfmt --color never --check %s" buffer-file-name)))
-    :custom
-    (rust-format-save t))
+      (compile (format "rustfmt --color never --check %s" buffer-file-name))))
 #+end_src
 *** Snippets
 Rust specific snippets for tempel
@@ -2031,7 +2056,7 @@ rust-ts-mode rust-ts-mode
 We can add a menu for python specific functions
 #+begin_src emacs-lisp
   (pretty-hydra-define hydra-rust
-    (:hint nil :forein-keys warn :quit-key "q" :title (with-mdicon "nf-md-language_rust" "Rust" 1 -0.05))
+    (:hint nil :forein-keys warn :quit-key "C-g" :title (with-mdicon "nf-md-language_rust" "Rust" 1 -0.05))
     ("Run"
      (("r" smahm/rust-run "run"))
      "Format"
@@ -2081,7 +2106,7 @@ Bash specific snippets for tempel
 We can add a menu for python specific functions
 #+begin_src emacs-lisp
   (pretty-hydra-define hydra-sh
-	(:hint nil :forein-keys warn :quit-key "q" :title (with-octicon "nf-oct-terminal" "sh" 1 -0.05))
+	(:hint nil :forein-keys warn :quit-key "C-g" :title (with-octicon "nf-oct-terminal" "sh" 1 -0.05))
 	("Run"
 	 (("r" smahm/sh-run "run"))
 	 "Format"
