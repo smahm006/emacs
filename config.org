@@ -99,21 +99,21 @@ Some useful global functions that we will use across the configuration
   (defun emacs.d (path)
     "Return the full path pointing to user-emacs-directory"
     (expand-file-name path user-emacs-directory))
-  (defun my/mkdir (dir-path)
+  (defun smahm/mkdir (dir-path)
     "Make directory in DIR-PATH if it doesn't exist."
     (unless (file-exists-p dir-path)
       (make-directory dir-path t)))
-  (defun my/location ()
+  (defun smahm/location ()
     "Return 'home' if system-name starts with 'sm-', otherwise return 'work'."
     (if (string-match-p "^sm-" (system-name))
         "home"
       "work"))
-  (defun my/reload-config ()
+  (defun smahm/reload-config ()
     "Reload init file, which will effectively reload everything"
     (interactive)
     (load-file (expand-file-name "init.el" user-emacs-directory)))
-  (global-set-key (kbd "<f5>") 'my/reload-config)
-  (defun my/revert-buffer-no-confirm ()
+  (global-set-key (kbd "<f5>") 'smahm/reload-config)
+  (defun smahm/revert-buffer-no-confirm ()
     "Revert buffer without confirmation."
     (interactive)
     (revert-buffer :ignore-auto :noconfirm))
@@ -207,12 +207,12 @@ The default paths used to store configuration files and persistent data are not 
 	(setq no-littering-var-directory (expand-file-name (format "%s/emacs/var/" xdg-data)))
 	:config
 	(let ((dir (expand-file-name (format "%s/emacs/etc/" xdg-cache))))
-	  (my/mkdir dir)
+	  (smahm/mkdir dir)
 	  (setq url-cookie-file dir))
 	(setq custom-file (no-littering-expand-etc-file-name "custom.el"))
 	(when (file-exists-p custom-file) (load custom-file))
 	(let ((dir (no-littering-expand-var-file-name "lock-files/")))
-	  (my/mkdir dir)
+	  (smahm/mkdir dir)
 	  (setq lock-file-name-transforms `((".*" ,dir t)))))
 #+end_src
 ** Saving Configuration
@@ -222,13 +222,13 @@ maintain an org-mode configuration and still get a faster load.
 
 Using the [[https://github.com/jwiegley/emacs-async][async]] package and the org-babel-tangle command, the code below will
 executes org-babel-tangle asynchronously when config.org is saved, to update the
-config.el file. From then on, you only need to add a add the my/config-tangle
+config.el file. From then on, you only need to add a add the smahm/config-tangle
 function to the after-save hook and specify the loading of the config.el file
 into the init.el file.
 
 #+begin_src emacs-lisp
   (use-package async
-	:hook (after-save . my/config-tangle)
+	:hook (after-save . smahm/config-tangle)
 	:preface
 	(defvar config-file (expand-file-name "config.org" user-emacs-directory)
 	  "The configuration file.")
@@ -236,17 +236,17 @@ into the init.el file.
 	  "The last modification time of the configuration file.")
 	(defvar show-async-tangle-results nil
 	  "Keep *emacs* async buffers around for later inspection.")
-	(defun my/config-tangle ()
+	(defun smahm/config-tangle ()
 	  "Tangle the org file asynchronously."
-	  (when (my/config-updated)
+	  (when (smahm/config-updated)
 		(setq config-last-change
 			  (nth 5 (file-attributes config-file)))
-		(my/async-babel-tangle config-file)))
-	(defun my/config-updated ()
+		(smahm/async-babel-tangle config-file)))
+	(defun smahm/config-updated ()
 	  "Check if the configuration file has been updated since the last time."
 	  (time-less-p config-last-change
 				   (nth 5 (file-attributes config-file))))
-	(defun my/async-babel-tangle (org-file)
+	(defun smahm/async-babel-tangle (org-file)
 	  "Tangle the org file asynchronously."
 	  (let ((init-tangle-start-time (current-time))
 			(file (buffer-file-name))
@@ -288,7 +288,7 @@ Sensible default values that I use.
 I switch themes quite often but usually I prefer high contrast dark themes.
 #+begin_src emacs-lisp
   (use-package doom-themes
-    :if (and (display-graphic-p) (string= (my/location) "home"))
+    :if (and (display-graphic-p) (string= (smahm/location) "home"))
     :custom
     (doom-themes-enable-bold t)
     (doom-themes-enable-italic t)
@@ -412,12 +412,12 @@ In addition, some buffers may contain useful temporary information that should n
     :preface
     (defvar protected-buffers '("*scratch*" "*Messages*")
       "Buffer that cannot be killed.")
-    (defun my/protected-buffers ()
+    (defun smahm/protected-buffers ()
       "Protect some buffers from being killed."
       (dolist (buffer protected-buffers)
         (with-current-buffer buffer
           (emacs-lock-mode 'kill))))
-    (defun my/rename-file-and-buffer ()
+    (defun smahm/rename-file-and-buffer ()
       "Rename the current buffer and file it is visiting."
       (interactive)
       (let ((filename (buffer-file-name)))
@@ -429,7 +429,7 @@ In addition, some buffers may contain useful temporary information that should n
              (t
               (rename-file filename new-name t)
               (set-visited-file-name new-name t t)))))))
-    (defun my/delete-file-and-buffer ()
+    (defun smahm/delete-file-and-buffer ()
       "Kill the current buffer and deletes the file it is visiting."
       (interactive)
       (let ((filename (buffer-file-name)))
@@ -440,7 +440,7 @@ In addition, some buffers may contain useful temporary information that should n
               (delete-file filename)
               (message "Deleted file %s" filename)
               (kill-buffer))))))
-    (defun my/kill-other-buffers ()
+    (defun smahm/kill-other-buffers ()
       "Kill other buffers except current one and protected buffers."
       (interactive)
       (eglot-shutdown-all)
@@ -453,7 +453,7 @@ In addition, some buffers may contain useful temporary information that should n
              (buffer-list)))
       (delete-other-windows))
     :bind (([remap kill-buffer] . kill-current-buffer))
-    :init (my/protected-buffers))
+    :init (smahm/protected-buffers))
 #+end_src
 In addition we can override eamcs default mechanism for making buffer name unique
 #+begin_src emacs-lisp
@@ -472,9 +472,9 @@ We can add a menu for buffer options as well
     (:hint nil :forein-keys warn :quit-key "q" :title (with-faicon "nf-fa-buffer" "Buffers" 1 -0.05))
     ("Buffer"
      (("a" ibuffer "all")
-      ("r" my/rename-file-and-buffer "rename")
-      ("d" my/delete-file-and-buffer "delete")
-      ("o" my/kill-other-buffers "only")
+      ("r" smahm/rename-file-and-buffer "rename")
+      ("d" smahm/delete-file-and-buffer "delete")
+      ("o" smahm/kill-other-buffers "only")
       ("s" sudo-edit-current-file "sudo"))))
   (global-set-key (kbd "C-c b") 'hydra-buffer/body)
   (global-unset-key (kbd "C-x C-b"))
@@ -486,17 +486,17 @@ Most of the time, I want to split a window and put the focus on it to perform an
 	  (use-package window
 		:ensure nil
 		:preface
-		(defun my/hsplit-last-window ()
+		(defun smahm/hsplit-last-window ()
 		  "Focus to the last created horizontal window."
 		  (interactive)
 		  (split-window-horizontally)
 		  (other-window 1))
-		(defun my/vsplit-last-window ()
+		(defun smahm/vsplit-last-window ()
 		  "Focus to the last created vertical window."
 		  (interactive)
 		  (split-window-vertically)
 		  (other-window 1))
-		(defun my/toggle-fullscreen-window ()
+		(defun smahm/toggle-fullscreen-window ()
 		  "Maximize buffer"
 		  (interactive)
 		  (if (= 1 (length (window-list)))
@@ -504,7 +504,7 @@ Most of the time, I want to split a window and put the focus on it to perform an
 			(progn
 			  (window-configuration-to-register '_)
 			  (delete-other-windows))))
-		(defun my/transpose-windows ()
+		(defun smahm/transpose-windows ()
 		  "Transpose two windows.  If more or less than two windows are visible, error."
 		  (interactive)
 		  (unless (= 2 (count-windows))
@@ -516,9 +516,9 @@ Most of the time, I want to split a window and put the focus on it to perform an
 				 (w2b (window-buffer w2)))
 			(set-window-buffer w1 w2b)
 			(set-window-buffer w2 w1b)))
-		:bind (("C-x 2" . my/vsplit-last-window)
-			   ("C-x 3" . my/hsplit-last-window)
-			   ("M-u" . my/toggle-fullscreen-window)))
+		:bind (("C-x 2" . smahm/vsplit-last-window)
+			   ("C-x 3" . smahm/hsplit-last-window)
+			   ("M-u" . smahm/toggle-fullscreen-window)))
 #+end_src
 
 The way I move between several windows in GNU Emacs is by indicating the number
@@ -549,7 +549,7 @@ We can add a menu for window options as well
 	("Window"
 	 (("b" balance-windows "balance")
 	  ("c" recenter-top-bottom "center")
-	  ("t" my/transpose-windows "transpose")
+	  ("t" smahm/transpose-windows "transpose")
 	  ("i" enlarge-window "heighten")
 	  ("j" shrink-window-horizontally "narrow")
 	  ("k" shrink-window "lower")
@@ -618,6 +618,35 @@ We can enhance buffer/minibuffer completion by adding a small completion popup w
     (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 #+end_src
 
+Better keyboard-quit
+From https://github.com/doomemacs/doomemacs/blob/master/lisp/doom-keybinds.el#L101
+#+begin_src emacs-lisp
+  (defvar smahm-escape-hook nil
+    "A hook run when C-g is pressed (or ESC in normal mode, for evil users).
+
+      More specifically, when `smahm/escape' is pressed. If any hook returns non-nil,
+      all hooks after it are ignored.")
+
+  (defun smahm/escape (&optional interactive)
+    "Run `smahm-escape-hook'."
+    (interactive (list 'interactive))
+    (let ((inhibit-quit t))
+      (cond ((minibuffer-window-active-p (minibuffer-window))
+             ;; quit the minibuffer if open.
+             (when interactive
+               (setq this-command 'abort-recursive-edit))
+             (abort-recursive-edit))
+            ;; Run all escape hooks. If any returns non-nil, then stop there.
+            ((run-hook-with-args-until-success 'smahm-escape-hook))
+            ;; don't abort macros
+            ((or defining-kbd-macro executing-kbd-macro) nil)
+            ;; Back to the default
+            ((unwind-protect (keyboard-quit)
+               (when interactive
+                 (setq this-command 'keyboard-quit)))))))
+  (global-set-key [remap keyboard-quit] #'smahm/escape)
+#+end_src
+
 And finally, [[https://github.com/justbur/emacs-which-key][which-key]] helps show available commands in the minibuffer
 #+begin_src emacs-lisp
   (use-package which-key
@@ -625,6 +654,7 @@ And finally, [[https://github.com/justbur/emacs-which-key][which-key]] helps sho
     :init
     (which-key-mode))
 #+end_src
+
 *** Actions
 [[https://github.com/minad/consult][consult]] is used for search and navigation but a lot of it's actions start from the minibuffer
 #+begin_src emacs-lisp
@@ -668,8 +698,8 @@ It is important to have file backups available with GNU Emacs. The following con
 	"Make a special 'per session' backup at the first save of each emacs session and a per-save backup on each subsequent save."
 	(let* ((per-save-dir (expand-file-name (file-name-as-directory (format "%s/emacs/backups/per-save/" xdg-data))))
 		   (per-session-dir (expand-file-name (file-name-as-directory (format "%s/emacs/backups/per-session/" xdg-data)))))
-	  (my/mkdir per-save-dir)
-	  (my/mkdir per-session-dir)
+	  (smahm/mkdir per-save-dir)
+	  (smahm/mkdir per-session-dir)
 	  (setq backup-directory-alist `(("." . ,per-save-dir)))
 	  (when (not buffer-backed-up)
 		(let ((backup-directory-alist `(("." . ,per-session-dir)))
@@ -693,7 +723,7 @@ Let's change where Emacs stores auto-saves
    auto-save-timeout 30                          ; Auto-save if idle for 30 seconds
    auto-save-interval 300)                       ; Auto-save after having typed 300 characters
   (let ((dir (expand-file-name (file-name-as-directory (expand-file-name (format "%s/emacs/auto-save/" xdg-cache))))))
-    (my/mkdir dir)
+    (smahm/mkdir dir)
     (setq auto-save-file-name-transforms `((".*" ,dir t))))
 #+end_src
 
@@ -809,7 +839,7 @@ The following tools are also recommended to use with dirvish:
 *** Menu
 We can add a menu for file options as well
 #+begin_src emacs-lisp
-  (defun my/find-file-with-default-path (path)
+  (defun smahm/find-file-with-default-path (path)
     (interactive)
     (let ((file-name-as-directory path))
       (call-interactively 'find-file)))
@@ -844,17 +874,17 @@ I have found the built-in project.el a suitable replacement now for projectile.
   (use-package project
     :ensure nil
     :config
-    (customize-set-variable 'project-find-functions (list #'project-try-vc #'my/project-try-local))
+    (customize-set-variable 'project-find-functions (list #'project-try-vc #'smahm/project-try-local))
     (cl-defmethod project-root ((project (head local)))
       "Return root directory of current PROJECT."
       (cdr project))
-    (defun my/project-try-local (dir)
+    (defun smahm/project-try-local (dir)
       "Determine if DIR is a non-Git project.
        DIR must include a .project file to be considered a project."
       (let ((root (locate-dominating-file dir ".project")))
         (when root
           (cons 'local root))))
-    (defun my/project-save-all-buffers (&optional proj arg)
+    (defun smahm/project-save-all-buffers (&optional proj arg)
       "Save all file-visiting buffers in PROJ without asking."
       (interactive)
       (let* ((proj (or proj (project-current)))
@@ -876,7 +906,7 @@ We can add a menu for project options as well
   ("Buffers"
    (("b" project-switch-to-buffer "list")
     ("k" project-kill-buffers "kill all")
-    ("S" my/project-save-all-buffers "save"))
+    ("S" smahm/project-save-all-buffers "save"))
    "Find"
    (("d" project-find-dir "directory")
     ("D" project-dired "root")
@@ -914,7 +944,7 @@ Some sensible defaults for editing
     :ensure nil
     :delight (auto-fill-function)
     :preface
-    (defun my/kill-region-or-line ()
+    (defun smahm/kill-region-or-line ()
       "When called interactively with no active region, kill the whole line."
       (interactive)
       (if current-prefix-arg
@@ -925,7 +955,7 @@ Some sensible defaults for editing
                    (kill-region (region-beginning) (region-end) t)
                  (kill-region (line-beginning-position) (line-beginning-position
                                                          2))))))
-    (defun my/delete-surround-at-point-find-brackets (pos)
+    (defun smahm/delete-surround-at-point-find-brackets (pos)
       "Return a pair of buffer positions for the opening & closing bracket positions.
   Or nil when nothing is found."
       (save-excursion
@@ -946,10 +976,10 @@ Some sensible defaults for editing
                 (progn
                   (forward-list)
                   (1- (point)))))))
-    (defun my/delete-surround-at-point ()
+    (defun smahm/delete-surround-at-point ()
       "https://emacs.stackexchange.com/a/54679"
       (interactive)
-      (let ((range (my/delete-surround-at-point-find-brackets (point))))
+      (let ((range (smahm/delete-surround-at-point-find-brackets (point))))
         (unless range
           (user-error "No surrounding brackets"))
         (pcase-let ((`(,beg ,end) range))
@@ -968,8 +998,8 @@ Some sensible defaults for editing
                ""))))))
     :hook ((before-save . delete-trailing-whitespace)
            ((prog-mode text-mode) . turn-on-auto-fill))
-    :bind (("C-M-d" . my/delete-surround-at-point)
-           ([remap kill-region] . my/kill-region-or-line))
+    :bind (("C-M-d" . smahm/delete-surround-at-point)
+           ([remap kill-region] . smahm/kill-region-or-line))
     :custom (set-mark-command-repeat-pop t))
 #+end_src
 
@@ -1027,7 +1057,7 @@ Let's start with some useful functions that improve on existing Emacs navigation
   (use-package navigation
     :ensure nil
     :preface
-    (defun my/smarter-move-beginning-of-line (arg)
+    (defun smahm/smarter-move-beginning-of-line (arg)
       "Move point back to indentation of beginning of line."
       (interactive "^p")
       (setq arg (or arg 1))
@@ -1038,31 +1068,31 @@ Let's start with some useful functions that improve on existing Emacs navigation
         (back-to-indentation)
         (when (= orig-point (point))
           (move-beginning-of-line 1))))
-    (defun my/smart-kill-whole-line (&optional arg)
+    (defun smahm/smart-kill-whole-line (&optional arg)
       "A simple wrapper around `kill-whole-line' that respects indentation."
       (interactive "P")
       (kill-whole-line arg)
       (back-to-indentation))
-    (defun my/move-line-up ()
+    (defun smahm/move-line-up ()
       "Move up the current line."
       (interactive)
       (transpose-lines 1)
       (forward-line -2)
       (indent-according-to-mode))
-    (defun my/move-line-down ()
+    (defun smahm/move-line-down ()
       "Move down the current line."
       (interactive)
       (forward-line 1)
       (transpose-lines 1)
       (forward-line -1)
       (indent-according-to-mode))
-    (defun my/smart-open-line-below ()
+    (defun smahm/smart-open-line-below ()
       "Insert an empty line after the current line.
           Position the cursor at its beginning, according to the current mode."
       (interactive)
       (move-end-of-line nil)
       (newline-and-indent))
-    (defun my/smart-open-line-above ()
+    (defun smahm/smart-open-line-above ()
       "Insert an empty line above the current line.
         Position the cursor at it's beginning, according to the current mode."
       (interactive)
@@ -1070,19 +1100,19 @@ Let's start with some useful functions that improve on existing Emacs navigation
       (newline-and-indent)
       (forward-line -1)
       (indent-according-to-mode))
-    (defun my/smart-kill-line-backwards ()
+    (defun smahm/smart-kill-line-backwards ()
       "Insert an empty line above the current line.
         Position the cursor at it's beginning, according to the current mode."
       (interactive)
       (kill-line 0)
       (indent-according-to-mode))
-    :bind (("M-p" . my/move-line-up)
-           ("M-n" . my/move-line-down)
-           ("C-a" . my/smarter-move-beginning-of-line)
-           ("C-<return>" . my/smart-open-line-below)
-           ("M-<return>" . my/smart-open-line-above)
-           ("M-<backspace>" . my/smart-kill-line-backwards)
-           ([remap kill-whole-line] . my/smart-kill-whole-line)))
+    :bind (("M-p" . smahm/move-line-up)
+           ("M-n" . smahm/move-line-down)
+           ("C-a" . smahm/smarter-move-beginning-of-line)
+           ("C-<return>" . smahm/smart-open-line-below)
+           ("M-<return>" . smahm/smart-open-line-above)
+           ("M-<backspace>" . smahm/smart-kill-line-backwards)
+           ([remap kill-whole-line] . smahm/smart-kill-whole-line)))
 #+end_src
 
 back-button
@@ -1136,7 +1166,7 @@ allows this behaviour.
   (use-package wiki-summary
 	:commands (wiki-summary wiki-summary-insert)
 	:preface
-	(defun my/format-summary-in-buffer (summary)
+	(defun smahm/format-summary-in-buffer (summary)
 	  "Given a summary, sticks it in the *wiki-summary* buffer and displays
 	   the buffer."
 	  (let ((buf (generate-new-buffer "*wiki-summary*")))
@@ -1148,7 +1178,7 @@ allows this behaviour.
 		(pop-to-buffer buf)))
 	:config
 	(advice-add 'wiki-summary/format-summary-in-buffer
-				:override #'my/format-summary-in-buffer))
+				:override #'smahm/format-summary-in-buffer))
 #+end_src
 
 This function saves me time to find the definition of a word
@@ -1185,17 +1215,10 @@ We can add a menu for language options as well
 ** Multi-Edit
 [[https://github.com/magnars/multiple-cursors.el][multiple-cursors]] is a package that allows you to edit multiple lines at once and is really nifty once you kinda get the hang of it.
 #+begin_src emacs-lisp
-  (use-package multiple-cursors)
-  (pretty-hydra-define hydra-multiple-cursors
-    (:hint nil :color blue :title (with-mdicon "nf-md-multicast" "Multiple Cursors" 1 -0.05))
-    ("Multilpe Cursors"
-     (("r" mc/mark-all-in-region-regexp "regex")
-  	("b" mc/edit-beginnings-of-lines "beginnings")
-  	("e" mc/edit-ends-of-lines "ends")
-  	(">" mc/mark-next-like-this "next" :color pink)
-  	("<" mc/mark-previous-like-this "previous" :color pink)
-  	("q" nil "quit" :color blue))))
-  (global-set-key (kbd "C-c m") 'hydra-multiple-cursors/body)
+  (use-package multiple-cursors
+    :bind (("C-c m r" . mc/mark-all-in-region-regexp)
+  		 ("C-c m b" . mc/edit-beginnings-of-lines)
+  		 ("C-c m e" . mc/edit-ends-of-lines)))
 #+end_src
 ** Undo/Redo
 [[https://github.com/casouri/vundo][Vundo]] is a really cool package that show your undo history and allows you traverse this tree
@@ -1245,10 +1268,10 @@ Currently though there is no clean way to implement tree-sitter for all language
   ;;   (global-treesit-auto-mode))
 #+end_src
 ** Version Control
-No surprises here magit is the best git interface to ever exist.
+No surprises here magit is my proffered git interface
 #+begin_src emacs-lisp
-      (use-package magit
-        :bind (("C-x g" . magit-status)))
+  (use-package magit
+    :bind (("C-x g" . magit-status)))
 #+end_src
 
 To make sure that the summary and the body of the commits respect the
@@ -1257,15 +1280,15 @@ conventions, the [[https://github.com/magit/magit/blob/master/lisp/git-commit.el
   (use-package git-commit
     :ensure nil
     :preface
-    (defun my/git-commit-auto-fill-everywhere ()
+    (defun smahm/git-commit-auto-fill-everywhere ()
       "Ensure that the commit body does not exceed 72 characters."
       (setq fill-column 72)
       (setq-local comment-auto-fill-only-comments nil))
-    :hook (git-commit-mode . my/git-commit-auto-fill-everywhere)
+    :hook (git-commit-mode . smahm/git-commit-auto-fill-everywhere)
     :custom (git-commit-summary-max-length 50))
 #+end_src
 
-Finally, I like to know the modified lines of a file while I edit it.
+I like to know the modified lines of a file while I edit it.
 #+begin_src emacs-lisp
   (use-package git-gutter
     :defer 0.3
@@ -1273,18 +1296,45 @@ Finally, I like to know the modified lines of a file while I edit it.
     :config (global-git-gutter-mode))
 #+end_src
 
+Finally, some quality of life functions
+#+begin_src emacs-lisp
+  (defun smahm/open-on-github ()
+    "Open current file in github"
+    (interactive)
+    (let
+        ((repo-url (magit-git-string "remote" "get-url" "--push" "origin"))
+         (commit-hash (magit-git-string "rev-parse" "HEAD"))
+         (start-line (if (use-region-p)
+                         (line-number-at-pos (region-beginning))
+                       (line-number-at-pos)))
+         (end-line (if (use-region-p) (line-number-at-pos (region-end)))))
+      (unless repo-url (error  "not in a git repo"))
+      (browse-url
+       (concat
+        (substring repo-url 0 -4)
+        "/blob/"
+        commit-hash
+        "/"
+        (substring buffer-file-name (length (projectile-project-root)))
+        "#L" (number-to-string start-line)
+        (if (and (use-region-p) (< 0 (- end-line start-line)))
+            (concat "..L" (number-to-string end-line)))
+        ))))
+#+end_src
+
 We can add a menu for git options as well
 #+begin_src emacs-lisp
-  (pretty-hydra-define hydra-magit
-	(:hint nil :color teal :quit-key "q" :title (with-octicon "nf-oct-mark_github" "Magit" 1 -0.05))
-	("Action"
-	 (("b" magit-blame "blame")
-	  ("c" magit-clone "clone")
-	  ("i" magit-init "init")
-	  ("l" magit-log-buffer-file "commit log (current file)")
-	  ("L" magit-log-current "commit log (project)")
-	  ("s" magit-status "status"))))
-  (global-set-key (kbd "C-c g") 'hydra-magit/body)
+    (pretty-hydra-define hydra-magit
+  	(:hint nil :color teal :quit-key "q" :title (with-octicon "nf-oct-mark_github" "Magit" 1 -0.05))
+  	("Action"
+  	 (("g" smahm/open-on-github "open")
+  	  ("b" magit-blame "blame")
+  	  ("c" magit-clone "clone")
+  	  ("i" magit-init "init")
+  	  ("l" magit-log-buffer-file "commit log (current file)")
+  	  ("L" magit-log-current "commit log (project)")
+  	  ("s" magit-status "status"))))
+    (global-set-key (kbd "C-c g") 'hydra-magit/body)
 #+end_src
 ** Language Server
 Emacs has a lot of great LSP clients namely eglot, lsp-mode and lsp-bridge. Eglot is my choice currently as it is built-in to emacs (29+) and also seems to be the more minimalist option.
@@ -1313,6 +1363,7 @@ Eldoc shows function arguments in the echo area
     :after eglot
     :ensure nil
     :config
+    (eldoc-add-command 'smahm/escape)
     (with-eval-after-load 'eglot
       (add-hook 'eglot-managed-mode-hook
                 (lambda ()
@@ -1419,10 +1470,10 @@ We can add a menu for org options as well
   (pretty-hydra-define hydra-org
     (:hint nil :color teal :quit-key "q" :title (with-faicon "nf-fa-pen" "Org" 1 -0.05))
     ("Action"
-     (("A" my/org-archive-done-tasks "archive")
+     (("A" smahm/org-archive-done-tasks "archive")
       ("a" org-agenda "agenda")
       ("c" org-capture "capture")
-      ("l" my/org-open-current-ledger "ledger")
+      ("l" smahm/org-open-current-ledger "ledger")
       ("d" org-decrypt-entry "decrypt")
       ("i" org-insert-link-global "insert-link")
       ("j" org-capture-goto-last-stored "jump-capture")
@@ -1478,8 +1529,8 @@ use my time to the fullest.
                 ("C-n" . org-agenda-next-item)
                 ("C-p" . org-agenda-previous-item)
                 ("j" . org-agenda-goto)
-                ("X" . my/org-agenda-mark-done-next)
-                ("x" . my/org-agenda-mark-done))
+                ("X" . smahm/org-agenda-mark-done-next)
+                ("x" . smahm/org-agenda-mark-done))
     :custom
     (org-agenda-files '("~/org/todos")))
 #+end_src
@@ -1543,13 +1594,13 @@ package.
 (use-package ledger-mode
     :mode ("\\.\\(dat\\|ledger\\)\\'")
     :preface
-    (defun my/ledger-save ()
+    (defun smahm/ledger-save ()
       "Clean the ledger buffer at each save."
       (interactive)
       (ledger-mode-clean-buffer)
       (save-buffer))
     :bind (:map ledger-mode-map
-                ("C-x C-s" . my/ledger-save))
+                ("C-x C-s" . smahm/ledger-save))
     :hook (ledger-mode . ledger-flymake-enable)
     :custom
     (ledger-clear-whole-transactions t))
@@ -1564,7 +1615,7 @@ Org (7.01+) has built-in support for ledger entries using Babel.
 
 We can also define a function to open the current years ledger file
 #+begin_src emacs-lisp
-  (defun my/org-open-current-ledger ()
+  (defun smahm/org-open-current-ledger ()
     "Open the ledger file corresponding to the current year."
     (interactive)
     (let* ((current-year (format-time-string "%Y"))
@@ -1596,11 +1647,11 @@ Yaml development environment.
     :init
     (add-to-list 'eglot-server-programs '((yaml-ts-mode) . ("yaml-language-server" "start")))
     :preface
-    (defun my/yaml-format ()
+    (defun smahm/yaml-format ()
       "Compile current buffer file with yaml."
       (interactive)
       (compile (format "yamlfmt %s" buffer-file-name)))
-    (defun my/yaml-check ()
+    (defun smahm/yaml-check ()
       "Compile current buffer file with yaml."
       (interactive)
       (compile (format "yamllint %s" buffer-file-name))))
@@ -1615,8 +1666,8 @@ We can add a menu for python specific functions
   (pretty-hydra-define hydra-yaml
     (:hint nil :forein-keys warn :quit-key "q" :title (with-octicon "nf-oct-terminal" "yaml" 1 -0.05))
     ("Format"
-     (("f" my/yaml-format "format")
-      ("c" my/yaml-check "check"))))
+     (("f" smahm/yaml-format "format")
+      ("c" smahm/yaml-check "check"))))
   (with-eval-after-load "yaml-mode"
     (define-key yaml-ts-mode-map (kbd "C-c r") 'hydra-yaml/body))
 #+end_src
@@ -1625,64 +1676,64 @@ We can add a menu for python specific functions
 Python development environment.
 *** Config
 #+begin_src emacs-lisp
-    (use-package python
-      :ensure nil
-      :mode (("\\.py\\'" . python-ts-mode))
-      :interpreter ("python" . python-ts-mode)
-      :hook
-      (python-ts-mode . eglot-ensure)
-      :init
-      (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
-      :preface
-      (defun my/pyrightconfig-write (virtualenv)
-        "From https://robbmann.io/posts/emacs-eglot-pyrightconfig/
-         Write a `pyrightconfig.json' file at the Git root of a project
-         with `venvPath' and `venv' set to the absolute path of
-         `virtualenv'.  When run interactively, prompts for a directory to
-         select."
-        (interactive "DEnv: ")
-        ;; Naming convention for venvPath matches the field for pyrightconfig.json
-        (let* ((venv-dir (tramp-file-local-name (file-truename virtualenv)))
-               (venv-file-name (directory-file-name venv-dir))
-               (venvPath (file-name-directory venv-file-name))
-               (venv (file-name-base venv-file-name))
-               (base-dir (vc-git-root default-directory))
-               (out-file (expand-file-name "pyrightconfig.json" base-dir))
-               (out-contents (json-encode (list :venvPath venvPath :venv venv))))
-          (with-temp-file out-file (insert out-contents))
-          (message (concat "Configured `" out-file "` to use environment `" venv-dir))))
-      (defun my/python-venv-setup ()
-        "Install .pyvenv virtual environment at the root of the project.
-    Additionally installed libraries from requirements.txt if it exists."
-        (interactive)
-        (let* ((base-dir (vc-git-root default-directory)) (venv-dir (concat base-dir ".venv")))
-          (progn
-            (save-window-excursion
-              (shell-command (s-concat "python3 -m venv " venv-dir))
-              (when (file-exists-p (concat base-dir "requirements.txt"))
-                (shell-command (s-concat "source " venv-dir "/bin/activate && pip3 install -r " base-dir "requirements.txt")))
-              (my/pyrightconfig-write venv-dir)))
-          (message (concat "Created " venv-dir))))
-      (defun my/python-run ()
-        "Compile current buffer file with python."
-        (interactive)
-        (compile (format "python3 %s" buffer-file-name)))
-      (defun my/python-format ()
-        "Compile current buffer file with python."
-        (interactive)
-        (compile (format "ruff format %s" buffer-file-name))
-        (my/revert-buffer-no-confirm))
-      (defun my/python-check ()
-        "Compile current buffer file with python."
-        (interactive)
-        (compile (format "ruff check %s" buffer-file-name)))
-      :config
-      ;; Error message support for pyright in a *Compilation* buffer
-      (with-eval-after-load 'compile
-        (add-to-list 'compilation-error-regexp-alist-alist
-                     '(pyright "^[[:blank:]]+\\(.+\\):\\([0-9]+\\):\\([0-9]+\\).*$" 1 2 3))
-        (add-to-list 'compilation-error-regexp-alist 'pyright))
-      (setq python-check-command "NO_COLOR=1 ruff check"))
+  (use-package python
+    :ensure nil
+    :mode (("\\.py\\'" . python-ts-mode))
+    :interpreter ("python" . python-ts-mode)
+    :hook
+    (python-ts-mode . eglot-ensure)
+    :init
+    (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
+    :preface
+    (defun smahm/pyrightconfig-write (virtualenv)
+      "From https://robbmann.io/posts/emacs-eglot-pyrightconfig/
+       Write a `pyrightconfig.json' file at the Git root of a project
+       with `venvPath' and `venv' set to the absolute path of
+       `virtualenv'.  When run interactively, prompts for a directory to
+       select."
+      (interactive "DEnv: ")
+      ;; Naming convention for venvPath matches the field for pyrightconfig.json
+      (let* ((venv-dir (tramp-file-local-name (file-truename virtualenv)))
+             (venv-file-name (directory-file-name venv-dir))
+             (venvPath (file-name-directory venv-file-name))
+             (venv (file-name-base venv-file-name))
+             (base-dir (vc-git-root default-directory))
+             (out-file (expand-file-name "pyrightconfig.json" base-dir))
+             (out-contents (json-encode (list :venvPath venvPath :venv venv))))
+        (with-temp-file out-file (insert out-contents))
+        (message (concat "Configured `" out-file "` to use environment `" venv-dir))))
+    (defun smahm/python-venv-setup ()
+      "Install .pyvenv virtual environment at the root of the project.
+  Additionally installed libraries from requirements.txt if it exists."
+      (interactive)
+      (let* ((base-dir (vc-git-root default-directory)) (venv-dir (concat base-dir ".venv")))
+        (progn
+          (save-window-excursion
+            (shell-command (s-concat "python3 -m venv " venv-dir))
+            (when (file-exists-p (concat base-dir "requirements.txt"))
+              (shell-command (s-concat "source " venv-dir "/bin/activate && pip3 install -r " base-dir "requirements.txt")))
+            (smahm/pyrightconfig-write venv-dir)))
+        (message (concat "Created " venv-dir))))
+    (defun smahm/python-run ()
+      "Compile current buffer file with python."
+      (interactive)
+      (compile (format "python3 %s" buffer-file-name)))
+    (defun smahm/python-format ()
+      "Compile current buffer file with python."
+      (interactive)
+      (compile (format "ruff format %s" buffer-file-name))
+      (smahm/revert-buffer-no-confirm))
+    (defun smahm/python-check ()
+      "Compile current buffer file with python."
+      (interactive)
+      (compile (format "ruff check %s" buffer-file-name)))
+    :config
+    ;; Error message support for pyright in a *Compilation* buffer
+    (with-eval-after-load 'compile
+      (add-to-list 'compilation-error-regexp-alist-alist
+                   '(pyright "^[[:blank:]]+\\(.+\\):\\([0-9]+\\):\\([0-9]+\\).*$" 1 2 3))
+      (add-to-list 'compilation-error-regexp-alist 'pyright))
+    (setq python-check-command "NO_COLOR=1 ruff check"))
 #+end_src
 *** Snippets
 Python specific snippets for tempel
@@ -1785,13 +1836,13 @@ We can add a menu for python specific functions
   (pretty-hydra-define hydra-python
 	(:hint nil :forein-keys warn :quit-key "q" :title (with-faicon "nf-fa-python" "Python" 1 -0.05))
 	("Venv"
-	 (("v" my/pyrightconfig-write "set venv")
-	  ("V" my/python-venv-setup "create venv"))
+	 (("v" smahm/pyrightconfig-write "set venv")
+	  ("V" smahm/python-venv-setup "create venv"))
 	 "Run"
-	 (("r" my/python-run "run"))
+	 (("r" smahm/python-run "run"))
 	 "Format"
-	 (("f" my/python-format "format")
-	  ("c" my/python-check "check"))))
+	 (("f" smahm/python-format "format")
+	  ("c" smahm/python-check "check"))))
   (with-eval-after-load "python"
 	(define-key python-ts-mode-map (kbd "C-c r") 'hydra-python/body))
 #+end_src
@@ -1808,15 +1859,15 @@ C/C++ development environment.
     :init
     (add-to-list 'eglot-server-programs '((c-mode c-mode) . ("clangd" "-j=8" "--log=error" "--malloc-trim" "--background-index" "--clang-tidy" "--all-scopes-completion" "--completion-style=detailed" "--pch-storage=memory" "--header-insertion=never" "--header-insertion-decorators=0")))
     :preface
-    (defun my/c-run ()
+    (defun smahm/c-run ()
       "Compile current buffer file with c."
       (interactive)
       (compile (format "clang -Wall %s -o %s.out && %s.out" buffer-file-name buffer-file-name buffer-file-name)))
-    (defun my/c-cpp-format ()
+    (defun smahm/c-cpp-format ()
       "Compile current buffer file with c."
       (interactive)
       (compile (format "clang-format %s" buffer-file-name)))
-    (defun my/c-cpp-check ()
+    (defun smahm/c-cpp-check ()
       "Compile current buffer file with c."
       (interactive)
       (compile (format "clang-check %s" buffer-file-name))))
@@ -1832,16 +1883,16 @@ C/C++ development environment.
       :init
       (add-to-list 'eglot-server-programs '((c++-mode cc-mode c++-ts-mode) . ("clangd" "-j=8" "--log=error" "--malloc-trim" "--background-index" "--clang-tidy" "--all-scopes-completion" "--completion-style=detailed" "--pch-storage=memory" "--header-insertion=never" "--header-insertion-decorators=0")))
       :preface
-      (defun my/c-run ()
+      (defun smahm/c-run ()
         "Compile current buffer file with c."
         (interactive)
         (compile (format "clang++ -Wall %s -o %s.out && %s.out" buffer-file-name buffer-file-name buffer-file-name)))
-      (defun my/c-cpp-format ()
+      (defun smahm/c-cpp-format ()
         "Compile current buffer file with c."
         (interactive)
         (compile (format "clang-format -style=Google -i %s" buffer-file-name))
-        (my/revert-buffer-no-confirm))
-      (defun my/c-cpp-check ()
+        (smahm/revert-buffer-no-confirm))
+      (defun smahm/c-cpp-check ()
         "Compile current buffer file with c."
         (interactive)
         (compile (format "clang-check --analyze %s" buffer-file-name))))
@@ -1856,10 +1907,10 @@ We can add a menu for c and c++ specific functions
   (pretty-hydra-define hydra-c-cpp
 	(:hint nil :forein-keys warn :quit-key "q" :title (with-mdicon "nf-md-language_c" "C/C++" 1 -0.05))
 	("Run"
-	 (("r" my/c-run "run"))
+	 (("r" smahm/c-run "run"))
 	 "Format"
-	 (("f" my/c-cpp-format "format")
-	  ("c" my/c-cpp-check "check"))))
+	 (("f" smahm/c-cpp-format "format")
+	  ("c" smahm/c-cpp-check "check"))))
   (with-eval-after-load "c-mode"
 	(define-key c-mode-map (kbd "C-c r") 'hydra-c-cpp/body))
   (with-eval-after-load "c-mode"
@@ -1876,16 +1927,16 @@ Golang development environment.
     :hook
     (go-ts-mode . eglot-ensure)
     :preface
-    (defun my/go-run ()
+    (defun smahm/go-run ()
       "Compile current buffer file with go."
       (interactive)
       (compile (format "go run %s" buffer-file-name)))
-    (defun my/go-format ()
+    (defun smahm/go-format ()
       "Format current buffer file with goimports."
       (interactive)
       (compile (format "goimports -w %s && gofumpt -w %s" buffer-file-name buffer-file-name))
-      (my/revert-buffer-no-confirm))
-    (defun my/go-check ()
+      (smahm/revert-buffer-no-confirm))
+    (defun smahm/go-check ()
       "Check current buffer file with goimports."
       (interactive)
       (compile (format "gofumpt -e %s" buffer-file-name)))
@@ -1935,10 +1986,10 @@ We can add a menu for python specific functions
   (pretty-hydra-define hydra-go
 	(:hint nil :forein-keys warn :quit-key "q" :title (with-mdicon "nf-md-language_go" "Go" 1 -0.05))
 	("Run"
-	 (("r" my/go-run "run"))
+	 (("r" smahm/go-run "run"))
 	 "Format"
-	 (("f" my/go-format "format")
-	  ("c" my/go-check "check"))))
+	 (("f" smahm/go-format "format")
+	  ("c" smahm/go-check "check"))))
   (with-eval-after-load "go-ts-mode"
 	(define-key go-ts-mode-map (kbd "C-c r") 'hydra-go/body))
 #+end_src
@@ -1954,16 +2005,16 @@ Rust development environment.
     :hook
     (rust-ts-mode . eglot-ensure)
     :preface
-    (defun my/rust-run ()
+    (defun smahm/rust-run ()
       "Compile current buffer file with rust."
       (interactive)
       (compile (format "rustc %s" buffer-file-name)))
-    (defun my/rust-format ()
+    (defun smahm/rust-format ()
       "Format current buffer file with rustimports."
       (interactive)
       (compile (format "rustfmt --color never %s" buffer-file-name buffer-file-name))
-      (my/revert-buffer-no-confirm))
-    (defun my/rust-check ()
+      (smahm/revert-buffer-no-confirm))
+    (defun smahm/rust-check ()
       "Check current buffer file with rustimports."
       (interactive)
       (compile (format "rustfmt --color never --check %s" buffer-file-name)))
@@ -1982,10 +2033,10 @@ We can add a menu for python specific functions
   (pretty-hydra-define hydra-rust
     (:hint nil :forein-keys warn :quit-key "q" :title (with-mdicon "nf-md-language_rust" "Rust" 1 -0.05))
     ("Run"
-     (("r" my/rust-run "run"))
+     (("r" smahm/rust-run "run"))
      "Format"
-     (("f" my/rust-format "format")
-      ("c" my/rust-check "check"))))
+     (("f" smahm/rust-format "format")
+      ("c" smahm/rust-check "check"))))
   (with-eval-after-load "rust-ts-mode"
     (define-key rust-ts-mode-map (kbd "C-c r") 'hydra-rust/body))
 #+end_src
@@ -2002,16 +2053,16 @@ Bash development environment.
     :init
     (add-to-list 'eglot-server-programs '((bash-ts-mode) . ("bash-language-server" "start")))
     :preface
-    (defun my/sh-run ()
+    (defun smahm/sh-run ()
       "Compile current buffer file with sh."
       (interactive)
       (compile (format "bash %s" buffer-file-name)))
-    (defun my/sh-format ()
+    (defun smahm/sh-format ()
       "Compile current buffer file with sh."
       (interactive)
       (compile (format "shfmt -w %s" buffer-file-name))
-    (my/revert-buffer-no-confirm))
-    (defun my/sh-check ()
+    (smahm/revert-buffer-no-confirm))
+    (defun smahm/sh-check ()
       "Compile current buffer file with sh."
       (interactive)
       (compile (format "shellcheck %s" buffer-file-name))))
@@ -2032,9 +2083,9 @@ We can add a menu for python specific functions
   (pretty-hydra-define hydra-sh
 	(:hint nil :forein-keys warn :quit-key "q" :title (with-octicon "nf-oct-terminal" "sh" 1 -0.05))
 	("Run"
-	 (("r" my/sh-run "run"))
+	 (("r" smahm/sh-run "run"))
 	 "Format"
-	 (("f" my/sh-format "format")
-	  ("c" my/sh-check "check"))))
+	 (("f" smahm/sh-format "format")
+	  ("c" smahm/sh-check "check"))))
 	(define-key bash-ts-mode-map (kbd "C-c r") 'hydra-sh/body)
 #+end_src
