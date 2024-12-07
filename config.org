@@ -1745,8 +1745,11 @@ Python development environment.
     (defun smahm/python-format ()
       "Compile current buffer file with python."
       (interactive)
-      (compile (format "ruff format %s" buffer-file-name))
-      (smahm/revert-buffer-no-confirm))
+      (compile (format "ruff format %s" buffer-file-name)))
+    (defun smahm/python-fix ()
+      "Compile current buffer file with python."
+      (interactive)
+      (compile (format "ruff check --fix %s" buffer-file-name)))
     (defun smahm/python-check ()
       "Compile current buffer file with python."
       (interactive)
@@ -1858,17 +1861,18 @@ python-ts-mode python-ts-mode
 We can add a menu for python specific functions
 #+begin_src emacs-lisp
   (pretty-hydra-define hydra-python
-	(:hint nil :forein-keys warn :quit-key "C-g" :title (with-faicon "nf-fa-python" "Python" 1 -0.05))
-	("Venv"
-	 (("v" smahm/pyrightconfig-write "set venv")
-	  ("V" smahm/python-venv-setup "create venv"))
-	 "Run"
-	 (("r" smahm/python-run "run"))
-	 "Format"
-	 (("f" smahm/python-format "format")
-	  ("c" smahm/python-check "check"))))
+    (:hint nil :forein-keys warn :quit-key "C-g" :title (with-faicon "nf-fa-python" "Python" 1 -0.05))
+    ("Venv"
+     (("v" smahm/pyrightconfig-write "set venv")
+  	("V" smahm/python-venv-setup "create venv"))
+     "Run"
+     (("r" smahm/python-run "run"))
+     "Format"
+     (("f" smahm/python-format "format")
+  	("w" smahm/python-fix "fix")
+  	("c" smahm/python-check "check"))))
   (with-eval-after-load "python"
-	(define-key python-ts-mode-map (kbd "C-c r") 'hydra-python/body))
+    (define-key python-ts-mode-map (kbd "C-c r") 'hydra-python/body))
 #+end_src
 ** C/C++
 C/C++ development environment.
@@ -1876,69 +1880,68 @@ C/C++ development environment.
 #+begin_src emacs-lisp
   (use-package c
     :ensure nil
-    :mode (("\\.c" . c-mode))
-    :interpreter ("c" . c-mode)
+    :mode (("\\.c" . c-ts-mode))
     :hook
-    (c-mode . eglot-ensure)
+    (c-ts-mode . eglot-ensure)
     :init
-    (add-to-list 'eglot-server-programs '((c-mode c-mode) . ("clangd" "-j=8" "--log=error" "--malloc-trim" "--background-index" "--clang-tidy" "--all-scopes-completion" "--completion-style=detailed" "--pch-storage=memory" "--header-insertion=never" "--header-insertion-decorators=0")))
+    (add-to-list 'eglot-server-programs '((c-mode c-ts-mode) . ("clangd" "-j=8" "--log=error" "--malloc-trim" "--background-index" "--clang-tidy" "--all-scopes-completion" "--completion-style=detailed" "--pch-storage=memory" "--header-insertion=never" "--header-insertion-decorators=0")))
     :preface
     (defun smahm/c-run ()
       "Compile current buffer file with c."
       (interactive)
       (compile (format "clang -Wall %s -o %s.out && %s.out" buffer-file-name buffer-file-name buffer-file-name)))
-    (defun smahm/c-cpp-format ()
+    (defun smahm/c-c++-format ()
       "Compile current buffer file with c."
       (interactive)
-      (compile (format "clang-format %s" buffer-file-name)))
-    (defun smahm/c-cpp-check ()
+      (compile (format "clang-format -i %s" buffer-file-name)))
+    (defun smahm/c-c++-check ()
       "Compile current buffer file with c."
       (interactive)
       (compile (format "clang-check %s" buffer-file-name))))
 #+end_src
 #+begin_src emacs-lisp
-    (use-package c++
-      :ensure nil
-      :mode (("\\.cc\\'" . c++-ts-mode)
-             ("\\.cpp\\'" . c++-ts-mode))
-      :interpreter ("c++" . c++-ts-mode)
-      :hook
-      (c++-ts-mode . eglot-ensure)
-      :init
-      (add-to-list 'eglot-server-programs '((c++-mode cc-mode c++-ts-mode) . ("clangd" "-j=8" "--log=error" "--malloc-trim" "--background-index" "--clang-tidy" "--all-scopes-completion" "--completion-style=detailed" "--pch-storage=memory" "--header-insertion=never" "--header-insertion-decorators=0")))
-      :preface
-      (defun smahm/c-run ()
-        "Compile current buffer file with c."
-        (interactive)
-        (compile (format "clang++ -Wall %s -o %s.out && %s.out" buffer-file-name buffer-file-name buffer-file-name)))
-      (defun smahm/c-cpp-format ()
-        "Compile current buffer file with c."
-        (interactive)
-        (compile (format "clang-format -style=Google -i %s" buffer-file-name))
-        (smahm/revert-buffer-no-confirm))
-      (defun smahm/c-cpp-check ()
-        "Compile current buffer file with c."
-        (interactive)
-        (compile (format "clang-check --analyze %s" buffer-file-name))))
+  (use-package c++
+    :ensure nil
+    :mode (("\\.cc\\'" . c++-ts-mode)
+           ("\\.cpp\\'" . c++-ts-mode))
+    :hook
+    (c++-ts-mode . eglot-ensure)
+    :init
+    (add-to-list 'eglot-server-programs '((c++-mode cc-mode c++-ts-mode) . ("clangd" "-j=8" "--log=error" "--malloc-trim" "--background-index" "--clang-tidy" "--all-scopes-completion" "--completion-style=detailed" "--pch-storage=memory" "--header-insertion=never" "--header-insertion-decorators=0")))
+    :preface
+    (defun smahm/c++-run ()
+      "Compile current buffer file with c."
+      (interactive)
+      (compile (format "clang++ -Wall %s -o %s.out && %s.out" buffer-file-name buffer-file-name buffer-file-name))))
 #+end_src
 *** Snippets
 C specific snippets for tempel
 #+begin_src lisp-data :tangle snippets/c.eld :mkdirp yes
 #+end_src
+C++ specific snippets for tempel
+#+begin_src lisp-data :tangle snippets/c++.eld :mkdirp yes
+#+end_src
 *** Menu
 We can add a menu for c and c++ specific functions
 #+begin_src emacs-lisp
-  (pretty-hydra-define hydra-c-cpp
-	(:hint nil :forein-keys warn :quit-key "C-g" :title (with-mdicon "nf-md-language_c" "C/C++" 1 -0.05))
-	("Run"
-	 (("r" smahm/c-run "run"))
-	 "Format"
-	 (("f" smahm/c-cpp-format "format")
-	  ("c" smahm/c-cpp-check "check"))))
-  (with-eval-after-load "c-mode"
-	(define-key c-mode-map (kbd "C-c r") 'hydra-c-cpp/body))
-  (with-eval-after-load "c-mode"
-	(define-key c++-ts-mode-map (kbd "C-c r") 'hydra-c-cpp/body))
+  (pretty-hydra-define hydra-c
+    (:hint nil :forein-keys warn :quit-key "C-g" :title (with-mdicon "nf-md-language_c" "" 1 -0.05))
+    ("Run"
+     (("r" smahm/c-run "run"))
+     "Format"
+     (("f" smahm/c-c++-format "format")
+  	("c" smahm/c-c++-check "check"))))
+  (pretty-hydra-define hydra-c++
+    (:hint nil :forein-keys warn :quit-key "C-g" :title (with-mdicon "nf-md-language_c" "++" 1 -0.05))
+    ("Run"
+     (("r" smahm/c++-run "run"))
+     "Format"
+     (("f" smahm/c-c++-format "format")
+  	("c" smahm/c-c++-check "check"))))
+  (with-eval-after-load "c-ts-mode"
+    (define-key c-ts-mode-map (kbd "C-c r") 'hydra-c/body))
+  (with-eval-after-load "c-ts-mode"
+    (define-key c++-ts-mode-map (kbd "C-c r") 'hydra-c++/body))
 #+end_src
 ** Go
 Golang development environment.
@@ -1958,8 +1961,7 @@ Golang development environment.
     (defun smahm/go-format ()
       "Format current buffer file with goimports."
       (interactive)
-      (compile (format "goimports -w %s && gofumpt -w %s" buffer-file-name buffer-file-name))
-      (smahm/revert-buffer-no-confirm))
+      (compile (format "goimports -w %s && gofumpt -w %s" buffer-file-name buffer-file-name)))
     (defun smahm/go-check ()
       "Check current buffer file with goimports."
       (interactive)
@@ -2039,8 +2041,7 @@ Rust development environment.
     (defun smahm/rust-format ()
       "Format current buffer file with rustimports."
       (interactive)
-      (compile (format "rustfmt --color never %s" buffer-file-name buffer-file-name))
-      (smahm/revert-buffer-no-confirm))
+      (compile (format "rustfmt --color never %s" buffer-file-name buffer-file-name)))
     (defun smahm/rust-check ()
       "Check current buffer file with rustimports."
       (interactive)
@@ -2085,8 +2086,7 @@ Bash development environment.
     (defun smahm/sh-format ()
       "Compile current buffer file with sh."
       (interactive)
-      (compile (format "shfmt -w %s" buffer-file-name))
-    (smahm/revert-buffer-no-confirm))
+      (compile (format "shfmt -w %s" buffer-file-name)))
     (defun smahm/sh-check ()
       "Compile current buffer file with sh."
       (interactive)
