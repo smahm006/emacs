@@ -1,0 +1,413 @@
+# -*- mode: org; -*-
+#+TITLE: GNU Emacs Configuration
+#+AUTHOR: Sohaib Mahmood
+#+STARTUP: show2levels indent
+#+PROPERTY: header-args :mkdirp yes :comments org :results none
+#+EXCLUDE_TAGS: noexport
+#+VERSION: 1.2.0
+#+auto_tangle: t
+* About
+This is the configuration for my personal GNU Emacs setup.
+#+name: header
+#+begin_src emacs-lisp :var name="file name" :var description="file description"
+  ;; Default header to be used for tangled file
+  (format
+   ";; %s - %s
+  ;; Copyright (C) 2023-%s Sohaib Mahmood
+  ;; Homepage: https://github.com/smahm006/emacs
+  ;; Code:"
+   name description (format-time-string "%Y") (format-time-string "%Y-%m-%d"))
+#+end_src
+* Early Emacs Initialization
+:PROPERTIES:
+:header-args: :tangle early-init.el
+:END:
+#+begin_src emacs-lisp :noweb yes
+<<header(name="early-init.el", description="Sets up core settings before the first frame is created.")>>
+#+end_src
+** XDG Directory
+[[https://wiki.archlinux.org/title/XDG_Base_Directory][XDG Base Directory]]
+#+begin_src emacs-lisp
+  ;; setup keymaps
+  (use-package emacs
+    :ensure nil
+    :preface
+    (defvar xdg-state (getenv "XDG_STATE_HOME"))
+    (defvar xdg-data (getenv "XDG_DATA_HOME"))
+    (defvar xdg-config (getenv "XDG_CONFIG_HOME"))
+    (defvar xdg-cache (getenv "XDG_CACHE_HOME"))
+    (defvar xdg-lib (getenv "XDG_LIB_HOME")))
+#+end_src
+** Optimize Startup Time
+#+begin_src emacs-lisp  
+  ;; We're going to increase the gc-cons-threshold to a very high number to decrease the load time and add a hook to measure Emacs startup time.
+  (setq gc-cons-threshold most-positive-fixnum
+        gc-cons-percentage 0.6)
+
+  ;; Let's lower our GC thresholds back down to a sane level.
+  (add-hook 'after-init-hook
+            (lambda ()
+              ;; restore after startup
+              (setq gc-cons-threshold (* 16 1024 1024))) 99)
+
+  ;; Profile emacs startup
+  (add-hook 'after-init-hook
+            (lambda ()
+              (message "🚀 Emacs loaded in %s with %d garbage collections."
+                       (format "%.2f seconds"
+                               (float-time
+                                (time-subtract after-init-time before-init-time)))
+                       gcs-done)))
+
+  ;; Resizing the Emacs frame can be a terribly expensive part of changing the
+  ;; font. By inhibiting this, we easily halve startup times with fonts that are
+  ;; larger than the system default.
+  (setq frame-inhibit-implied-resize t)
+
+  ;; Ignore X resources; its settings would be redundant with the other settings
+  ;; in this file and can conflict with later config (particularly where the
+  ;; cursor color is concerned).
+  (advice-add #'x-apply-session-resources :override #'ignore)
+
+  ;; remove "for information about gnu emacs..." message at startup
+  (advice-add #'display-startup-echo-area-message :override #'ignore)
+
+  ;; suppress the vanilla startup screen completely. we've disabled it with
+  ;; `inhibit-startup-screen', but it would still initialize anyway.
+  (advice-add #'display-startup-screen :override #'ignore)
+
+  ;; never show the hello file
+  (defalias #'view-hello-file #'ignore)
+
+  ;; Disable warnings from the legacy advice API. They aren't useful.
+  (setq ad-redefinition-action 'accept)
+
+  ;; Ignore warnings about "existing variables being aliased".
+  (setq warning-suppress-types '((defvaralias) (lexical-binding)))
+
+  ;; Unset `file-name-handler-alist' too (temporarily). Every file opened and
+  ;; loaded by Emacs will run through this list to check for a proper handler for
+  ;; the file, but during startup, it won’t need any of them.
+  (defvar file-name-handler-alist-old file-name-handler-alist)
+  (setq file-name-handler-alist nil)
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              (setq file-name-handler-alist file-name-handler-alist-old)))
+
+  ;; Remove irreleant command line options for faster startup
+  (setq command-line-x-option-alist nil)
+
+  ;; Minimal UI
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+#+end_src
+** Configure Byte Compile
+#+begin_src emacs-lisp    
+  ;; In noninteractive sessions, prioritize non-byte-compiled source files to
+  ;; prevent the use of stale byte-code. Otherwise, it saves us a little IO time
+  ;; to skip the mtime checks on every *.elc file.
+  (setq load-prefer-newer t)
+
+  ;; Ensure JIT compilation is enabled for improved performance by
+  ;; native-compiling loaded .elc files asynchronously
+  (setq native-comp-jit-compilation t)
+
+  ;; Move native compilation cache directory to xdg-cache
+  (when (boundp 'native-comp-eln-load-path)
+    (startup-redirect-eln-cache
+     (expand-file-name (format "%s/emacs/eln-cache/" xdg-cache))))
+
+  ;; Disable certain byte compiler warnings to cut down on the noise.
+  (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
+
+  ;; Ensure that quitting only occurs once Emacs finishes native compiling,
+  ;; preventing incomplete or leftover compilation files in `/tmp`.
+  (setq native-comp-async-query-on-exit t)
+  (setq confirm-kill-processes t)
+#+end_src
+** Runtime optimizations
+#+begin_src emacs-lisp  
+  ;; PERF: A second, case-insensitive pass over `auto-mode-alist' is time wasted.
+  (setq auto-mode-case-fold nil)
+
+  ;; PERF: Disable bidirectional text scanning for a modest performance boost.
+  ;;   I've set this to `nil' in the past, but the `bidi-display-reordering's docs
+  ;;   say that is an undefined state and suggest this to be just as good:
+  (setq-default bidi-display-reordering 'left-to-right
+                bidi-paragraph-direction 'left-to-right)
+
+  ;; PERF: Disabling BPA makes redisplay faster, but might produce incorrect
+  ;;   reordering of bidirectional text with embedded parentheses (and other
+  ;;   bracket characters whose 'paired-bracket' Unicode property is non-nil).
+  (setq bidi-inhibit-bpa t)  ; Emacs 27+ only
+
+  ;; Reduce rendering/line scan work for Emacs by not rendering cursors or regions
+  ;; in non-focused windows.
+  (setq-default cursor-in-non-selected-windows nil)
+  (setq highlight-nonselected-windows nil)
+
+  ;; Don't ping things that look like domain names.
+  (setq ffap-machine-p-known 'reject)
+
+  ;; Emacs "updates" its ui more often than it needs to, so slow it down slightly
+  (setq idle-update-delay 1.0)  ; default is 0.5
+
+  ;; Font compacting can be terribly expensive, especially for rendering icon
+  ;; fonts on Windows. Whether disabling it has a notable affect on Linux and Mac
+  ;; hasn't been determined, but do it anyway, just in case. This increases memory
+  ;; usage, however!
+  (setq inhibit-compacting-font-caches t)
+
+  ;; Introduced in Emacs HEAD (b2f8c9f), this inhibits fontification while
+  ;; receiving input, which should help a little with scrolling performance.
+  (setq redisplay-skip-fontification-on-input t)
+  (provide 'early-init)  
+#+end_src
+* Emacs Initialization
+:PROPERTIES:
+:header-args: :tangle init.el
+:END:
+#+begin_src emacs-lisp :noweb yes
+<<header(name="init.el", description="Main configuration file, used for setting up packages, keybindings, and behavior.")>>
+#+end_src
+** Better Defaults
+#+begin_src emacs-lisp
+  (use-package emacs
+    :ensure nil
+    :custom
+    ;; User details
+    (user-full-name "Sohaib Mahmood")                     ; Set the full name of the current user
+    (user-mail-address "soh.mahmood@fastmail.com")        ; Set the email address of the current user
+    
+    ;; Startup
+    ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
+    (inhibit-splash-screen t)                            ; Disable startup screens and messages
+    (inhibit-startup-buffer-menu t)                      ; Disable display of buffer list when more than 2 files are loaded
+    (inhibit-startup-echo-area-message t)                ; Disable initial echo message
+    (inhibit-startup-message t)                          ; Disable startup message
+    (inhibit-startup-screen t)                           ; Disable start-up screen
+    (initial-scratch-message "")                         ; Empty the initial *scratch* buffer
+
+    ;; Dialogs
+    ;; use simple text prompts
+    (use-dialog-box nil)                                 ; Don't pop up UI dialogs when prompting
+    (use-file-dialog nil)                                ; Don't use UI dialogs for file search
+    (use-short-answers t)                                ; Replace yes/no prompts with y/n
+    (confirm-nonexistent-file-or-buffer nil)             ; Ok to visit non existent files
+
+    ;; Default mode
+    ;; Default & initial mode is text.
+    (initial-major-mode 'fundamental-mode)               ; Initial mode is text
+    (default-major-mode 'fundamental-mode)               ; Default mode is text
+
+    ;; Performance
+    ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
+    (read-process-output-max (* 1024 1024))              ; Increase how much is read from processes in a single chunk.
+    (select-active-regions 'only)                        ; Emacs hangs when large selections contain mixed line endings.
+    (vc-handled-backends '(Git SVN))                     ; Remove unused VC backend
+
+    ;; Miscellaneous
+    (native-comp-async-report-warnings-errors 'silent)   ; Disable native compiler warnings
+    (fringes-outside-margins t)                          ; DOOM: add some space between fringe it and buffer.
+    (windmove-mode nil)                                  ; Diasble windmove mode
+    (comment-auto-fill-only-comments t)                  ; Use auto fill mode only in comments
+    (custom-buffer-done-kill t)                          ; Kill custom buffer when done
+    :init
+    ;; Modify width and height of frames
+    (modify-all-frames-parameters '((width . 200)
+                                    (height . 50)))
+    :hook
+    (kill-emacs . (lambda () (setq kill-ring (mapcar 'substring-no-properties kill-ring)))))
+#+end_src
+** Functions
+Some useful utility functions
+#+begin_src emacs-lisp
+  (use-package emacs
+    :ensure nil
+    :bind
+    (("<f5>" . smahm006/reload-config))
+    :preface
+    ;; Non-interactive
+    (defun smahm006/emacs.d (path)
+      "Return the full path pointing to user-emacs-directory"
+      (expand-file-name path user-emacs-directory))
+    (defun smahm006/mkdir (dir-path)
+      "Make directory in DIR-PATH if it doesn't exist."
+      (unless (file-exists-p dir-path)
+        (make-directory dir-path t)))
+    (defun smahm006/location ()
+      "Return 'home' if system-name starts with 'sm-', otherwise return 'work'."
+      (if (string-match-p "^sm-" (system-name))
+      	"home"
+        "work"))
+    ;; Interactive    
+    (defun smahm006/reload-config ()
+      "Reload init file, which will effectively reload everything"
+      (interactive)
+      (load-file (expand-file-name "init.el" user-emacs-directory)))
+    (global-set-key (kbd "<f5>") 'smahm006/reload-config)
+    (defun smahm006/revert-buffer-no-confirm ()
+      "Revert buffer without confirmation."
+      (interactive)
+      (revert-buffer :ignore-auto :noconfirm)))
+#+end_src
+** Keymaps
+Keymaps used for important built-in command or commands from other packages
+#+begin_src emacs-lisp
+  (use-package emacs
+    :ensure nil
+    :bind
+    (("C-c" . smahm006/main-map))
+    :preface
+    (defvar smahm006/main-map (make-sparse-keymap) "key-map for leader key")
+    (defvar smahm006/buffer-map (make-sparse-keymap) "key-map for buffer commands")
+    (defvar smahm006/file-map (make-sparse-keymap) "key-map for file commands")
+    (defvar smahm006/version-control-map (make-sparse-keymap) "key-map for version control commands"))
+#+end_src
+** Packages
+To manage packages, I use [[https://github.com/jwiegley/use-package/][use-package]].
+*** Package Configuration
+To manage the package configurations with use-package, we add some required libraries
+#+begin_src emacs-lisp
+  (use-package use-package
+    :ensure nil
+    :custom
+    (use-package-always-ensure t)    ;; Always make sure package is downloaded
+    (use-package-always-defer t)     ;; Defer package Enable lazy loading per default
+    :config
+    ;; Load packages from these archives
+    (setq package-archives '(("elpa" . "https://elpa.gnu.org/packages/")
+                             ("melpa" . "https://melpa.org/packages/")
+                             ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+    ;; Highest number gets priority (what is not mentioned has priority 0)
+    (setq package-archive-priorities
+      	'(("gnu-elpa" . 3)
+            ("melpa" . 2)
+            ("nongnu" . 1)))
+    ;; Make use-package more verbose when `--debug-init` flag is passed
+    (when init-file-debug
+      (setq use-package-verbose t
+  	  use-package-expand-minimally nil
+  	  use-package-compute-statistics t
+  	  jka-compr-verbose t
+  	  warning-minimum-level :warning
+  	  byte-compile-warnings t
+  	  byte-compile-verbose t
+  	  native-comp-warning-on-missing-source t
+  	  debug-on-error t)))
+#+end_src
+*** Package Automatic Updates
+There is no default way to auto update packages so we will use the
+auto-package-update package
+#+begin_src emacs-lisp
+(use-package auto-package-update
+  :custom
+  (auto-package-update-interval 7)
+  (auto-package-update-prompt-before-update t)
+  (auto-package-update-hide-results t)
+  :config
+  (auto-package-update-maybe)
+  (auto-package-update-at-time "09:00"))
+#+end_src
+** System Configuration
+*** Environment
+By default not all environment variables are copied to Emacs. This package ensures proper synchronization between the two.
+#+begin_src emacs-lisp
+(use-package exec-path-from-shell
+  :custom
+  (epg-pinentry-mode 'loopback)
+  (exec-path-from-shell-variables '("PATH" "SHELL" "GOPATH"))
+  :config
+  (setenv "SSH_AUTH_SOCK" (string-chop-newline (shell-command-to-string "gpgconf --list-dirs agent-ssh-socket")))
+  (exec-path-from-shell-initialize))
+#+end_src
+*** Authentication
+I use a GPG key stored in a Yubikey for most of my authentication
+#+begin_src emacs-lisp
+  (use-package epa-file
+    :ensure nil
+    :init
+    (epa-file-enable))
+#+end_src
+*** No-littering
+The default paths used to store configuration files and persistent data are not consistent across Emacs packages. This isn’t just a problem with third-party packages but even with built-in packages. The following package helps sort that out.
+#+begin_src emacs-lisp
+  (use-package no-littering
+    :demand t
+    :init
+    ;; Store backup and auto-save files in no-littering-var-directory
+    (setq no-littering-etc-directory (expand-file-name (format "%s/emacs/etc/" xdg-data)))
+    (smahm006/mkdir no-littering-etc-directory)
+    (setq no-littering-var-directory (expand-file-name (format "%s/emacs/var/" xdg-data)))
+    (smahm006/mkdir no-littering-etc-directory)
+    (setq no-littering-cache-directory (expand-file-name (format "%s/emacs/etc" xdg-cache)))
+    (smahm006/mkdir no-littering-etc-directory)
+    (no-littering-theme-backups)
+    ;; Store customization file in no-littering-var-directory
+    (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
+    (when (file-exists-p custom-file) (load custom-file))
+    ;; Store cookies in cache directory
+    (setq url-cookie-file no-littering-cache-directory)
+    ;; Store lock files in in no-littering-var-directory
+    (let ((dir (no-littering-expand-var-file-name "lock-files/")))
+      (smahm006/mkdir dir)
+      (setq lock-file-name-transforms `((".*", dir t)))))
+#+end_src
+* Appearance
+** Theming
+** Fonts
+** Icons
+** Menus
+** Modeline
+** Dashboard
+* Management
+** Buffer Management
+** Window Management
+** Minibuffer Management
+** Project Management
+** File Management
+* Editing
+** Deletion
+** Navigation
+** Search and Replace
+** Spellchecking
+** Multi-Cursor Editing
+** Undo & Redo
+** Privileged Editing
+* Development
+** Tree-sitter
+** Version Control
+** Language Servers
+** Linters and Documentation
+** Snippets
+** Virtualization
+* Org
+** Settings
+** Agenda
+** Capture
+** Note-taking
+** Scheduling
+** Finance
+* Languages
+** Markup & Configuration
+*** HTML
+*** JSON
+*** TOML
+*** XML
+*** YAML
+** Scripting
+*** Bash
+** Application Programming
+*** Python
+*** Go
+** Software Programming
+*** C
+*** C++
+*** Rust
+
+# #+begin_src emacs-lisp
+#   (use-package emacs
+#     :ensure nil
+#     :preface)
+# #+end_src
