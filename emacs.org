@@ -2,12 +2,13 @@
 #+TITLE: GNU Emacs Configuration
 #+AUTHOR: Sohaib Mahmood
 #+STARTUP: show2levels indent
-#+PROPERTY: header-args :mkdirp yes :comments org :results none
+#+PROPERTY: header-args :mkdirp yes :comments org :results none :eval yes
 #+EXCLUDE_TAGS: noexport
 #+VERSION: 1.2.0
 #+auto_tangle: t
 * About
 This is the configuration for my personal GNU Emacs setup.
+** Header
 #+name: header
 #+begin_src emacs-lisp :var name="file name" :var description="file description"
   ;; Default header to be used for tangled file
@@ -18,17 +19,26 @@ This is the configuration for my personal GNU Emacs setup.
   ;; Code:"
    name description (format-time-string "%Y") (format-time-string "%Y-%m-%d"))
 #+end_src
+** Footer
+#+name: footer
+#+begin_src emacs-lisp :var name="file name"
+  ;; Footer to be used for lisp tangled file
+  (format
+   ";; %s end
+  (provide '%s.el)"
+   name name)
+#+end_src
 * Early Emacs Initialization
 :PROPERTIES:
-:header-args: :tangle early-init.el
+:header-args+: :tangle early-init.el
 :END:
+** Header
 #+begin_src emacs-lisp :noweb yes
 <<header(name="early-init.el", description="Sets up core settings before the first frame is created.")>>
 #+end_src
 ** XDG Directory
 [[https://wiki.archlinux.org/title/XDG_Base_Directory][XDG Base Directory]]
 #+begin_src emacs-lisp
-  ;; setup keymaps
   (use-package emacs
     :ensure nil
     :preface
@@ -162,16 +172,20 @@ This is the configuration for my personal GNU Emacs setup.
   ;; Introduced in Emacs HEAD (b2f8c9f), this inhibits fontification while
   ;; receiving input, which should help a little with scrolling performance.
   (setq redisplay-skip-fontification-on-input t)
-  (provide 'early-init)  
+#+end_src
+** Footer
+#+begin_src emacs-lisp :noweb yes
+<<footer(name="early-init")>>
 #+end_src
 * Emacs Initialization
 :PROPERTIES:
-:header-args: :tangle init.el
+:header-args+: :tangle init.el
 :END:
+** Header
 #+begin_src emacs-lisp :noweb yes
 <<header(name="init.el", description="Main configuration file, used for setting up packages, keybindings, and behavior.")>>
 #+end_src
-** Better Defaults
+** General Defaults
 #+begin_src emacs-lisp
   (use-package emacs
     :ensure nil
@@ -213,10 +227,6 @@ This is the configuration for my personal GNU Emacs setup.
     (windmove-mode nil)                                  ; Diasble windmove mode
     (comment-auto-fill-only-comments t)                  ; Use auto fill mode only in comments
     (custom-buffer-done-kill t)                          ; Kill custom buffer when done
-    :init
-    ;; Modify width and height of frames
-    (modify-all-frames-parameters '((width . 200)
-                                    (height . 50)))
     :hook
     (kill-emacs . (lambda () (setq kill-ring (mapcar 'substring-no-properties kill-ring)))))
 #+end_src
@@ -354,13 +364,62 @@ The default paths used to store configuration files and persistent data are not 
       (smahm006/mkdir dir)
       (setq lock-file-name-transforms `((".*", dir t)))))
 #+end_src
-* Appearance
+* User Interface
+:PROPERTIES:
+:header-args+: :tangle lisp/user-interface.el
+:END:
+** Header
+#+begin_src emacs-lisp :tangle init.el
+  (require 'user-interface)
+#+end_src
+#+begin_src emacs-lisp :noweb yes
+<<header(name="user-interface.el", description="User Interface customizations for themes, fonts and icons")>>
+#+end_src
+** UI Defaults
+#+begin_src emacs-lisp
+  (use-package emacs
+    :ensure nil
+    :custom
+    ;; Mouse
+    (context-menu-mode (display-graphic-p))              ; Enable context menu on right click
+    (mouse-yank-at-point t)                              ; Yank at point rather than pointer
+    (xterm-mouse-mode (not (display-graphic-p)))         ; Mouse active in tty mode.
+    (make-pointer-invisible t)                           ; Hide mouse pointer when typing
+
+    ;; Cursor
+    (cursor-type bar)                                    ; Underline-shaped cursor
+    (cursor-intangible-mode t)                           ; Enforce cursor intangibility
+    (x-stretch-cursor nil)                               ; Don't stretch cursor to the glyph width
+    (blink-cursor-mode t)                                ; Blink cursor
+    
+    ;; Enable window dividers
+    (window-divider-default-bottom-width 2)
+    (window-divider-default-right-width 2)
+    (window-divider-default-places t)
+    (window-divider-mode t)    
+    :init
+    ;; Modify width and height of frames
+    (modify-all-frames-parameters '((width . 200)
+                                    (height . 50))))
+
+#+end_src
 ** Theming
+I switch themes quite often but usually I prefer high contrast dark themes.
+#+begin_src emacs-lisp
+(use-package gruber-darker-theme
+  :if (and (display-graphic-p) (string= (smahm/location) "home"))
+  :init
+  (load-theme 'gruber-darker t))
+#+end_src
 ** Fonts
 ** Icons
 ** Menus
 ** Modeline
 ** Dashboard
+** Footer
+#+begin_src emacs-lisp :noweb yes
+<<footer(name="user-interface")>>
+#+end_src
 * Management
 ** Buffer Management
 ** Window Management
