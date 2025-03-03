@@ -5,7 +5,6 @@
 #+PROPERTY: header-args :mkdirp yes :comments org :results none
 #+EXCLUDE_TAGS: noexport
 #+VERSION: 1.2.0
-#+auto_tangle: t
 * Table of Contents :TOC_2_gh:noexport:
 - [[#about][About]]
   - [[#header][Header]]
@@ -29,13 +28,11 @@
   - [[#finance][Finance]]
 - [[#user-interface][User Interface]]
   - [[#ui-defaults][UI Defaults]]
-  - [[#theming][Theming]]
-  - [[#fonts][Fonts]]
-  - [[#icons][Icons]]
-  - [[#menus][Menus]]
+  - [[#appearance][Appearance]]
+  - [[#lines][Lines]]
   - [[#modeline][Modeline]]
   - [[#dashboard][Dashboard]]
-- [[#management][Management]]
+- [[#user-experience][User Experience]]
   - [[#buffer-management][Buffer Management]]
   - [[#window-management][Window Management]]
   - [[#minibuffer-management][Minibuffer Management]]
@@ -88,8 +85,7 @@ This is the configuration for my personal GNU Emacs setup.
 :PROPERTIES:
 :header-args+: :tangle early-init.el
 :END:
-** XDG Directory
-[[https://wiki.archlinux.org/title/XDG_Base_Directory][XDG Base Directory]]
+** [[https://wiki.archlinux.org/title/XDG_Base_Directory][XDG Directory]]
 #+begin_src emacs-lisp :noweb yes
 <<header(name="early-init.el", description="Sets up core settings before the first frame is created.")>>
 #+end_src
@@ -384,6 +380,7 @@ auto-package-update package
 #+end_src
 ** System Configuration
 *** Environment
+**** [[https://github.com/purcell/exec-path-from-shell][exec-path-from-shell]]
 By default not all environment variables are copied to Emacs. This package ensures proper synchronization between the two.
 #+begin_src emacs-lisp
 (use-package exec-path-from-shell
@@ -394,15 +391,7 @@ By default not all environment variables are copied to Emacs. This package ensur
   (setenv "SSH_AUTH_SOCK" (string-chop-newline (shell-command-to-string "gpgconf --list-dirs agent-ssh-socket")))
   (exec-path-from-shell-initialize))
 #+end_src
-*** Authentication
-I use a GPG key stored in a Yubikey for most of my authentication
-#+begin_src emacs-lisp
-  (use-package epa-file
-    :ensure nil
-    :init
-    (epa-file-enable))
-#+end_src
-*** No-littering
+**** [[https://github.com/emacscollective/no-littering][no-littering]]
 The default paths used to store configuration files and persistent data are not consistent across Emacs packages. This isn’t just a problem with third-party packages but even with built-in packages. The following package helps sort that out.
 #+begin_src emacs-lisp
   (use-package no-littering
@@ -425,6 +414,14 @@ The default paths used to store configuration files and persistent data are not 
     (let ((dir (no-littering-expand-var-file-name "lock-files/")))
       (smahm006/mkdir dir)
       (setq lock-file-name-transforms `((".*", dir t)))))
+#+end_src
+*** Authentication
+I use a GPG key stored in a Yubikey for most of my authentication
+#+begin_src emacs-lisp
+  (use-package epa-file
+    :ensure nil
+    :init
+    (epa-file-enable))
 #+end_src
 * Org
 :PROPERTIES:
@@ -466,13 +463,6 @@ Org short for organization of my life mainly by using org-mode
                                 (shell . t)
   			      (python . t)
   			      (ledger . t))))
-#+end_src
-**** [[https://github.com/yilkalargaw/org-auto-tangle.git][org-auto-tangle]]
-A simple emacs package to allow org file tangling upon save.
-#+begin_src emacs-lisp
-  (use-package org-auto-tangle
-    :after org
-    :hook (org-mode . org-auto-tangle-mode))
 #+end_src
 **** [[https://github.com/snosov1/toc-org.git][toc-org]]
 Toc-org is an Emacs utility to have an up-to-date table of contents in the org files without exporting (useful primarily for readme files on GitHub).
@@ -611,7 +601,6 @@ the UNIX command line.
 :END:
 ** UI Defaults
 #+begin_src emacs-lisp :tangle init.el
-  ;; User Interface 
   (require 'smahm006-ui)
 #+end_src
 #+begin_src emacs-lisp :noweb yes
@@ -637,14 +626,10 @@ the UNIX command line.
     (window-divider-default-bottom-width 2)
     (window-divider-default-right-width 2)
     (window-divider-default-places t)
-    (window-divider-mode t)    
-    :init
-    ;; Modify width and height of frames
-    (modify-all-frames-parameters '((width . 200)
-                                    (height . 50))))
-
+    (window-divider-mode t))
 #+end_src
-** Theming
+** Appearance
+*** Theme
 I switch themes quite often but usually I prefer high contrast dark themes.
 #+begin_src emacs-lisp
 (use-package gruber-darker-theme
@@ -652,15 +637,135 @@ I switch themes quite often but usually I prefer high contrast dark themes.
   :init
   (load-theme 'gruber-darker t))
 #+end_src
-** Fonts
-** Icons
-** Menus
+*** Fonts
+Spending most of our time on GNU Emacs, it is important to use a font that will
+make our reading easier.
+#+begin_src emacs-lisp
+  (set-face-attribute 'default nil :font "JetBrainsMonoNerdFont 14")
+  (set-fontset-font t 'latin "Noto Sans")
+#+end_src
+*** Icons
+To integrate icons with the modeline and other packages, [[https://github.com/domtronn/all-the-icons.el/][nerd-icons]] is my icons
+package of choice.
+#+begin_src emacs-lisp
+  (use-package nerd-icons
+    :custom
+    (nerd-icons-font-family "JetBrains Mono Nerd Font"))
+#+end_src
+*** [[https://github.com/hlissner/emacs-solaire-mode][solaire-mode]]
+Distinguish "work" buffers from "side" ones
+#+begin_src emacs-lisp
+(use-package solaire-mode
+  :defer 0.1
+  :custom (solaire-mode-remap-fringe t)
+  :config (solaire-global-mode))
+#+end_src
+** Lines
+*** display-line-numbers
+Enable line numbers for some modes
+#+begin_src emacs-lisp
+  (use-package display-line-numbers
+    :ensure nil
+    :custom
+    ;; Shift display once to accomodate growing line column
+    (display-line-numbers-grow-only t)
+    :hook
+    (;; Enabled modes
+     ((prog-mode) . display-line-numbers-mode)
+     ((conf-mode) . display-line-numbers-mode)
+     ((text-mode) . display-line-numbers-mode)
+     ;; Disabled modes
+     (org-mode . (lambda () (display-line-numbers-mode -1)))))
+     ;; (eat-mode . (lambda () (display-line-numbers-mode -1)))))
+#+end_src
+*** highlight-line
+Highlighting of the current line (native mode)
+#+begin_src emacs-lisp
+  (use-package hl-line
+    :ensure nil
+    :hook
+    ((prog-mode org-mode) . global-hl-line-mode))
+#+end_src
+*** [[https://github.com/jdtsmith/indent-bars.git][indent-bars]]
+Fast, configurable indentation guide-bars for Emacs.
+#+begin_src emacs-lisp
+  (use-package indent-bars
+    :custom
+    (indent-bars-treesit-support t)
+    (indent-bars-treesit-ignore-blank-lines-types '("module"))
+    (indent-bars-treesit-wrap '((python
+                                 argument_list parameters list list_comprehension dictionary
+                                 dictionary_comprehension parenthesized_expression subscript)))
+    (indent-bars-treesit-scope '((python
+                                  function_definition class_definition for_statement
+                                  if_statement with_statement while_statement)))
+    (indent-bars-color-by-depth nil)
+    (indent-bars-highlight-current-depth '(:face default :blend 0.4))
+    (indent-bars-pad-frac 0.1)
+    (indent-bars-pattern ".")
+    (indent-bars-width-frac 0.2)
+    :hook
+    ((python-base-mode yaml-ts-mode emacs-lisp-mode) . indent-bars-mode))
+#+end_src
 ** Modeline
+*** [[https://github.com/dbordak/telephone-line/][telephone-line]]
+Power-line style mode line which seems to work best with nyan mode
+#+begin_src emacs-lisp
+  (use-package telephone-line
+    :ensure nyan-mode
+    :hook
+    (((after-init) . telephone-line-mode)
+      ((telephone-line-mode) . nyan-mode))
+    :config
+    (setq telephone-line-lhs
+          '((accent . (telephone-line-vc-segment
+                       telephone-line-erc-modified-channels-segment))
+            (nil    . (telephone-line-buffer-segment
+                       telephone-line-nyan-segment))))
+    (setq telephone-line-rhs
+          '((nil    . (telephone-line-misc-info-segment))
+            (accent . (telephone-line-major-mode-segment))
+            (evil   . (telephone-line-airline-position-segment)))))
+#+end_src
+*** [[https://github.com/hlissner/emacs-hide-mode-line.git][hide-mode-line]]
+An Emacs plugin that hides (or masks) the current buffer's mode-line.
+#+begin_src emacs-lisp
+  (use-package hide-mode-line)
+    ;; :hook
+    ;; (symbols-outline-mode . hide-mode-line-mode)
+    #+end_src
 ** Dashboard
+*** [[https://github.com/emacs-dashboard/emacs-dashboard][dashboard]]
+An extensible emacs startup screen showing you what’s most important.
+#+begin_src emacs-lisp
+    (use-package dashboard
+      :init
+      (dashboard-setup-startup-hook)
+      :custom
+      (dashboard-banner-logo-title "Get Busy Living Or Get Busy Dying!")
+      (dashboard-startup-banner 'logo)
+      (dashboard-center-content t)
+      (dashboard-vertically-center-content t)
+      (dashboard-items '((agenda)
+                         (projects . 3)
+                         (recents   . 3)))
+      (dashboard-set-file-icons t)
+      (dashboard-set-heading-icons t)
+      (dashboard-icon-type 'nerd-icons)
+      (dashboard-startupify-list
+       '(dashboard-insert-banner
+         dashboard-insert-newline
+         dashboard-insert-banner-title
+         dashboard-insert-newline
+         dashboard-insert-navigator
+         dashboard-insert-newline
+         dashboard-insert-items
+         dashboard-insert-newline)))
+#+end_src
 #+begin_src emacs-lisp :noweb yes
 <<footer(name="smahm006-ui")>>
 #+end_src
-* Management
+* User Experience
 ** Buffer Management
 ** Window Management
 ** Minibuffer Management
