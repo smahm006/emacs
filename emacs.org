@@ -2,7 +2,7 @@
 #+TITLE: GNU Emacs Configuration
 #+AUTHOR: Sohaib Mahmood
 #+STARTUP: show2levels indent
-#+PROPERTY: header-args :mkdirp yes :comments org :results none :eval yes
+#+PROPERTY: header-args :mkdirp yes :comments org :results none
 #+EXCLUDE_TAGS: noexport
 #+VERSION: 1.2.0
 #+auto_tangle: t
@@ -24,24 +24,24 @@ This is the configuration for my personal GNU Emacs setup.
 #+begin_src emacs-lisp :var name="file name"
   ;; Footer to be used for lisp tangled file
   (format
-   ";; %s end
-  (provide '%s.el)"
+   ";; %s.el end
+  (provide '%s)"
    name name)
 #+end_src
 * Early Emacs Initialization
 :PROPERTIES:
 :header-args+: :tangle early-init.el
 :END:
-** Header
+** XDG Directory
+[[https://wiki.archlinux.org/title/XDG_Base_Directory][XDG Base Directory]]
 #+begin_src emacs-lisp :noweb yes
 <<header(name="early-init.el", description="Sets up core settings before the first frame is created.")>>
 #+end_src
-** XDG Directory
-[[https://wiki.archlinux.org/title/XDG_Base_Directory][XDG Base Directory]]
 #+begin_src emacs-lisp
   (use-package emacs
     :ensure nil
     :preface
+    (defvar xdg-home (getenv "HOME"))
     (defvar xdg-state (getenv "XDG_STATE_HOME"))
     (defvar xdg-data (getenv "XDG_DATA_HOME"))
     (defvar xdg-config (getenv "XDG_CONFIG_HOME"))
@@ -173,7 +173,6 @@ This is the configuration for my personal GNU Emacs setup.
   ;; receiving input, which should help a little with scrolling performance.
   (setq redisplay-skip-fontification-on-input t)
 #+end_src
-** Footer
 #+begin_src emacs-lisp :noweb yes
 <<footer(name="early-init")>>
 #+end_src
@@ -181,11 +180,10 @@ This is the configuration for my personal GNU Emacs setup.
 :PROPERTIES:
 :header-args+: :tangle init.el
 :END:
-** Header
+** General Defaults
 #+begin_src emacs-lisp :noweb yes
 <<header(name="init.el", description="Main configuration file, used for setting up packages, keybindings, and behavior.")>>
 #+end_src
-** General Defaults
 #+begin_src emacs-lisp
   (use-package emacs
     :ensure nil
@@ -228,7 +226,9 @@ This is the configuration for my personal GNU Emacs setup.
     (comment-auto-fill-only-comments t)                  ; Use auto fill mode only in comments
     (custom-buffer-done-kill t)                          ; Kill custom buffer when done
     :hook
-    (kill-emacs . (lambda () (setq kill-ring (mapcar 'substring-no-properties kill-ring)))))
+    (kill-emacs . (lambda () (setq kill-ring (mapcar 'substring-no-properties kill-ring))))
+    :config
+    (add-to-list 'load-path (expand-file-name (format "%s/emacs/lisp/" xdg-config))))
 #+end_src
 ** Functions
 Some useful utility functions
@@ -267,13 +267,19 @@ Keymaps used for important built-in command or commands from other packages
 #+begin_src emacs-lisp
   (use-package emacs
     :ensure nil
-    :bind
-    (("C-c" . smahm006/main-map))
     :preface
-    (defvar smahm006/main-map (make-sparse-keymap) "key-map for leader key")
+    (defvar smahm006/window-map (make-sparse-keymap) "key-map for window commands")
     (defvar smahm006/buffer-map (make-sparse-keymap) "key-map for buffer commands")
     (defvar smahm006/file-map (make-sparse-keymap) "key-map for file commands")
-    (defvar smahm006/version-control-map (make-sparse-keymap) "key-map for version control commands"))
+    (defvar smahm006/version-control-map (make-sparse-keymap) "key-map for version control commands")
+    (defvar smahm006/org-map (make-sparse-keymap) "key-map for org commands")
+    (defvar smahm006/note-map (make-sparse-keymap) "key-map for note taking commands")
+    :config
+    (define-key mode-specific-map (kbd "w") (cons "window" smahm006/window-map))
+    (define-key mode-specific-map (kbd "b") (cons "buffer" smahm006/buffer-map))
+    (define-key mode-specific-map (kbd "f") (cons "file" smahm006/file-map))
+    (define-key mode-specific-map (kbd "o") (cons "note" smahm006/org-map))    
+    (define-key mode-specific-map (kbd "n") (cons "note" smahm006/note-map)))
 #+end_src
 ** Packages
 To manage packages, I use [[https://github.com/jwiegley/use-package/][use-package]].
@@ -347,11 +353,11 @@ The default paths used to store configuration files and persistent data are not 
     :demand t
     :init
     ;; Store backup and auto-save files in no-littering-var-directory
-    (setq no-littering-etc-directory (expand-file-name (format "%s/emacs/etc/" xdg-data)))
+    (setq no-littering-etc-directory (format "%s/emacs/etc/" xdg-data))
     (smahm006/mkdir no-littering-etc-directory)
-    (setq no-littering-var-directory (expand-file-name (format "%s/emacs/var/" xdg-data)))
+    (setq no-littering-var-directory (format "%s/emacs/var/" xdg-data))
     (smahm006/mkdir no-littering-etc-directory)
-    (setq no-littering-cache-directory (expand-file-name (format "%s/emacs/etc" xdg-cache)))
+    (setq no-littering-cache-directory (format "%s/emacs/etc" xdg-cache))
     (smahm006/mkdir no-littering-etc-directory)
     (no-littering-theme-backups)
     ;; Store customization file in no-littering-var-directory
@@ -364,18 +370,196 @@ The default paths used to store configuration files and persistent data are not 
       (smahm006/mkdir dir)
       (setq lock-file-name-transforms `((".*", dir t)))))
 #+end_src
-* User Interface
+* Org
 :PROPERTIES:
-:header-args+: :tangle lisp/user-interface.el
+:header-args+: :tangle lisp/smahm006-org.el
 :END:
-** Header
+Org short for organization of my life mainly by using org-mode
+** Org Defaults
 #+begin_src emacs-lisp :tangle init.el
-  (require 'user-interface)
+  (require 'smahm006-org)
 #+end_src
 #+begin_src emacs-lisp :noweb yes
-<<header(name="user-interface.el", description="User Interface customizations for themes, fonts and icons")>>
+<<header(name="smahm006-org.el", description="User Interface customizations for themes, fonts and icons")>>
 #+end_src
+#+begin_src emacs-lisp
+  (use-package org
+    :ensure org-contrib
+    :init
+    (setq org-directory (format "%s/org" xdg-home))
+    (let ((org-archive-directory (format "%s/archives" org-directory)))
+      (smahm006/mkdir org-archive-directory)
+      (setq org-archive-location (format "%s/%%s::" org-archive-directory)))
+    :hook
+    (org-mode . org-indent-mode)
+    (org-mode . visual-line-mode)    
+    :bind
+    (:map smahm006/org-map
+          ("c" . org-capture)
+          ("a" . org-agenda)) 
+    :custom
+    (org-confirm-babel-evaluate nil)                     ; Do not ask about code evaluation
+    (org-return-follows-link t)                          ; Follow links if entered on
+    (org-mouse-1-follows-link t)                         ; Follow links if clicked on
+    (org-link-descriptive t)                             ; Show links by description not URL
+    (org-enforce-todo-dependencies t)                    ; Cannot set a headline to DONE if children aren’t DONE
+    (org-log-done 'time)                                 ; Add timstamp to items when done    
+   
+    ;; Languages to autoload for babel
+    (org-babel-load-languages '((emacs-lisp . t)
+                                (shell . t)
+  			      (python . t)
+  			      (ledger . t))))
+#+end_src
+**** [[https://github.com/yilkalargaw/org-auto-tangle.git][org-auto-tangle]]
+A simple emacs package to allow org file tangling upon save.
+#+begin_src emacs-lisp
+  (use-package org-auto-tangle
+    :after org
+    :hook (org-mode . org-auto-tangle-mode))
+#+end_src
+**** [[https://github.com/snosov1/toc-org.git][toc-org]]
+Toc-org is an Emacs utility to have an up-to-date table of contents in the org files without exporting (useful primarily for readme files on GitHub).
+#+begin_src emacs-lisp
+  (use-package toc-org
+    :after org
+    :hook
+    (org-mode . toc-org-enable))
+** Styling
+*** [[https://github.com/minad/org-modern][org-modern]]
+Modernize the look of org
+#+begin_src emacs-lisp
+  (use-package org-modern
+    :custom
+    (org-ellipsis "…")
+    (org-pretty-entities t)
+    (org-hide-emphasis-markers t)
+    (org-auto-align-tags nil)
+    (org-tags-column 0)
+    (org-agenda-tags-column 0)
+    (org-catch-invisible-edits 'show-and-error)
+    (org-special-ctrl-a/e t)
+    (org-insert-heading-respect-content t)
+    :config
+    (set-face-attribute 'org-ellipsis nil :inherit 'default :box nil))
+#+end_src
+*** [[https://github.com/awth13/org-appear][org-appear]]
+Toggle visibility of hidden Org mode element parts upon entering and leaving an element.
+#+begin_src emacs-lisp
+  (use-package org-appear
+    :after org
+    :hook (org-mode . org-appear-mode))
+#+end_src
+** Capture
+#+begin_src emacs-lisp :tangle init.el
+  (use-package org-capture
+    :ensure nil
+    :custom
+    ;; Todo
+    (org-todo-keywords
+     '((sequence
+        "TODO(t)"  ; A task that needs doing & is ready to do
+        "NEXT(n)"  ; Next task in a project          
+        "|"
+        "DONE(d)"  ; Task successfully completed
+        )
+       (sequence
+        "WAIT(w)"  ; Something external is holding up this task
+        "HOLD(h)"  ; This task is paused/on hold because of me
+        "|"
+        "KILL(k)"  ; Task was cancelled, aborted or is no longer applicable
+        )))
+    (org-todo-keyword-faces
+     '(("TODO" :foreground "red" :weight bold)
+       ("NEXT" :foreground "blue" :weight bold)
+       ("DONE" :foreground "forest green" :weight bold)
+       ("WAIT" :foreground "orange" :weight bold)
+       ("HOLD" :foreground "magenta" :weight bold)
+       ("KILL" :foreground "forest green" :weight bold))))
+#+end_src
+*** [[https://github.com/protesilaos/denote][denote]]
+Simple notes with an efficient file-naming scheme
+#+begin_src emacs-lisp
+  ;; Another basic setup with a little more to it.
+  (use-package denote
+    :ensure t
+    :hook (dired-mode . denote-dired-mode)
+    :bind
+    (:map smahm006/note-map
+  	(("n" . denote)
+  	 ("r" . denote-rename-file)
+  	 ("l" . denote-link)
+  	 ("b" . denote-backlinks)
+  	 ("d" . denote-sort-dired)))
+    :config
+    (let ((org-notes-directory (format "%s/notes" org-directory)))
+      (smahm006/mkdir org-notes-directory)
+      (setq denote-directory org-notes-directory))
+    (denote-rename-buffer-mode 1))
+#+end_src
+** Agenda
+#+begin_src emacs-lisp :tangle init.el
+  (use-package org-agenda
+    :ensure nil
+    :bind (:map org-agenda-mode-map
+                ("C-n" . org-agenda-next-item)
+                ("C-p" . org-agenda-previous-item)
+                ("g" . org-agenda-goto)
+                ("X" . smahm/org-agenda-mark-done-next)
+                ("x" . smahm/org-agenda-mark-done))
+    :config
+    (let ((org-agenda-directory (format "%s/agenda" org-directory)))
+      (smahm006/mkdir org-agenda-directory)
+      (org-agenda-files org-agenda-directory)))
+#+end_src
+** Finance
+*** [[https://github.com/ledger/ledger-mode][ledger-mode]]
+Good money management is a skill to be acquired as soon as possible. Fortunately
+for us, [[https://www.ledger-cli.org/][Ledger]] allows you to have a double-entry accounting system directly from
+the UNIX command line.
+#+begin_src emacs-lisp
+  (use-package ledger-mode
+    :after org
+    :mode ("\\.\\(dat\\|ledger\\)\\'")
+    :hook (ledger-mode . ledger-flymake-enable)
+    :bind
+    (:map ledger-mode-map
+          ("C-x C-s" . smahm006/ledger-save))
+    (:map smahm006/org-map
+          ("l" . smahm006/org-open-current-ledger))
+    :preface
+    (defun smahm006/org-open-current-ledger ()
+      "Open the ledger file corresponding to the current year."
+      (interactive)
+      (let* ((current-year (format-time-string "%Y"))
+             (ledger-file (format "%s/ledger/%s.org.gpg" org-dir current-year)))
+        (find-file ledger-file)))
+    (defun smahm006/ledger-save ()
+      "Clean the ledger buffer at each save."
+      (interactive)
+      (ledger-mode-clean-buffer)
+      (save-buffer))
+    :custom
+    (ledger-clear-whole-transactions t)
+    :config
+    (let ((org-ledger-directory (format "%s/ledger" org-directory)))
+      (smahm006/mkdir org-ledger-directory)))
+#+end_src
+#+begin_src emacs-lisp :noweb yes
+<<footer(name="smahm006-org")>>
+#+end_src
+* User Interface
+:PROPERTIES:
+:header-args+: :tangle lisp/smahm006-ui.el
+:END:
 ** UI Defaults
+#+begin_src emacs-lisp :tangle init.el
+  ;; User Interface 
+  (require 'smahm006-ui)
+#+end_src
+#+begin_src emacs-lisp :noweb yes
+<<header(name="smahm006-ui.el", description="User Interface customizations for themes, fonts and icons")>>
+#+end_src
 #+begin_src emacs-lisp
   (use-package emacs
     :ensure nil
@@ -407,7 +591,7 @@ The default paths used to store configuration files and persistent data are not 
 I switch themes quite often but usually I prefer high contrast dark themes.
 #+begin_src emacs-lisp
 (use-package gruber-darker-theme
-  :if (and (display-graphic-p) (string= (smahm/location) "home"))
+  :if (and (display-graphic-p) (string= (smahm006/location) "home"))
   :init
   (load-theme 'gruber-darker t))
 #+end_src
@@ -416,9 +600,8 @@ I switch themes quite often but usually I prefer high contrast dark themes.
 ** Menus
 ** Modeline
 ** Dashboard
-** Footer
 #+begin_src emacs-lisp :noweb yes
-<<footer(name="user-interface")>>
+<<footer(name="smahm006-ui")>>
 #+end_src
 * Management
 ** Buffer Management
@@ -441,13 +624,6 @@ I switch themes quite often but usually I prefer high contrast dark themes.
 ** Linters and Documentation
 ** Snippets
 ** Virtualization
-* Org
-** Settings
-** Agenda
-** Capture
-** Note-taking
-** Scheduling
-** Finance
 * Languages
 ** Markup & Configuration
 *** HTML
