@@ -2,50 +2,57 @@
 #+TITLE: GNU Emacs Configuration
 #+AUTHOR: Sohaib Mahmood
 #+STARTUP: show2levels indent
-#+PROPERTY: header-args :mkdirp yes :comments org :results none
 #+EXCLUDE_TAGS: noexport
 #+VERSION: 1.2.0
+This is the configuration for my personal GNU Emacs setup.
 * Table of Contents :TOC_2_gh:noexport:
-- [[#about][About]]
-  - [[#header][Header]]
-  - [[#footer][Footer]]
 - [[#early-emacs-initialization][Early Emacs Initialization]]
+  - [[#header][Header]]
   - [[#xdg-directory][XDG Directory]]
   - [[#optimize-startup-time][Optimize Startup Time]]
   - [[#configure-byte-compile][Configure Byte Compile]]
   - [[#runtime-optimizations][Runtime optimizations]]
+  - [[#footer][Footer]]
 - [[#emacs-initialization][Emacs Initialization]]
+  - [[#header-1][Header]]
   - [[#general-defaults][General Defaults]]
   - [[#functions][Functions]]
   - [[#keymaps][Keymaps]]
+  - [[#modes][Modes]]
   - [[#packages][Packages]]
   - [[#system-configuration][System Configuration]]
+  - [[#footer-1][Footer]]
 - [[#org][Org]]
+  - [[#header-2][Header]]
   - [[#org-defaults][Org Defaults]]
   - [[#styling][Styling]]
   - [[#capture][Capture]]
   - [[#agenda][Agenda]]
   - [[#finance][Finance]]
+  - [[#footer-2][Footer]]
 - [[#user-interface][User Interface]]
+  - [[#header-3][Header]]
   - [[#ui-defaults][UI Defaults]]
   - [[#appearance][Appearance]]
   - [[#lines][Lines]]
   - [[#modeline][Modeline]]
+  - [[#footer-3][Footer]]
 - [[#user-experience][User Experience]]
+  - [[#header-4][Header]]
   - [[#ux-defaults][UX Defaults]]
+  - [[#completion][Completion]]
   - [[#window-management][Window Management]]
   - [[#buffer-management][Buffer Management]]
   - [[#file-management][File Management]]
-  - [[#project-management][Project Management]]
-  - [[#completion][Completion]]
-- [[#editing][Editing]]
+  - [[#footer-4][Footer]]
+- [[#text-manipulation][Text Manipulation]]
   - [[#deletion][Deletion]]
   - [[#navigation][Navigation]]
   - [[#search-and-replace][Search and Replace]]
   - [[#spellchecking][Spellchecking]]
-  - [[#multi-cursor-editing][Multi-Cursor Editing]]
+  - [[#multi-cursor][Multi-Cursor]]
   - [[#undo--redo][Undo & Redo]]
-  - [[#privileged-editing][Privileged Editing]]
+  - [[#privileged][Privileged]]
 - [[#development][Development]]
   - [[#tree-sitter][Tree-sitter]]
   - [[#version-control][Version Control]]
@@ -59,36 +66,18 @@
   - [[#application-programming][Application Programming]]
   - [[#software-programming][Software Programming]]
 
-* About
-This is the configuration for my personal GNU Emacs setup.
-** Header
-#+name: header
-#+begin_src emacs-lisp :var name="file name" :var description="file description"
-  ;; Default header to be used for tangled file
-  (format
-   ";; %s - %s
-  ;; Copyright (C) 2023-%s Sohaib Mahmood
-  ;; Homepage: https://github.com/smahm006/emacs
-  ;; Code:"
-   name description (format-time-string "%Y") (format-time-string "%Y-%m-%d"))
-#+end_src
-** Footer
-#+name: footer
-#+begin_src emacs-lisp :var name="file name"
-  ;; Footer to be used for lisp tangled file
-  (format
-   ";; %s.el end
-  (provide '%s)"
-   name name)
-#+end_src
 * Early Emacs Initialization
 :PROPERTIES:
-:header-args+: :tangle early-init.el
+:header-args: :tangle early-init.el
 :END:
-** [[https://wiki.archlinux.org/title/XDG_Base_Directory][XDG Directory]]
-#+begin_src emacs-lisp :noweb yes
-<<header(name="early-init.el", description="Sets up core settings before the first frame is created.")>>
+** Header
+#+begin_src text
+;; early-init.el - Sets up core settings before the first frame is created.
+;; Copyright (C) 2023-2025 Sohaib Mahmood
+;; Homepage: https://github.com/smahm006/emacs
+;; Code:
 #+end_src
+** [[https://wiki.archlinux.org/title/XDG_Base_Directory][XDG Directory]]
 #+begin_src emacs-lisp
   (use-package emacs
     :ensure nil
@@ -225,17 +214,23 @@ This is the configuration for my personal GNU Emacs setup.
   ;; receiving input, which should help a little with scrolling performance.
   (setq redisplay-skip-fontification-on-input t)
 #+end_src
-#+begin_src emacs-lisp :noweb yes
-<<footer(name="early-init")>>
+** Footer
+#+begin_src text
+;; early-init.el end
+(provide 'early-init)
 #+end_src
 * Emacs Initialization
 :PROPERTIES:
-:header-args+: :tangle init.el
+:header-args: :tangle init.el
 :END:
-** General Defaults
-#+begin_src emacs-lisp :noweb yes
-<<header(name="init.el", description="Main configuration file, used for setting up packages, keybindings, and behavior.")>>
+** Header
+#+begin_src text
+;; init.el - User configuration entry point for Emacs, loading custom modules and settings
+;; Copyright (C) 2023-2025 Sohaib Mahmood
+;; Homepage: https://github.com/smahm006/emacs
+;; Code:
 #+end_src
+** General Defaults
 #+begin_src emacs-lisp
   (use-package emacs
     :ensure nil
@@ -320,18 +315,54 @@ Keymaps used for important built-in command or commands from other packages
   (use-package emacs
     :ensure nil
     :preface
+    (defvar smahm006/search-map (make-sparse-keymap) "key-map for searching")
+    (defvar smahm006/goto-map (make-sparse-keymap) "key-map for going to places")
     (defvar smahm006/window-map (make-sparse-keymap) "key-map for window commands")
     (defvar smahm006/buffer-map (make-sparse-keymap) "key-map for buffer commands")
     (defvar smahm006/file-map (make-sparse-keymap) "key-map for file commands")
+    (defvar smahm006/project-map (make-sparse-keymap) "key-map for project commands")
     (defvar smahm006/version-control-map (make-sparse-keymap) "key-map for version control commands")
     (defvar smahm006/org-map (make-sparse-keymap) "key-map for org commands")
     (defvar smahm006/note-map (make-sparse-keymap) "key-map for note taking commands")
+    
     :config
+    (define-key mode-specific-map (kbd "s") (cons "search" smahm006/search-map))
+    (define-key mode-specific-map (kbd "g") (cons "goto" smahm006/goto-map))    
     (define-key mode-specific-map (kbd "w") (cons "window" smahm006/window-map))
     (define-key mode-specific-map (kbd "b") (cons "buffer" smahm006/buffer-map))
     (define-key mode-specific-map (kbd "f") (cons "file" smahm006/file-map))
-    (define-key mode-specific-map (kbd "o") (cons "note" smahm006/org-map))    
+    (define-key mode-specific-map (kbd "p") (cons "project" smahm006/project-map))    
+    (define-key mode-specific-map (kbd "o") (cons "org" smahm006/org-map))    
     (define-key mode-specific-map (kbd "n") (cons "note" smahm006/note-map)))
+#+end_src
+** Modes
+#+begin_src emacs-lisp
+  (define-minor-mode sensitive-mode
+    "https://anirudhsasikumar.net/blog/2005.01.21.html
+
+     For sensitive files like password lists.
+     It disables backup creation and auto saving.
+     With no argument, this command toggles the mode.
+     Non-null prefix argument turns on the mode.
+     Null prefix argument turns off the mode."
+    ;; The initial value.
+    nil
+    ;; The indicator for the mode line.
+    " Sensitive"
+    ;; The minor mode bindings.
+    nil
+    (if (symbol-value sensitive-mode)
+        (progn
+  	;; Disable backups
+  	(set (make-local-variable 'backup-inhibited) t)	
+  	;; Disable auto-save
+  	(if auto-save-default
+  	    (auto-save-mode -1)))
+      ;; Resort to default value of backup-inhibited
+      (kill-local-variable 'backup-inhibited)
+      ;; Resort to default auto save setting
+      (if auto-save-default
+  	(auto-save-mode 1))))
 #+end_src
 ** Packages
 To manage packages, I use [[https://github.com/jwiegley/use-package/][use-package]].
@@ -407,19 +438,21 @@ The default paths used to store configuration files and persistent data are not 
     (setq no-littering-etc-directory (format "%s/emacs/etc/" xdg-data))
     (smahm006/mkdir no-littering-etc-directory)
     (setq no-littering-var-directory (format "%s/emacs/var/" xdg-data))
-    (smahm006/mkdir no-littering-etc-directory)
-    (setq no-littering-cache-directory (format "%s/emacs/etc" xdg-cache))
-    (smahm006/mkdir no-littering-etc-directory)
+    (smahm006/mkdir no-littering-var-directory)
+    (setq no-littering-cache-directory (format "%s/emacs/cache/" xdg-cache))
+    (smahm006/mkdir no-littering-cache-directory)
+    :config
+    ;; Store backup and auto-save files in no-littering-var-directory
     (no-littering-theme-backups)
-    ;; Store customization file in no-littering-var-directory
-    (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
-    (when (file-exists-p custom-file) (load custom-file))
     ;; Store cookies in cache directory
-    (setq url-cookie-file no-littering-cache-directory)
-    ;; Store lock files in in no-littering-var-directory
-    (let ((dir (no-littering-expand-var-file-name "lock-files/")))
-      (smahm006/mkdir dir)
-      (setq lock-file-name-transforms `((".*", dir t)))))
+    (setq url-cookie-file (no-littering-expand-var-file-name "cookies"))
+    ;; Store lock files in no-littering-var-directory
+    (let ((lock-files-dir (no-littering-expand-var-file-name "lock-files/")))
+      (smahm006/mkdir lock-files-dir)
+      (setq lock-file-name-transforms `((".*" ,lock-files-dir t))))
+    ;; Store customization file in no-littering-etc-directory
+    (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
+    (add-hook 'after-init-hook (lambda () (load custom-file 'noerror 'nomessage)) -99))
 #+end_src
 *** Authentication
 I use a GPG key stored in a Yubikey for most of my authentication
@@ -427,26 +460,42 @@ I use a GPG key stored in a Yubikey for most of my authentication
   (use-package epa-file
     :ensure nil
     :init
-    (epa-file-enable))
+    (epa-file-enable)
+    :config
+    ;; Disable backup and autosave of .vcf and .gpg files
+    ;; Alternatively, to protect only some files, like some .txt files, use a line like
+    ;; // -*-mode:asciidoc; mode:sensitive-minor; fill-column:132-*-
+    (setq auto-mode-alist
+  	(append
+  	 (list '("\\.\\(vcf\\|gpg\\)$" . sensitive-minor-mode)) auto-mode-alist)))  
+#+end_src
+** Footer
+#+begin_src text
+;; init.el end
 #+end_src
 * Org
 :PROPERTIES:
-:header-args+: :tangle lisp/smahm006-org.el
+:header-args: :tangle lisp/smahm006-org.el :mkdirp yes
 :END:
-** Org Defaults
-Org short for organization of my life mainly by using org-mode
+** Header
 #+begin_src emacs-lisp :tangle init.el
   (require 'smahm006-org)
 #+end_src
-#+begin_src emacs-lisp :noweb yes
-<<header(name="smahm006-org.el", description="User Interface customizations for themes, fonts and icons")>>
+#+begin_src text
+;; init.el - Org configuration file, managing structure, defaults, and integrations
+;; Copyright (C) 2023-2025 Sohaib Mahmood
+;; Homepage: https://github.com/smahm006/emacs
+;; Code:
 #+end_src
+** Org Defaults
+*** org
+Org short for organization of my life mainly by using org-mode
 #+begin_src emacs-lisp
   (use-package org
     :ensure org-contrib
     :init
-    (setq org-directory (format "%s/org" xdg-home))
-    (let ((org-archive-directory (format "%s/archives" org-directory)))
+    (setq org-directory (format "%s/org/" xdg-home))
+    (let ((org-archive-directory (format "%s/archives/" org-directory)))
       (smahm006/mkdir org-archive-directory)
       (setq org-archive-location (format "%s/%%s::" org-archive-directory)))
     :hook
@@ -463,20 +512,57 @@ Org short for organization of my life mainly by using org-mode
     (org-link-descriptive t)                             ; Show links by description not URL
     (org-enforce-todo-dependencies t)                    ; Cannot set a headline to DONE if children aren’t DONE
     (org-log-done 'time)                                 ; Add timstamp to items when done    
-   
+    
     ;; Languages to autoload for babel
     (org-babel-load-languages '((emacs-lisp . t)
                                 (shell . t)
   			      (python . t)
   			      (ledger . t))))
 #+end_src
-**** [[https://github.com/snosov1/toc-org.git][toc-org]]
+*** [[https://github.com/snosov1/toc-org.git][toc-org]]
 Toc-org is an Emacs utility to have an up-to-date table of contents in the org files without exporting (useful primarily for readme files on GitHub).
 #+begin_src emacs-lisp
   (use-package toc-org
     :after org
     :hook
     (org-mode . toc-org-mode))
+#+end_src
+*** [[https://github.com/jwiegley/emacs-async][async]]
+Using the async package and the org-babel-tangle command, the code below will executes org-babel-tangle asynchronously when emacs.org is saved
+#+begin_src emacs-lisp :noweb yes
+  (use-package async
+    :hook (after-save . smahm006/config-tangle)
+    :preface
+    (defcustom smahm006/config-file (expand-file-name "emacs.org" user-emacs-directory)
+      "Path to the main configuration Org file."
+      :type 'string)
+    (defvar smahm006/config-last-change (nth 5 (file-attributes smahm006/config-file))
+      "Timestamp of the last modification to the config file.")
+    (defcustom smahm006/show-async-tangle-results nil
+      "Whether to keep async tangle result buffers for later inspection."
+      :type 'boolean)
+(defun smahm006/async-babel-tangle (org-file)
+    "Asynchronously tangle the given ORG-FILE."
+    (let ((start-time (current-time)))
+      (async-start
+       `(lambda ()
+          (require 'org)
+          (org-babel-tangle-file ,org-file))
+       (unless smahm006/show-async-tangle-results
+         `(lambda (result)
+            (message "[%s] %s tangled in %.2fs"
+                     (if result "✓" "✗")
+                     ,org-file
+                     (float-time (time-subtract (current-time) ',start-time))))))))
+    (defun smahm006/config-updated-p ()
+      "Return non-nil if the configuration file has been modified since the last tangle."
+      (time-less-p smahm006/config-last-change
+                   (nth 5 (file-attributes smahm006/config-file))))
+    (defun smahm006/config-tangle ()
+      "Asynchronously tangle the Org config file if it has been updated."
+      (when (smahm006/config-updated-p)
+        (setq smahm006/config-last-change (nth 5 (file-attributes smahm006/config-file)))
+        (smahm006/async-babel-tangle smahm006/config-file))))
 #+end_src
 ** Styling
 *** [[https://github.com/minad/org-modern][org-modern]]
@@ -545,7 +631,7 @@ Simple notes with an efficient file-naming scheme
   	 ("b" . denote-backlinks)
   	 ("d" . denote-sort-dired)))
     :config
-    (let ((org-notes-directory (format "%s/notes" org-directory)))
+    (let ((org-notes-directory (format "%s/notes/" org-directory)))
       (smahm006/mkdir org-notes-directory)
       (setq denote-directory org-notes-directory))
     (denote-rename-buffer-mode 1))
@@ -557,11 +643,9 @@ Simple notes with an efficient file-naming scheme
     :bind (:map org-agenda-mode-map
                 ("C-n" . org-agenda-next-item)
                 ("C-p" . org-agenda-previous-item)
-                ("g" . org-agenda-goto)
-                ("X" . smahm/org-agenda-mark-done-next)
-                ("x" . smahm/org-agenda-mark-done))
+                ("g" . org-agenda-goto))
     :config
-    (let ((org-agenda-directory (format "%s/agenda" org-directory)))
+    (let ((org-agenda-directory (format "%s/agenda/" org-directory)))
       (smahm006/mkdir org-agenda-directory)
       (org-agenda-files org-agenda-directory)))
  #+end_src
@@ -595,23 +679,29 @@ the UNIX command line.
     :custom
     (ledger-clear-whole-transactions t)
     :config
-    (let ((org-ledger-directory (format "%s/ledger" org-directory)))
+    (let ((org-ledger-directory (format "%s/ledger/" org-directory)))
       (smahm006/mkdir org-ledger-directory)))
 #+end_src
-#+begin_src emacs-lisp :noweb yes
-<<footer(name="smahm006-org")>>
+** Footer
+#+begin_src text
+;; smahm006-org.el end
+(provide 'smahm006-org)
 #+end_src
 * User Interface
 :PROPERTIES:
-:header-args+: :tangle lisp/smahm006-ui.el
+:header-args: :tangle lisp/smahm006-ui.el :mkdirp yes
 :END:
-** UI Defaults
+** Header
 #+begin_src emacs-lisp :tangle init.el
   (require 'smahm006-ui)
 #+end_src
-#+begin_src emacs-lisp :noweb yes
-<<header(name="smahm006-ui.el", description="User Interface customizations for themes, fonts and icons")>>
+#+begin_src text
+;; init.el - Configures themes, fonts, icons, and other UI enhancements for a polished experience
+;; Copyright (C) 2023-2025 Sohaib Mahmood
+;; Homepage: https://github.com/smahm006/emacs
+;; Code:
 #+end_src
+** UI Defaults
 #+begin_src emacs-lisp
   (use-package emacs
     :ensure nil
@@ -651,12 +741,21 @@ make our reading easier.
   (set-fontset-font t 'latin "Noto Sans")
 #+end_src
 *** Icons
-To integrate icons with the modeline and other packages, [[https://github.com/domtronn/all-the-icons.el/][nerd-icons]] is my icons
-package of choice.
+*** [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
+A library for Nerd Font icons. Required for many icons used in other packages
 #+begin_src emacs-lisp
   (use-package nerd-icons
     :custom
     (nerd-icons-font-family "JetBrains Mono Nerd Font"))
+#+end_src
+*** [[https://github.com/rainstormstudio/nerd-icons-completion.git][nerd-icons-completion]]
+#+begin_src emacs-lisp
+  (use-package nerd-icons-completion
+    :after marginalia vertico
+    :hook
+    (marginalia-mode . nerd-icons-completion-marginalia-setup)
+    :config
+    (nerd-icons-completion-mode))
 #+end_src
 *** [[https://github.com/hlissner/emacs-solaire-mode][solaire-mode]]
 Distinguish "work" buffers from "side" ones
@@ -709,7 +808,7 @@ Enable line numbers for some modes
      ((text-mode) . display-line-numbers-mode)
      ;; Disabled modes
      (org-mode . (lambda () (display-line-numbers-mode -1)))))
-     ;; (eat-mode . (lambda () (display-line-numbers-mode -1)))))
+     ;; (eat-mode . (lambda () (display-line-numbers-mode -1)))
 #+end_src
 *** highlight-line
 Highlighting of the current line (native mode)
@@ -767,21 +866,26 @@ An Emacs plugin that hides (or masks) the current buffer's mode-line.
     ;; :hook
     ;; (symbols-outline-mode . hide-mode-line-mode)
     #+end_src
-#+begin_src emacs-lisp :noweb yes
-<<footer(name="smahm006-ui")>>
+** Footer
+#+begin_src text
+;; smahm006-ui.el end
+(provide 'smahm006-ui)
 #+end_src
-
 * User Experience
 :PROPERTIES:
-:header-args+: :tangle lisp/smahm006-ux.el
+:header-args: :tangle lisp/smahm006-ux.el :mkdirp yes
 :END:
-** UX Defaults
+** Header
 #+begin_src emacs-lisp :tangle init.el
   (require 'smahm006-ux)
 #+end_src
-#+begin_src emacs-lisp :noweb yes
-<<header(name="smahm006-ux.el", description="User Experience customizations for windows, buffers and files")>>
+#+begin_src text
+;; init.el - Adds better completion, configures window/buffer/file management
+;; Copyright (C) 2023-2025 Sohaib Mahmood
+;; Homepage: https://github.com/smahm006/emacs
+;; Code:
 #+end_src
+** UX Defaults
 #+begin_src emacs-lisp
   (use-package emacs
     :ensure nil
@@ -795,6 +899,182 @@ An Emacs plugin that hides (or masks) the current buffer's mode-line.
     (pixel-scroll-precision-mode (display-graphic-p))    ; Enable pixel-wise scrolling
     (pixel-scroll-precision-use-momentum t)              ; Enable momentum for scrolling lagre buffers
     )
+#+end_src
+** Completion
+*** [[https://github.com/justbur/emacs-which-key.git][which-key]]
+The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
+#+begin_src emacs-lisp
+  (use-package which-key
+    :ensure nil
+    :hook
+    (after-init . which-key-mode)  
+    :custom
+    (which-key-idle-delay 0.5)
+    (which-key-compute-remaps t)
+    (which-key-prefix-prefix "󰜄 ")
+    (which-key-separator " ")
+    :config
+    (which-key-setup-minibuffer))
+ #+end_src
+*** [[https://github.com/emacs-straight/vertico.git][vertico]]
+Vertico provides a performant and minimalistic vertical completion UI based on the default completion system.
+#+begin_src emacs-lisp
+  (use-package vertico
+    :init
+    (require 'vertico-directory)
+    :bind
+    (:map vertico-map
+          ("<return>" . vertico-directory-enter))
+    :hook
+    ((minibuffer-setup . cursor-intangible-mode)
+     (after-init . vertico-mode))    
+    :custom    
+    (vertico-count 20)                         ; Show more candidates
+    (vertico-resize t)                         ; Grow and shrink the Vertico minibuffer
+    (vertico-cycle t)                          ; Enable cycling for `vertico-next' and `vertico-previous'.
+    (minibuffer-prompt-properties              ; Do not allow the cursor in the minibuffer prompt
+     '(read-only t cursor-intangible t face minibuffer-prompt))    
+    (read-extended-command-predicate           ; Vertico commands are hidden in normal buffers.
+     #'command-completion-default-include-p)
+    (enable-recursive-minibuffers t)           ; Enable recursive minibuffers    
+    (vertico-mouse-mode t)                     ; Enable Mouse support
+    :preface
+    ;; Add prompt indicator to `completing-read-multiple'.
+    ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
+    (defun crm-indicator (args)
+      (cons (format "[CRM%s] %s"
+                    (replace-regexp-in-string
+                     "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
+                     crm-separator)
+                    (car args))
+            (cdr args)))
+    :config
+    (advice-add #'completing-read-multiple :filter-args #'crm-indicator))
+#+end_src
+*** [[https://github.com/minad/marginalia.git][marginalia]]
+Richer annotations in the minibuffer.
+#+begin_src emacs-lisp
+  (use-package marginalia
+    :after vertico
+    :hook
+    (vertico-mode . marginalia-mode)    
+    :custom
+    (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil)))
+#+end_src
+*** [[https://github.com/oantolin/orderless.git][orderless]]
+Emacs completion style that matches multiple regexps in any order
+#+begin_src emacs-lisp
+  (use-package orderless
+    :custom
+    (completion-styles '(orderless basic))
+    (completion-category-defaults nil)
+    (completion-category-overrides '((file (styles basic partial-completion)))))
+#+end_src
+*** [[https://github.com/minad/consult.git][consult]]
+Additional featureful completion commands.
+#+begin_src emacs-lisp
+  (use-package consult
+    :bind (([remap Info-searpch] . consult-info)           
+           ([remap bookmark-jump] . consult-bookmark)
+           ([remap goto-line] . consult-goto-line)
+           ([remap imenu] . consult-imenu)
+           ([remap locate] . consult-locate)
+           ([remap load-theme] . consult-theme)
+           ([remap man] . consult-man)           
+           ([remap yank-pop] . consult-yank-pop)           
+           ([remap yank-pop] . consult-yank-pop)
+           :map smahm006/goto-map
+           ("e" . consult-compile-error)
+           ("f" . consult-flymake)            
+           ("g" . consult-goto-line)          
+           ("o" . consult-outline)            
+           ("m" . consult-mark)
+           ("k" . consult-global-mark)
+           ("i" . consult-imenu)
+           ("I" . consult-imenu-multi)
+           :map smahm006/search-map
+           ("f" . consult-find)
+           ("F" . consult-locate)
+           ("g" . consult-grep)
+           ("G" . consult-git-grep)
+           ("r" . consult-ripgrep)
+           ("l" . consult-line)
+           ("L" . consult-line-multi)
+           ("k" . consult-keep-lines)
+           ("u" . consult-focus-lines)
+           ("e" . consult-isearch-history)
+           :map isearch-mode-map
+           ("M-e" . consult-isearch-history)
+           ("M-s e" . consult-isearch-history)
+           ("M-s l" . consult-line)           
+           ("M-s L" . consult-line-multi)     
+           :map minibuffer-local-map
+           ("M-s" . consult-history)          
+           ("M-r" . consult-history))
+    :custom
+    (consult-yank-rotate 1)
+    (register-preview-delay 0.5)
+    (register-preview-function #'consult-register-format)
+    (xref-show-xrefs-function #'consult-xref)
+    (xref-show-definitions-function #'consult-xref))
+#+end_src
+*** COMMENT [[https://github.com/oantolin/embark.git][embark]]
+Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session and in normal buffers.
+#+begin_src emacs-lisp
+  (use-package embark
+    :after which-key
+    :bind
+    (("C-." . embark-act)         ;; pick some com fortable binding
+     ("C-:" . embark-dwim)        ;; good alternative: M-.
+     ("C-h B" . embark-bindings)  ;; alternative for `describe-bindings'
+     :map vertico-map
+     ("C-SPC" . embark-select))   ;; good alternative: M-.
+    :custom
+    ;; Optionally replace the key help with a completing-read interface
+    (prefix-help-command #'embark-prefix-help-command)
+    :preface
+    ;; The built-in embark-verbose-indicator displays actions in a buffer along with their keybindings and the first line of their docstrings.
+    ;; Users desiring a more compact display can use which-key instead with the following configuration:
+    ;; ref.: https://github.com/oantolin/embark/wiki/Additional-Configuration#use-which-key-like-a-key-menu-prompt
+    (defun embark-which-key-indicator ()
+      "An embark indicator that displays keymaps using which-key.
+       The which-key help message will show the type and value of the
+       current target followed by an ellipsis if there are further
+       targets."
+      (lambda (&optional keymap targets prefix)
+        (if (null keymap)
+            (which-key--hide-popup-ignore-command)
+          (which-key--show-keymap
+           (if (eq (plist-get (car targets) :type) 'embark-become)
+               "Become"
+             (format "Act on %s '%s'%s"
+                     (plist-get (car targets) :type)
+                     (embark--truncate-target (plist-get (car targets) :target))
+                     (if (cdr targets) "…" "")))
+           (if prefix
+               (pcase (lookup-key keymap prefix 'accept-default)
+                 ((and (pred keymapp) km) km)
+                 (_ (key-binding prefix 'accept-default)))
+             keymap)
+           nil nil t (lambda (binding)
+                       (not (string-suffix-p "-argument" (cdr binding))))))))
+    (defun embark-hide-which-key-indicator (fn &rest args)
+      "Hide the which-key indicator immediately when using
+      the completing-read prompter."
+      (which-key--hide-popup-ignore-command)
+      (let ((embark-indicators
+             (remq #'embark-which-key-indicator embark-indicators)))
+        (apply fn args)))
+    :config
+    ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
+    ;; strategy, if you want to see the documentation from multiple providers.
+    (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+    (setq embark-indicators
+          '(embark-which-key-indicator
+            embark-highlight-indicator
+            embark-isearch-highlight-indicator))
+    (advice-add #'embark-completing-read-prompter
+                :around #'embark-hide-which-key-indicator))
 #+end_src
 ** Window Management
 *** [[https://github.com/abo-abo/ace-window.git][ace-window]]
@@ -813,7 +1093,6 @@ Quickly switch windows in Emacs.
      (:map smahm006/window-map
   	 ("b" . balance-windows)
   	 ("c" . recenter-top-bottom)
-  	 ("t" . smahm/transpose-windows)
   	 ("i" . enlarge-window)
   	 ("j" . shrink-window-horizontally)
   	 ("k" . shrink-window)
@@ -890,58 +1169,62 @@ To manage them better, I use the ibuffer built-in package instead of buffer-menu
   (use-package ibuffer
     :ensure nil
     :bind
-    (([remap kill-buffer] . kill-current-buffer)
-     ("C-B" . smahm006/switch-to-previous-buffer)
-     (:map smahm006/buffer-map
-  	 ("r" . smahm006/rename-file-and-buffer)
-  	 ("d" . smahm006/delete-file-and-buffer)
-  	 ("o" . smahm006/kill-other-buffers)))
-    :init (smahm006/protected-buffers)
-    :preface
-    (defvar protected-buffers '("*scratch*" "*Messages*"))
-    (defun smahm006/protected-buffers ()
-      "Protect some buffers from being killed."
-      (dolist (buffer protected-buffers)
-        (with-current-buffer buffer
-          (emacs-lock-mode 'kill))))
-    (defun smahm006/switch-to-previous-buffer ()
-      (interactive)
-      (switch-to-buffer (other-buffer (current-buffer) 1)))
-    (defun smahm006/rename-file-and-buffer ()
-      "Rename the current buffer and file it is visiting."
-      (interactive)
-      (let ((filename (buffer-file-name)))
-        (if (not (and filename (file-exists-p filename)))
-            (message "Buffer is not visiting a file!")
-          (let ((new-name (read-file-name "New name: " filename)))
-            (cond
-             ((vc-backend filename) (vc-rename-file filename new-name))
-             (t
-              (rename-file filename new-name t)
-              (set-visited-file-name new-name t t)))))))
-    (defun smahm006/delete-file-and-buffer ()
-      "Kill the current buffer and deletes the file it is visiting."
- p     (interactive)
-      (let ((filename (buffer-file-name)))
-        (when filename
-          (if (vc-backend filename)
-              (vc-delete-file filename)
-            (progn
-              (delete-file filename)
-              (message "Deleted file %s" filename)
-              (kill-buffer))))))
-    (defun smahm006/kill-other-buffers ()
-      "Kill other buffers except current one and protected buffers."
-      (interactive)
-      (eglot-shutdown-all)
-      (mapc 'kill-buffer
-            (cl-remove-if
-             (lambda (x)
-               (or
-                (eq x (current-buffer))
-                (member (buffer-name x) protected-buffers)))
-             (buffer-list)))
-      (delete-other-windows)))
+    (([remap switch-to-buffer] . consult-buffer)
+    ([remap switch-to-buffer-other-window] . consult-buffer-other-window)
+    ([remap switch-to-buffer-other-frame]  . consult-buffer-other-frame)
+    ([remap kill-buffer] . kill-current-buffer)    
+    :map ctl-x-map
+    ("B" . smahm006/switch-to-previous-buffer)
+    :map smahm006/buffer-map
+    ("r" . smahm006/rename-file-and-buffer)
+    ("d" . smahm006/delete-file-and-buffer)
+    ("o" . smahm006/kill-other-buffers))
+  :init (smahm006/protected-buffers)
+  :preface
+  (defvar protected-buffers '("*scratch*" "*Messages*"))
+  (defun smahm006/protected-buffers ()
+    "Protect some buffers from being killed."
+    (dolist (buffer protected-buffers)
+      (with-current-buffer buffer
+        (emacs-lock-mode 'kill))))
+  (defun smahm006/switch-to-previous-buffer ()
+    (interactive)
+    (switch-to-buffer (other-buffer (current-buffer) 1)))
+  (defun smahm006/rename-file-and-buffer ()
+    "Rename the current buffer and file it is visiting."
+    (interactive)
+    (let ((filename (buffer-file-name)))
+      (if (not (and filename (file-exists-p filename)))
+          (message "Buffer is not visiting a file!")
+        (let ((new-name (read-file-name "New name: " filename)))
+          (cond
+           ((vc-backend filename) (vc-rename-file filename new-name))
+           (t
+            (rename-file filename new-name t)
+            (set-visited-file-name new-name t t)))))))
+  (defun smahm006/delete-file-and-buffer ()
+    "Kill the current buffer and deletes the file it is visiting."
+    p     (interactive)
+    (let ((filename (buffer-file-name)))
+      (when filename
+        (if (vc-backend filename)
+            (vc-delete-file filename)
+          (progn
+            (delete-file filename)
+            (message "Deleted file %s" filename)
+            (kill-buffer))))))
+  (defun smahm006/kill-other-buffers ()
+    "Kill other buffers except current one and protected buffers."
+    (interactive)
+    (eglot-shutdown-all)
+    (mapc 'kill-buffer
+          (cl-remove-if
+           (lambda (nx)
+             (or
+              (eq x (current-buffer))
+              (member (buffer-name x) protected-buffers)))
+           (buffer-list)))
+    (delete-other-windows)))
 #+end_src
 *** uniquify
 We can override eamcs default mechanism for making buffer name unique
@@ -955,19 +1238,211 @@ We can override eamcs default mechanism for making buffer name unique
     (setq uniquify-ignore-buffers-re "^\\*"))
 #+end_src
 ** File Management
-** Project Management
-** Completion
-#+begin_src emacs-lisp :noweb yes
-<<footer(name="smahm006-ux")>>
+*** [[https://github.com/lewang/backup-walker][backup-walker]]
+It is important to have file backups available with GNU Emacs.
+The following configuration forces a backup on every save of a file.
+It also auto backups a file after a few seconds
+We can also view the diff between backups and selectively restore one
+#+begin_src emacs-lisp
+  (use-package backup-walker
+    :demand t
+    :hook
+    (after-init . savehist-mode)    
+    :custom
+    ;; Session backups
+    (backup-by-copying t)                              ; Backs up by moving the actual file, no symlinks
+    (vc-make-backup-files t)                           ; Backup versioned files
+    (version-control t)                                ; Version numbers for backup files
+    (make-backup-files t)                              ; Backup of a file the first time it is saved.
+    (kept-new-versions 100)                            ; Number of newest versions to keep
+    (kept-old-versions 100)                            ; Number of oldest versions to keep
+    (delete-old-versions t)                            ; Delete excess backup files silently
+    (delete-by-moving-to-trash t)                      ; Delete backups to trash
+    
+    ;; Auto save backups
+    (auto-save-default t)                              ; Auto-save every buffer that visits a file
+    (auto-save-timeout 20)                             ; Number of seconds between auto-save
+    (auto-save-interval 200)                           ; Number of keystrokes between auto-saves
+
+    ;; Command history backup
+    (history-delete-duplicates t)                      ; Delete duplicates in history
+    (history-length 25)                                ; Max history length
+    (savehist-file (format "%s/emacs/history" xdg-cache))   ; history backup location
+    :config
+    (let* ((backup-session-dir  (format "%s/emacs/backups/session/" xdg-data))
+    	 (auto-save-dir (format "%s/emacs/backups/saves/" xdg-data)))
+      (smahm006/mkdir backup-session-dir)
+      (smahm006/mkdir auto-save-dir)
+      (setq backup-directory-alist `(("." . ,backup-session-dir)))
+      (setq auto-save-file-name-transforms `((".*" ,auto-save-dir t)))))
 #+end_src
-* Editing
+*** autorevert
+Revert buffers when the underlying file has changed
+#+begin_src emacs-lisp
+  (use-package autorevert
+    :ensure nil
+    :bind
+    (:map smahm006/file-map
+          ("x" . revert-buffer))        
+    :hook
+    (after-init . global-auto-revert-mode)
+    :custom
+    ;; Revert Dired and other buffers
+    (global-auto-revert-non-file-buffers t)
+    ;; Avoid polling for changes and rather get notified by the system
+    (auto-revert-use-notify t)
+    (auto-revert-avoid-polling t))
+#+end_src
+*** recentf
+#+begin_src emacs-lisp
+  (use-package recentf
+    :ensure nil
+    :hook
+    (after-init . recentf-mode)
+    :bind
+    ([remap recentf-open] . consult-recent-file)
+    ([remap recentf-open-files] . consult-recent-file)
+    (:map smahm006/file-map
+          ("r" . recentf-open))    
+    :custom
+    (recentf-keep '(file-remote-p file-readable-p))
+    (recentf-max-menu-items 10)
+    (recentf-max-saved-items 100)
+    (recentf-save-file (format "%s/emacs/recentf" xdg-cache))
+    :config
+    (add-to-list 'recentf-exclude
+                 (recentf-expand-file-name no-littering-var-directory))
+    (add-to-list 'recentf-exclude
+                 (recentf-expand-file-name no-littering-etc-directory)))
+#+end_src
+*** [[https://github.com/shingo256/trashed][trashed]]
+Open, view, browse, restore or permanently delete trashed files
+#+begin_src emacs-lisp
+  (use-package trashed
+    :bind
+    (:map smahm006/file-map
+          ("t" . trashed))    
+    :config
+    (setq delete-by-moving-to-trash t)    
+    (setq trashed-action-confirmer 'y-or-n-p)
+    (setq trashed-use-header-line t)
+    (setq trashed-sort-key '("Date deleted" . t))
+    (setq trashed-date-format "%Y-%m-%d %H:%M:%S"))
+#+end_src
+*** [[https://github.com/alexluigit/dirvish][dirvish]]
+Dirvish is an improved version built on Emacs's builtin file manager Dired.
+#+begin_src emacs-lisp
+  (use-package dirvish
+    :init
+    (dirvish-override-dired-mode)
+    :bind
+    ("<f1>" . dirvish-side)
+    (:map smahm006/file-map  	
+  	("d" . dirvish)
+  	("f" . dirvish-fd))    
+    (:map dirvish-mode-map
+  	("F"   . dirvish-toggle-fullscreen)
+  	("N"   . dirvish-narrow)
+  	("M-f" . dirvish-history-go-forward)
+  	("M-b" . dirvish-history-go-backward)  	  
+  	("M-p" . dired-up-directory)
+  	("M-n" . dired-find-file)
+  	("M-d" . empty-trash)
+  	("M-l" . dirvish-ls-switches-menu)
+  	("M-m" . dirvish-mark-menu)
+  	("M-s" . dirvish-setup-menu)
+  	("M-t" . dirvish-layout-toggle)  	
+  	("a"   . dirvish-quick-access)
+  	("s"   . dirvish-quicksort)
+  	("f"   . dirvish-file-info-menu)
+  	("y"   . dirvish-yank-menu)
+  	("v"   . dirvish-vc-menu)
+  	("^"   . dirvish-history-last)
+  	("h"   . dirvish-history-jump)
+  	("z"   . dirvish-show-history)  	    	
+  	("TAB" . dirvish-subtree-toggle))
+    :custom
+    (dirvish-reuse-session nil)
+    (dirvish-subtree-state-style 'nerd)
+    (dirvish-use-header-line 'global)
+    (dired-listing-switches
+     "-l --almost-all --human-readable --group-directories-first --no-group")    
+    (dirvish-attributes
+     '(nerd-icons file-time file-size collapse subtree-state vc-state))  
+    (dirvish-path-separators (list
+                              (format "  %s " (nerd-icons-codicon "nf-cod-home"))
+                              (format "  %s " (nerd-icons-codicon "nf-cod-root_folder"))
+                              (format " %s " (nerd-icons-faicon "nf-fa-angle_right"))))    
+    (dirvish-header-line-format
+     '(:left (path) :right (free-space))
+     dirvish-mode-line-format
+     '(:left (sort file-time " " file-size symlink) :right (omit yank index)))    
+    (dirvish-mode-line-format
+     '(:left (sort symlink) :right (vc-info yank index)))    
+    (dirvish-quick-access-entries
+     '(("h" "~/"                                          "Home")
+       ("d" "~/dump/"                                     "Downloads")
+       ("w" "~/workstation"                               "Workstation")
+       ("p" "~/media/pictures/"                           "Pictures")
+       ("m" "/mnt/"                                       "Drives")
+       ("t" "~/.local/share/Trash/files/"                 "TrashCan")
+       ("r" "/"                                           "Root")))
+    :config
+    (dirvish-side-follow-mode))
+#+end_src
+*** project
+Project.el is more than enough for my project management needs
+#+begin_src emacs-lisp
+  (use-package project
+    :ensure nil
+    :bind
+    (([remap project-list-buffers] . consult-project-buffer)
+    :map ctl-x-map
+    ("C-p" . project-find-file)
+    :map smahm006/project-map
+    ("p" . project-switch-project)
+    ("l" . project-list-buffers)
+    ("b" . project-switch-to-buffer)
+    ("k" . project-kill-buffers)
+    ("S" . smahm006/project-save-all-buffers)
+    ("r" . project-query-replace-regexp)
+    ("s" . project-search))
+    :preface
+    (defun smahm006/project-save-all-buffers (&optional proj arg)
+      "Save all file-visiting buffers in project without asking."
+      (interactive)
+      (let* ((proj (or proj (project-current)))
+             (buffers (project-buffers (proj))))
+        (dolist (buf buffers)
+          ;; Act on base buffer of indirect buffers, if needed.
+          (with-current-buffer (or (buffer-base-buffer buf) buf)
+            (when (and (buffer-file-name buf)   ; Ignore all non-file-visiting buffers.
+                       (buffer-modified-p buf)) ; Ignore all unchanged buffers.
+              (let ((buffer-save-without-query t))  ; Save silently.
+                (save-buffer arg)))))))
+    :config
+    (setq project-buffers-viewer 'project-list-buffers-ibuffer)
+    (setq project-kill-buffers-display-buffer-list t)
+    (setq project-switch-commands
+   	'((project-find-file "Find file")
+            (project-find-regexp "Find regexp")
+            (project-find-dir "Find directory")
+            (magit-project-status "Magit")))
+    (setq project-vc-extra-root-markers '(".project")))
+#+end_src
+** Footer
+#+begin_src text
+;; smahm006-ux.el end
+(provide 'smahm006-ux)
+#+end_src
+* Text Manipulation
 ** Deletion
 ** Navigation
 ** Search and Replace
 ** Spellchecking
-** Multi-Cursor Editing
+** Multi-Cursor
 ** Undo & Redo
-** Privileged Editing
+** Privileged
 * Development
 ** Tree-sitter
 ** Version Control
@@ -992,8 +1467,4 @@ We can override eamcs default mechanism for making buffer name unique
 *** C++
 *** Rust
 
-# #+begin_src emacs-lisp
-#   (use-package emacs
-#     :ensure nil
-#     :preface)
-# #+end_src
+
