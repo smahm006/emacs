@@ -53,13 +53,15 @@ This is the configuration for my personal GNU Emacs setup.
   - [[#undoredo][Undo/Redo]]
   - [[#spellchecking][Spellchecking]]
   - [[#footer-5][Footer]]
-- [[#development][Development]]
-  - [[#tree-sitter][Tree-sitter]]
+- [[#user-development][User Development]]
+  - [[#header-6][Header]]
+  - [[#shell--remote-access][Shell & Remote Access]]
   - [[#version-control][Version Control]]
-  - [[#language-servers][Language Servers]]
+  - [[#language-server-protocol][Language Server Protocol]]
   - [[#linters-and-documentation][Linters and Documentation]]
   - [[#snippets][Snippets]]
   - [[#virtualization][Virtualization]]
+  - [[#footer-6][Footer]]
 - [[#languages][Languages]]
   - [[#markup--configuration][Markup & Configuration]]
   - [[#scripting][Scripting]]
@@ -312,29 +314,29 @@ Some useful utility functions
 ** Keymaps
 Keymaps used for important built-in command or commands from other packages
 #+begin_src emacs-lisp
-    (use-package emacs
-      :ensure nil
-      :preface
-      (defvar smahm006/search-map (make-sparse-keymap) "key-map for searching")
-      (defvar smahm006/goto-map (make-sparse-keymap) "key-map for going to places")
-      (defvar smahm006/window-map (make-sparse-keymap) "key-map for window commands")
-      (defvar smahm006/buffer-map (make-sparse-keymap) "key-map for buffer commands")
-      (defvar smahm006/file-map (make-sparse-keymap) "key-map for file commands")
-      (defvar smahm006/project-map (make-sparse-keymap) "key-map for project commands")
-      (defvar smahm006/version-control-map (make-sparse-keymap) "key-map for version control commands")
-      (defvar smahm006/org-map (make-sparse-keymap) "key-map for org commands")
-      (defvar smahm006/note-map (make-sparse-keymap) "key-map for note taking commands")
-      (defvar smahm006/mc-map (make-sparse-keymap) "key-map for multiple cursors commands")
-      :config
-      (define-key mode-specific-map (kbd "s") (cons "search" smahm006/search-map))
-      (define-key mode-specific-map (kbd "g") (cons "goto" smahm006/goto-map))
-      (define-key mode-specific-map (kbd "w") (cons "window" smahm006/window-map))
-      (define-key mode-specific-map (kbd "b") (cons "buffer" smahm006/buffer-map))
-      (define-key mode-specific-map (kbd "f") (cons "file" smahm006/file-map))
-      (define-key mode-specific-map (kbd "p") (cons "project" smahm006/project-map))
-      (define-key mode-specific-map (kbd "o") (cons "org" smahm006/org-map))
-      (define-key mode-specific-map (kbd "n") (cons "note" smahm006/note-map))
-  	(define-key mode-specific-map (kbd "m") (cons "multi" smahm006/mc-map)))
+  (use-package emacs
+    :ensure nil
+    :preface
+    (defvar smahm006/search-map (make-sparse-keymap) "key-map for searching")
+    (defvar smahm006/goto-map (make-sparse-keymap) "key-map for going to places")
+    (defvar smahm006/window-map (make-sparse-keymap) "key-map for window commands")
+    (defvar smahm006/buffer-map (make-sparse-keymap) "key-map for buffer commands")
+    (defvar smahm006/file-map (make-sparse-keymap) "key-map for file commands")
+    (defvar smahm006/org-map (make-sparse-keymap) "key-map for org commands")
+    (defvar smahm006/note-map (make-sparse-keymap) "key-map for note taking commands")
+    (defvar smahm006/mc-map (make-sparse-keymap) "key-map for multiple cursors commands")
+    (defvar smahm006/vc-map (make-sparse-keymap) "key-map for version control commands")
+    :config
+    (define-key mode-specific-map (kbd "s") (cons "search" smahm006/search-map))
+    (define-key mode-specific-map (kbd "g") (cons "goto" smahm006/goto-map))
+    (define-key mode-specific-map (kbd "w") (cons "window" smahm006/window-map))
+    (define-key mode-specific-map (kbd "b") (cons "buffer" smahm006/buffer-map))
+    (define-key mode-specific-map (kbd "f") (cons "file" smahm006/file-map))
+    (define-key mode-specific-map (kbd "p") (cons "project" project-prefix-map))
+    (define-key mode-specific-map (kbd "o") (cons "org" smahm006/org-map))
+    (define-key mode-specific-map (kbd "n") (cons "note" smahm006/note-map))
+    (define-key mode-specific-map (kbd "m") (cons "multi" smahm006/mc-map))
+  (define-key mode-specific-map (kbd "v") (cons "version control" smahm006/vc-map)))
 #+end_src
 ** Modes
 #+begin_src emacs-lisp
@@ -417,17 +419,12 @@ By default not all environment variables are copied to Emacs. This package ensur
 #+begin_src emacs-lisp
   (use-package exec-path-from-shell
     :hook
-    ((after-init . exec-path-from-shell-initialize)
-     (magit-credential . smahm006/copy-ssh-env))
-    :preface
-    (defun smahm006/copy-ssh-env ()
-      (exec-path-from-shell-copy-env "SSH_AGENT_PID")
-      (exec-path-from-shell-copy-env "SSH_AUTH_SOCK"))
+    (after-init . exec-path-from-shell-initialize)
     :custom
     (epg-pinentry-mode 'loopback)
-    (exec-path-from-shell-variables '("PATH" "SHELL" "GOPATH")))
-  ;; :config
-  ;; (setenv "SSH_AUTH_SOCK" (string-chop-newline (shell-command-to-string "gpgconf --list-dirs agent-ssh-socket")))
+    (exec-path-from-shell-variables '("PATH" "SHELL" "GOPATH"))
+    :config
+    (setenv "SSH_AUTH_SOCK" (string-chop-newline (shell-command-to-string "gpgconf --list-dirs agent-ssh-socket"))))
 #+end_src
 **** [[https://github.com/emacscollective/no-littering][no-littering]]
 The default paths used to store configuration files and persistent data are not consistent across Emacs packages. This isn’t just a problem with third-party packages but even with built-in packages. The following package helps sort that out.
@@ -462,6 +459,7 @@ I use a GPG key stored in a Yubikey for most of my authentication
     :ensure nil
     :init
     (epa-file-enable)
+    (setq epg-pinentry-mode 'loopback)
     :config
     ;; Disable backup and autosave of .vcf and .gpg files
     ;; Alternatively, to protect only some files, like some .txt files, use a line like
@@ -810,8 +808,8 @@ Enable line numbers for some modes
      ((conf-mode) . display-line-numbers-mode)
      ((text-mode) . display-line-numbers-mode)
      ;; Disabled modes
-     (org-mode . (lambda () (display-line-numbers-mode -1)))))
-     ;; (eat-mode . (lambda () (display-line-numbers-mode -1)))
+     (org-mode . (lambda () (display-line-numbers-mode -1))))
+     (eat-mode . (lambda () (display-line-numbers-mode -1))))
 #+end_src
 *** highlight-line
 Highlighting of the current line (native mode)
@@ -1425,16 +1423,12 @@ Project.el is more than enough for my project management needs
     :ensure nil
     :bind
     (([remap project-list-buffers] . consult-project-buffer)
-    :map ctl-x-map
-    ("C-p" . project-find-file)
-    :map smahm006/project-map
-    ("p" . project-switch-project)
-    ("l" . project-list-buffers)
-    ("b" . project-switch-to-buffer)
-    ("k" . project-kill-buffers)
-    ("S" . smahm006/project-save-all-buffers)
-    ("r" . project-query-replace-regexp)
-    ("s" . project-search))
+     :map ctl-x-map
+     ("C-p" . project-find-file)
+     :map project-prefix-map
+     ("l" . project-list-buffers)
+     ("S" . smahm006/project-save-all-buffers)
+     ("s" . project-search))
     :preface
     (defun smahm006/project-save-all-buffers (&optional proj arg)
       "Save all file-visiting buffers in project without asking."
@@ -1452,10 +1446,11 @@ Project.el is more than enough for my project management needs
     (setq project-buffers-viewer 'project-list-buffers-ibuffer)
     (setq project-kill-buffers-display-buffer-list t)
     (setq project-switch-commands
-   	'((project-find-file "Find file")
-            (project-find-regexp "Find regexp")
-            (project-find-dir "Find directory")
-            (magit-project-status "Magit")))
+  		'((project-find-file "Find file" "f")
+  		  (project-find-dir "Find dir" "d")
+  		  (project-dired "Dired" "D")
+  		  (consult-ripgrep "ripgrep" "r")
+  		  (magit-project-status "Magit" "m")))
     (setq project-vc-extra-root-markers '(".project")))
 #+end_src
 *** [[https://github.com/smahm006/emacs/blob/main/config.org#sudo][sudo-edit]]
@@ -1738,13 +1733,167 @@ Enchanted Spell Checker.
 ;; smahm006-editing.el end
 (provide 'smahm006-editing)
 #+end_src
-* Development
-** Tree-sitter
+* User Development
+:PROPERTIES:
+:header-args: :tangle lisp/smahm006-development.el :mkdirp yes
+:END:
+** Header
+#+begin_src emacs-lisp :tangle init.el
+  (require 'smahm006-development)
+#+end_src
+#+begin_src text
+;; init.el - Development
+;; Copyright (C) 2023-2025 Sohaib Mahmood
+;; Homepage: https://github.com/smahm006/emacs
+;; Code:
+#+end_src
+** Shell & Remote Access
+*** tramp
+remote file editing through ssh/scp.
+#+begin_src emacs-lisp
+  (use-package tramp
+    :ensure nil
+    :custom
+    (tramp-verbose 0)
+    (tramp-chunksize 2000)
+    (tramp-histfile-override nil)
+    (tramp-default-method "ssh")
+    :config
+    ;; Allows more dirvish features over tamp
+    ;; Remove if casuing emacs to hang
+    (add-to-list 'tramp-connection-properties
+                 (list (regexp-quote "/ssh:")
+                       "direct-async-process" t)))
+#+end_src
+*** [[https://codeberg.org/akib/emacs-eat][eat]]
+Eat is the best terminal emulator which three modes to switch from
+#+begin_src emacs-lisp
+  (use-package eat
+    :bind
+    ("C-c t" . eat)
+    :config
+    (define-key eat-semi-char-mode-map (kbd "M-o") nil) ;; M-o is used to switch windows
+    (define-key eat-semi-char-mode-map (kbd "M-u") nil) ;; M-u is used to fullscreen buffer
+    )
+#+end_src
 ** Version Control
-** Language Servers
+*** [[https://github.com/magit/magit.git][magit]]
+The magical git client.
+#+begin_src emacs-lisp
+  (use-package magit
+    :bind
+    (:map ctl-x-map
+      	("g" . magit-status))
+    (:map smahm006/vc-map
+  		("f"  . magit-fetch)
+          ("F"  . magit-fetch-all)
+  		("p"  . magit-pull-branch)
+          ("P"  . magit-push-current)
+          ("b"  . magit-branch-or-checkout)
+          ("c"  . magit-commit)
+  		("a"  . smahm006/magit-amend-file-and-push)
+  		("A"  . smahm006/magit-amend-all-and-push)
+          ("d"  . magit-diff-unstaged)
+          ("la" . magit-log-all)
+          ("lc" . magit-log-current)
+          ("lf" . magit-log-buffer-file)
+          ("r"  . magit-rebase))
+    :preface
+    (defun smahm006/magit-amend-file-and-push ()
+  	"Stage only the current file, amend the last commit without editing, and force push with lease."
+  	(interactive)
+  	(let ((file (buffer-file-name)))
+  	  (if file
+  		  (progn
+  			(magit-run-git "add" file)
+  			(magit-run-git "commit" "--amend" "--no-edit")
+  			(magit-run-git "push" "--force-with-lease"))
+  		(message "No file associated with this buffer!"))))
+    (defun smahm006/magit-amend-all-and-push ()
+  	"Stage all unstaged files, amend the last commit without editing, and force push with lease."
+  	(interactive)
+  	(magit-stage-modified)
+  	(magit-run-git "commit" "--amend" "--no-edit")
+  	(magit-run-git "push" "--force-with-lease")))
+#+end_src
+*** [[https://github.com/alphapapa/magit-todos.git][magit-todos]]
+Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
+#+begin_src emacs-lisp
+  (use-package magit-todos
+    :after magit
+    :init (magit-todos-mode))
+#+end_src
+*** [[https://github.com/dgutov/diff-hl.git][diff-hl]]
+Emacs package for highlighting uncommitted changes.
+#+begin_src emacs-lisp
+  (use-package diff-hl
+    :hook
+    ((find-file    . diff-hl-mode)
+     (vc-dir-mode  . diff-hl-dir-mode)
+     (dired-mode   . diff-hl-dired-mode)
+     (diff-hl-mode . diff-hl-flydiff-mode)
+     (magit-pre-refresh . diff-hl-magit-pre-refresh)
+     (magit-post-refresh . diff-hl-magit-post-refresh))
+    :bind
+    (:map smahm006/vc-map
+          ("g" . diff-hl-show-hunk)
+          :repeat-map diff-hl-show-hunk-map
+          ("n" . diff-hl-show-hunk-next)
+          ("p" . diff-hl-show-hunk-previous)
+          ("r" . diff-hl-revert-hunk)
+          ("S" . diff-hl-stage-current-hunk)
+          :exit
+          ("C" . magit-commit-create))
+    :custom
+    ;; A slightly faster algorithm for diffing.
+    (vc-git-diff-switches '("--histogram"))
+    ;; Slightly more conservative delay before updating the diff
+    (diff-hl-flydiff-delay 0.5)  ; default: 0.3
+    ;; UX: get realtime feedback in diffs after staging/unstaging hunks.
+    (diff-hl-show-staged-changes nil)
+    :preface
+    (defun smahm006/diff-hl-inline-popup-show-adv (orig-func &rest args)
+      (setcar (nthcdr 2 args) "")
+      (apply orig-func args))
+    (defun smahm006/diff-hl-fix-face-colors (&rest _)
+      "Set foreground to background color for diff-hl faces"
+      (seq-do (lambda (face)
+                (if-let ((color (face-background face)))
+                    (progn (set-face-foreground face color)
+                           (set-face-background face nil))))
+              '(diff-hl-insert
+                diff-hl-delete
+                diff-hl-change)))
+    :config
+    (advice-add #'diff-hl-inline-popup-show :around #'smahm006/diff-hl-inline-popup-show-adv)
+    ;; UI: minimal fringe indicators
+    ;; https://github.com/dgutov/diff-hl/issues/116#issuecomment-1573253134
+    (let* ((width 2)
+           (bitmap (vector (1- (expt 2 width)))))
+      (define-fringe-bitmap 'smahm006/diff-hl-bitmap bitmap 1 width '(top t)))
+    (setq diff-hl-fringe-bmp-function (lambda (type pos) 'smahm006/diff-hl-bitmap))
+    (smahm006/diff-hl-fix-face-colors)
+    (advice-add #'enable-theme :after #'smahm006/diff-hl-fix-face-colors)
+    (when (not (display-graphic-p))
+      (diff-hl-margin-mode)))
+#+end_src
+*** [[https://codeberg.org/pidu/git-timemachine.git][git-timemachine]]
+Step through historic versions of git controlled file
+#+begin_src emacs-lisp
+  (use-package git-timemachine
+    :bind
+    (:map smahm006/vc-map
+          ("t" . git-timemachine)))
+#+end_src
+** Language Server Protocol
 ** Linters and Documentation
 ** Snippets
 ** Virtualization
+** Footer
+#+begin_src text
+;; smahm006-development.el end
+(provide 'smahm006-development)
+#+end_src
 * Languages
 ** Markup & Configuration
 *** HTML
