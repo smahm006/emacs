@@ -45,14 +45,14 @@ This is the configuration for my personal GNU Emacs setup.
   - [[#buffer-management][Buffer Management]]
   - [[#file-management][File Management]]
   - [[#footer-4][Footer]]
-- [[#text-manipulation][Text Manipulation]]
-  - [[#deletion][Deletion]]
+- [[#user-editing][User Editing]]
+  - [[#header-5][Header]]
+  - [[#editing-defaults][Editing Defaults]]
+  - [[#text-manipulation][Text Manipulation]]
   - [[#navigation][Navigation]]
-  - [[#search-and-replace][Search and Replace]]
+  - [[#undoredo][Undo/Redo]]
   - [[#spellchecking][Spellchecking]]
-  - [[#multi-cursor][Multi-Cursor]]
-  - [[#undo--redo][Undo & Redo]]
-  - [[#privileged][Privileged]]
+  - [[#footer-5][Footer]]
 - [[#development][Development]]
   - [[#tree-sitter][Tree-sitter]]
   - [[#version-control][Version Control]]
@@ -90,7 +90,7 @@ This is the configuration for my personal GNU Emacs setup.
     (defvar xdg-lib (getenv "XDG_LIB_HOME")))
 #+end_src
 ** Optimize Startup Time
-#+begin_src emacs-lisp  
+#+begin_src emacs-lisp
   ;; We're going to increase the gc-cons-threshold to a very high number to decrease the load time and add a hook to measure Emacs startup time.
   (setq gc-cons-threshold most-positive-fixnum
         gc-cons-percentage 0.6)
@@ -154,7 +154,7 @@ This is the configuration for my personal GNU Emacs setup.
   (scroll-bar-mode -1)
 #+end_src
 ** Configure Byte Compile
-#+begin_src emacs-lisp    
+#+begin_src emacs-lisp
   ;; In noninteractive sessions, prioritize non-byte-compiled source files to
   ;; prevent the use of stale byte-code. Otherwise, it saves us a little IO time
   ;; to skip the mtime checks on every *.elc file.
@@ -178,7 +178,7 @@ This is the configuration for my personal GNU Emacs setup.
   (setq confirm-kill-processes t)
 #+end_src
 ** Runtime optimizations
-#+begin_src emacs-lisp  
+#+begin_src emacs-lisp
   ;; PERF: A second, case-insensitive pass over `auto-mode-alist' is time wasted.
   (setq auto-mode-case-fold nil)
 
@@ -238,7 +238,7 @@ This is the configuration for my personal GNU Emacs setup.
     ;; User details
     (user-full-name "Sohaib Mahmood")                     ; Set the full name of the current user
     (user-mail-address "soh.mahmood@fastmail.com")        ; Set the email address of the current user
-    
+
     ;; Startup
     ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
     (inhibit-splash-screen t)                            ; Disable startup screens and messages
@@ -298,7 +298,7 @@ Some useful utility functions
       (if (string-match-p "^sm-" (system-name))
       	"home"
         "work"))
-    ;; Interactive    
+    ;; Interactive
     (defun smahm006/reload-config ()
       "Reload init file, which will effectively reload everything"
       (interactive)
@@ -312,28 +312,29 @@ Some useful utility functions
 ** Keymaps
 Keymaps used for important built-in command or commands from other packages
 #+begin_src emacs-lisp
-  (use-package emacs
-    :ensure nil
-    :preface
-    (defvar smahm006/search-map (make-sparse-keymap) "key-map for searching")
-    (defvar smahm006/goto-map (make-sparse-keymap) "key-map for going to places")
-    (defvar smahm006/window-map (make-sparse-keymap) "key-map for window commands")
-    (defvar smahm006/buffer-map (make-sparse-keymap) "key-map for buffer commands")
-    (defvar smahm006/file-map (make-sparse-keymap) "key-map for file commands")
-    (defvar smahm006/project-map (make-sparse-keymap) "key-map for project commands")
-    (defvar smahm006/version-control-map (make-sparse-keymap) "key-map for version control commands")
-    (defvar smahm006/org-map (make-sparse-keymap) "key-map for org commands")
-    (defvar smahm006/note-map (make-sparse-keymap) "key-map for note taking commands")
-    
-    :config
-    (define-key mode-specific-map (kbd "s") (cons "search" smahm006/search-map))
-    (define-key mode-specific-map (kbd "g") (cons "goto" smahm006/goto-map))    
-    (define-key mode-specific-map (kbd "w") (cons "window" smahm006/window-map))
-    (define-key mode-specific-map (kbd "b") (cons "buffer" smahm006/buffer-map))
-    (define-key mode-specific-map (kbd "f") (cons "file" smahm006/file-map))
-    (define-key mode-specific-map (kbd "p") (cons "project" smahm006/project-map))    
-    (define-key mode-specific-map (kbd "o") (cons "org" smahm006/org-map))    
-    (define-key mode-specific-map (kbd "n") (cons "note" smahm006/note-map)))
+    (use-package emacs
+      :ensure nil
+      :preface
+      (defvar smahm006/search-map (make-sparse-keymap) "key-map for searching")
+      (defvar smahm006/goto-map (make-sparse-keymap) "key-map for going to places")
+      (defvar smahm006/window-map (make-sparse-keymap) "key-map for window commands")
+      (defvar smahm006/buffer-map (make-sparse-keymap) "key-map for buffer commands")
+      (defvar smahm006/file-map (make-sparse-keymap) "key-map for file commands")
+      (defvar smahm006/project-map (make-sparse-keymap) "key-map for project commands")
+      (defvar smahm006/version-control-map (make-sparse-keymap) "key-map for version control commands")
+      (defvar smahm006/org-map (make-sparse-keymap) "key-map for org commands")
+      (defvar smahm006/note-map (make-sparse-keymap) "key-map for note taking commands")
+      (defvar smahm006/mc-map (make-sparse-keymap) "key-map for multiple cursors commands")
+      :config
+      (define-key mode-specific-map (kbd "s") (cons "search" smahm006/search-map))
+      (define-key mode-specific-map (kbd "g") (cons "goto" smahm006/goto-map))
+      (define-key mode-specific-map (kbd "w") (cons "window" smahm006/window-map))
+      (define-key mode-specific-map (kbd "b") (cons "buffer" smahm006/buffer-map))
+      (define-key mode-specific-map (kbd "f") (cons "file" smahm006/file-map))
+      (define-key mode-specific-map (kbd "p") (cons "project" smahm006/project-map))
+      (define-key mode-specific-map (kbd "o") (cons "org" smahm006/org-map))
+      (define-key mode-specific-map (kbd "n") (cons "note" smahm006/note-map))
+  	(define-key mode-specific-map (kbd "m") (cons "multi" smahm006/mc-map)))
 #+end_src
 ** Modes
 #+begin_src emacs-lisp
@@ -354,7 +355,7 @@ Keymaps used for important built-in command or commands from other packages
     (if (symbol-value sensitive-mode)
         (progn
   	;; Disable backups
-  	(set (make-local-variable 'backup-inhibited) t)	
+  	(set (make-local-variable 'backup-inhibited) t)
   	;; Disable auto-save
   	(if auto-save-default
   	    (auto-save-mode -1)))
@@ -467,7 +468,7 @@ I use a GPG key stored in a Yubikey for most of my authentication
     ;; // -*-mode:asciidoc; mode:sensitive-minor; fill-column:132-*-
     (setq auto-mode-alist
   	(append
-  	 (list '("\\.\\(vcf\\|gpg\\)$" . sensitive-minor-mode)) auto-mode-alist)))  
+  	 (list '("\\.\\(vcf\\|gpg\\)$" . sensitive-minor-mode)) auto-mode-alist)))
 #+end_src
 ** Footer
 #+begin_src text
@@ -500,19 +501,19 @@ Org short for organization of my life mainly by using org-mode
       (setq org-archive-location (format "%s/%%s::" org-archive-directory)))
     :hook
     (org-mode . org-indent-mode)
-    (org-mode . visual-line-mode)    
+    (org-mode . visual-line-mode)
     :bind
     (:map smahm006/org-map
           ("c" . org-capture)
-          ("a" . org-agenda)) 
+          ("a" . org-agenda))
     :custom
     (org-confirm-babel-evaluate nil)                     ; Do not ask about code evaluation
     (org-return-follows-link t)                          ; Follow links if entered on
     (org-mouse-1-follows-link t)                         ; Follow links if clicked on
     (org-link-descriptive t)                             ; Show links by description not URL
     (org-enforce-todo-dependencies t)                    ; Cannot set a headline to DONE if children aren’t DONE
-    (org-log-done 'time)                                 ; Add timstamp to items when done    
-    
+    (org-log-done 'time)                                 ; Add timstamp to items when done
+
     ;; Languages to autoload for babel
     (org-babel-load-languages '((emacs-lisp . t)
                                 (shell . t)
@@ -587,7 +588,9 @@ Toggle visibility of hidden Org mode element parts upon entering and leaving an 
 #+begin_src emacs-lisp
   (use-package org-appear
     :after org
-    :hook (org-mode . org-appear-mode))
+    :hook (org-mode . org-appear-mode)
+    :custom
+    (org-appear-autolinks t))
 #+end_src
 ** Capture
 #+begin_src emacs-lisp :tangle init.el
@@ -598,7 +601,7 @@ Toggle visibility of hidden Org mode element parts upon entering and leaving an 
     (org-todo-keywords
      '((sequence
         "TODO(t)"  ; A task that needs doing & is ready to do
-        "NEXT(n)"  ; Next task in a project          
+        "NEXT(n)"  ; Next task in a project
         "|"
         "DONE(d)"  ; Task successfully completed
         )
@@ -717,7 +720,7 @@ the UNIX command line.
     (cursor-intangible-mode t)                           ; Enforce cursor intangibility
     (x-stretch-cursor nil)                               ; Don't stretch cursor to the glyph width
     (blink-cursor-mode t)                                ; Blink cursor
-    
+
     ;; Enable window dividers
     (window-divider-default-bottom-width 2)
     (window-divider-default-right-width 2)
@@ -907,7 +910,7 @@ The mode displays the key bindings following your currently entered incomplete c
   (use-package which-key
     :ensure nil
     :hook
-    (after-init . which-key-mode)  
+    (after-init . which-key-mode)
     :custom
     (which-key-idle-delay 0.5)
     (which-key-compute-remaps t)
@@ -927,16 +930,16 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
           ("<return>" . vertico-directory-enter))
     :hook
     ((minibuffer-setup . cursor-intangible-mode)
-     (after-init . vertico-mode))    
-    :custom    
+     (after-init . vertico-mode))
+    :custom
     (vertico-count 20)                         ; Show more candidates
     (vertico-resize t)                         ; Grow and shrink the Vertico minibuffer
     (vertico-cycle t)                          ; Enable cycling for `vertico-next' and `vertico-previous'.
     (minibuffer-prompt-properties              ; Do not allow the cursor in the minibuffer prompt
-     '(read-only t cursor-intangible t face minibuffer-prompt))    
+     '(read-only t cursor-intangible t face minibuffer-prompt))
     (read-extended-command-predicate           ; Vertico commands are hidden in normal buffers.
      #'command-completion-default-include-p)
-    (enable-recursive-minibuffers t)           ; Enable recursive minibuffers    
+    (enable-recursive-minibuffers t)           ; Enable recursive minibuffers
     (vertico-mouse-mode t)                     ; Enable Mouse support
     :preface
     ;; Add prompt indicator to `completing-read-multiple'.
@@ -957,7 +960,7 @@ Richer annotations in the minibuffer.
   (use-package marginalia
     :after vertico
     :hook
-    (vertico-mode . marginalia-mode)    
+    (vertico-mode . marginalia-mode)
     :custom
     (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil)))
 #+end_src
@@ -974,51 +977,32 @@ Emacs completion style that matches multiple regexps in any order
 Additional featureful completion commands.
 #+begin_src emacs-lisp
   (use-package consult
-    :bind (([remap Info-searpch] . consult-info)           
+    :bind (([remap Info-searpch] . consult-info)
            ([remap bookmark-jump] . consult-bookmark)
            ([remap goto-line] . consult-goto-line)
            ([remap imenu] . consult-imenu)
            ([remap locate] . consult-locate)
            ([remap load-theme] . consult-theme)
-           ([remap man] . consult-man)           
-           ([remap yank-pop] . consult-yank-pop)           
-           ([remap yank-pop] . consult-yank-pop)
+           ([remap man] . consult-man)
            :map smahm006/goto-map
            ("e" . consult-compile-error)
-           ("f" . consult-flymake)            
-           ("g" . consult-goto-line)          
-           ("o" . consult-outline)            
+           ("f" . consult-flymake)
+           ("g" . consult-goto-line)
+           ("o" . consult-outline)
            ("m" . consult-mark)
            ("k" . consult-global-mark)
            ("i" . consult-imenu)
            ("I" . consult-imenu-multi)
-           :map smahm006/search-map
-           ("f" . consult-find)
-           ("F" . consult-locate)
-           ("g" . consult-grep)
-           ("G" . consult-git-grep)
-           ("r" . consult-ripgrep)
-           ("l" . consult-line)
-           ("L" . consult-line-multi)
-           ("k" . consult-keep-lines)
-           ("u" . consult-focus-lines)
-           ("e" . consult-isearch-history)
-           :map isearch-mode-map
-           ("M-e" . consult-isearch-history)
-           ("M-s e" . consult-isearch-history)
-           ("M-s l" . consult-line)           
-           ("M-s L" . consult-line-multi)     
            :map minibuffer-local-map
-           ("M-s" . consult-history)          
+           ("M-s" . consult-history)
            ("M-r" . consult-history))
     :custom
-    (consult-yank-rotate 1)
     (register-preview-delay 0.5)
     (register-preview-function #'consult-register-format)
     (xref-show-xrefs-function #'consult-xref)
     (xref-show-definitions-function #'consult-xref))
 #+end_src
-*** COMMENT [[https://github.com/oantolin/embark.git][embark]]
+*** [[https://github.com/oantolin/embark.git][embark]]
 Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session and in normal buffers.
 #+begin_src emacs-lisp
   (use-package embark
@@ -1075,6 +1059,14 @@ Embark makes it easy to choose a command to run based on what is near point, bot
             embark-isearch-highlight-indicator))
     (advice-add #'embark-completing-read-prompter
                 :around #'embark-hide-which-key-indicator))
+#+end_src
+**** [[https://github.com/oantolin/embark/blob/master/embark-consult.el][embark-consult]]
+Consult users will also want the embark-consult package.
+#+begin_src emacs-lisp
+  (use-package embark-consult
+    :after embark
+    :hook
+    (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 ** Window Management
 *** [[https://github.com/abo-abo/ace-window.git][ace-window]]
@@ -1135,7 +1127,7 @@ Quickly switch windows in Emacs.
        nil "[ace-window]")
       (message "Use `ace-window' to display next command buffer..."))
     :custom
-    (aw-minibuffer-flag nil)    
+    (aw-minibuffer-flag nil)
     ;; Make Emacs ask where to place a new buffer
     (display-buffer-base-action
      '((display-buffer-reuse-window
@@ -1153,7 +1145,7 @@ Prevent windows from jumping on minibuffer activation.
   (use-package mini-ontop
     :vc (:url "https://github.com/hkjels/mini-ontop.el" :branch "main")
     :hook
-    (after-init . mini-ontop-mode)    
+    (after-init . mini-ontop-mode)
     :custom
     (mini-ontop-lines 22)
     :config
@@ -1172,7 +1164,7 @@ To manage them better, I use the ibuffer built-in package instead of buffer-menu
     (([remap switch-to-buffer] . consult-buffer)
     ([remap switch-to-buffer-other-window] . consult-buffer-other-window)
     ([remap switch-to-buffer-other-frame]  . consult-buffer-other-frame)
-    ([remap kill-buffer] . kill-current-buffer)    
+    ([remap kill-buffer] . kill-current-buffer)
     :map ctl-x-map
     ("B" . smahm006/switch-to-previous-buffer)
     :map smahm006/buffer-map
@@ -1247,7 +1239,27 @@ We can also view the diff between backups and selectively restore one
   (use-package backup-walker
     :demand t
     :hook
-    (after-init . savehist-mode)    
+    (after-init . savehist-mode)
+    (before-save . smahm006/backup-buffer)
+    :init
+    (defvar backup-session-dir (format "%s/emacs/backups/session/" xdg-data))
+    (defvar backup-save-dir (format "%s/emacs/backups/save/" xdg-data))
+    (let* ((auto-save-dir (format "%s/emacs/auto-save/" xdg-cache)))
+      (smahm006/mkdir backup-session-dir)
+      (smahm006/mkdir backup-save-dir)
+      (smahm006/mkdir auto-save-dir)
+      (setq auto-save-file-name-transforms `((".*" ,auto-save-dir t))))
+    (setq backup-directory-alist `(("." . ,backup-session-dir)))
+    :preface
+    (defun smahm006/backup-buffer ()
+      "Make a session backup at the first save of each emacs session and a save backup on each subsequent save."
+      (setq backup-directory-alist `(("." . ,backup-save-dir)))
+      (when (not buffer-backed-up)
+        (let ((backup-directory-alist `(("." . ,backup-session-dir)))
+  	    (kept-new-versions 3))
+  	(backup-buffer)))
+      (let ((buffer-backed-up nil))
+        (backup-buffer)))
     :custom
     ;; Session backups
     (backup-by-copying t)                              ; Backs up by moving the actual file, no symlinks
@@ -1258,23 +1270,39 @@ We can also view the diff between backups and selectively restore one
     (kept-old-versions 100)                            ; Number of oldest versions to keep
     (delete-old-versions t)                            ; Delete excess backup files silently
     (delete-by-moving-to-trash t)                      ; Delete backups to trash
-    
+
     ;; Auto save backups
     (auto-save-default t)                              ; Auto-save every buffer that visits a file
-    (auto-save-timeout 20)                             ; Number of seconds between auto-save
-    (auto-save-interval 200)                           ; Number of keystrokes between auto-saves
+    (auto-save-timeout 30)                             ; Number of seconds between auto-save
+    (auto-save-interval 300)                           ; Number of keystrokes between auto-saves
 
     ;; Command history backup
     (history-delete-duplicates t)                      ; Delete duplicates in history
-    (history-length 25)                                ; Max history length
-    (savehist-file (format "%s/emacs/history" xdg-cache))   ; history backup location
+    (history-length 500)                               ; Max history length
+    (savehist-file (format "%s/emacs/history" xdg-cache))
+    (savehist-additional-variables
+     '(kill-ring
+       command-history
+       set-variable-value-history
+       custom-variable-history
+       query-replace-history
+       read-expression-history
+       minibuffer-history
+       read-char-history
+       face-name-history
+       bookmark-history
+       file-name-history))
     :config
-    (let* ((backup-session-dir  (format "%s/emacs/backups/session/" xdg-data))
-    	 (auto-save-dir (format "%s/emacs/backups/saves/" xdg-data)))
-      (smahm006/mkdir backup-session-dir)
-      (smahm006/mkdir auto-save-dir)
-      (setq backup-directory-alist `(("." . ,backup-session-dir)))
-      (setq auto-save-file-name-transforms `((".*" ,auto-save-dir t)))))
+    (put 'minibuffer-history         'history-length 500)
+    (put 'file-name-history          'history-length 500)
+    (put 'set-variable-value-history 'history-length 250)
+    (put 'custom-variable-history    'history-length 250)
+    (put 'query-replace-history      'history-length 250)
+    (put 'read-expression-history    'history-length 250)
+    (put 'read-char-history          'history-length 250)
+    (put 'face-name-history          'history-length 250)
+    (put 'bookmark-history           'history-length 250))
+
 #+end_src
 *** autorevert
 Revert buffers when the underlying file has changed
@@ -1283,7 +1311,7 @@ Revert buffers when the underlying file has changed
     :ensure nil
     :bind
     (:map smahm006/file-map
-          ("x" . revert-buffer))        
+          ("x" . revert-buffer))
     :hook
     (after-init . global-auto-revert-mode)
     :custom
@@ -1303,7 +1331,7 @@ Revert buffers when the underlying file has changed
     ([remap recentf-open] . consult-recent-file)
     ([remap recentf-open-files] . consult-recent-file)
     (:map smahm006/file-map
-          ("r" . recentf-open))    
+          ("r" . recentf-open))
     :custom
     (recentf-keep '(file-remote-p file-readable-p))
     (recentf-max-menu-items 10)
@@ -1321,13 +1349,13 @@ Open, view, browse, restore or permanently delete trashed files
   (use-package trashed
     :bind
     (:map smahm006/file-map
-          ("t" . trashed))    
-    :config
-    (setq delete-by-moving-to-trash t)    
-    (setq trashed-action-confirmer 'y-or-n-p)
-    (setq trashed-use-header-line t)
-    (setq trashed-sort-key '("Date deleted" . t))
-    (setq trashed-date-format "%Y-%m-%d %H:%M:%S"))
+          ("t" . trashed))
+    :custom
+    (delete-by-moving-to-trash t)
+    (trashed-action-confirmer 'y-or-n-p)
+    (trashed-use-header-line t)
+    (trashed-sort-key '("Date deleted" . t))
+    (trashed-date-format "%Y-%m-%d %H:%M:%S"))
 #+end_src
 *** [[https://github.com/alexluigit/dirvish][dirvish]]
 Dirvish is an improved version built on Emacs's builtin file manager Dired.
@@ -1337,21 +1365,21 @@ Dirvish is an improved version built on Emacs's builtin file manager Dired.
     (dirvish-override-dired-mode)
     :bind
     ("<f1>" . dirvish-side)
-    (:map smahm006/file-map  	
+    (:map smahm006/file-map
   	("d" . dirvish)
-  	("f" . dirvish-fd))    
+  	("f" . dirvish-fd))
     (:map dirvish-mode-map
   	("F"   . dirvish-toggle-fullscreen)
   	("N"   . dirvish-narrow)
   	("M-f" . dirvish-history-go-forward)
-  	("M-b" . dirvish-history-go-backward)  	  
+  	("M-b" . dirvish-history-go-backward)
   	("M-p" . dired-up-directory)
   	("M-n" . dired-find-file)
   	("M-d" . empty-trash)
   	("M-l" . dirvish-ls-switches-menu)
   	("M-m" . dirvish-mark-menu)
   	("M-s" . dirvish-setup-menu)
-  	("M-t" . dirvish-layout-toggle)  	
+  	("M-t" . dirvish-layout-toggle)
   	("a"   . dirvish-quick-access)
   	("s"   . dirvish-quicksort)
   	("f"   . dirvish-file-info-menu)
@@ -1359,26 +1387,26 @@ Dirvish is an improved version built on Emacs's builtin file manager Dired.
   	("v"   . dirvish-vc-menu)
   	("^"   . dirvish-history-last)
   	("h"   . dirvish-history-jump)
-  	("z"   . dirvish-show-history)  	    	
+  	("z"   . dirvish-show-history)
   	("TAB" . dirvish-subtree-toggle))
     :custom
     (dirvish-reuse-session nil)
     (dirvish-subtree-state-style 'nerd)
     (dirvish-use-header-line 'global)
     (dired-listing-switches
-     "-l --almost-all --human-readable --group-directories-first --no-group")    
+     "-l --almost-all --human-readable --group-directories-first --no-group")
     (dirvish-attributes
-     '(nerd-icons file-time file-size collapse subtree-state vc-state))  
+     '(nerd-icons file-time file-size collapse subtree-state vc-state))
     (dirvish-path-separators (list
                               (format "  %s " (nerd-icons-codicon "nf-cod-home"))
                               (format "  %s " (nerd-icons-codicon "nf-cod-root_folder"))
-                              (format " %s " (nerd-icons-faicon "nf-fa-angle_right"))))    
+                              (format " %s " (nerd-icons-faicon "nf-fa-angle_right"))))
     (dirvish-header-line-format
      '(:left (path) :right (free-space))
      dirvish-mode-line-format
-     '(:left (sort file-time " " file-size symlink) :right (omit yank index)))    
+     '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
     (dirvish-mode-line-format
-     '(:left (sort symlink) :right (vc-info yank index)))    
+     '(:left (sort symlink) :right (vc-info yank index)))
     (dirvish-quick-access-entries
      '(("h" "~/"                                          "Home")
        ("d" "~/dump/"                                     "Downloads")
@@ -1430,19 +1458,286 @@ Project.el is more than enough for my project management needs
             (magit-project-status "Magit")))
     (setq project-vc-extra-root-markers '(".project")))
 #+end_src
+*** [[https://github.com/smahm006/emacs/blob/main/config.org#sudo][sudo-edit]]
+#+begin_src emacs-lisp
+  (use-package sudo-edit
+    :bind
+    (:map smahm006/file-map
+          ("e" . sudo-edit)))
+#+end_src
 ** Footer
 #+begin_src text
 ;; smahm006-ux.el end
 (provide 'smahm006-ux)
 #+end_src
-* Text Manipulation
-** Deletion
+* User Editing
+:PROPERTIES:
+:header-args: :tangle lisp/smahm006-editing.el :mkdirp yes
+:END:
+** Header
+#+begin_src emacs-lisp :tangle init.el
+  (require 'smahm006-editing)
+#+end_src
+#+begin_src text
+;; init.el - Editing
+;; Copyright (C) 2023-2025 Sohaib Mahmood
+;; Homepage: https://github.com/smahm006/emacs
+;; Code:
+#+end_src
+** Editing Defaults
+#+begin_src emacs-lisp
+  (use-package emacs
+    :ensure nil
+    :custom
+    ;; Typography
+    (fill-column 80)                                     ; Default line width
+    (tab-width 4)                                        ; Set width for tabs
+    (kill-ring-max 128)                                  ; Maximum length of kill ring
+    (mark-ring-max 128)                                  ; Maximum length of mark ring
+    (kill-do-not-save-duplicates t)                      ; Remove duplicates from kill ring
+    (delete-selection-mode t)                            ; Typing will replace a selected region
+    (require-final-newline t)                            ; Always add new line to end of file
+    (sentence-end-double-space nil)                      ; Use a single space after dots
+    (truncate-string-ellipsis "…")                       ; Nicer ellipsis
+
+    ;; Default to utf-8 encoding
+    (set-default-coding-systems 'utf-8)
+    (prefer-coding-system 'utf-8)
+    (set-language-environment 'utf-8)
+    (set-default-coding-systems 'utf-8)
+    (set-terminal-coding-system 'utf-8)
+    (set-selection-coding-system 'utf-8))
+#+end_src
+** Text Manipulation
+*** kill/yank
+Better kill and yank bindings
+#+begin_src emacs-lisp
+(use-package simple
+  :ensure nil
+  :hook (before-save . delete-trailing-whitespace)
+  :bind (([remap yank-pop] . consult-yank-pop)
+         ([remap kill-region] . smahm006/kill-region-or-line)
+         ("C-<backspace>" . smahm006/backward-kill-thing)
+         ("C-M-d" . smahm006/delete-surround-at-point))
+  :preface
+  (defun smahm006/backward-kill-thing ()
+    "Delete sexp, symbol, word or whitespace backward depending on the context at point."
+    (interactive)
+    (let ((bounds (seq-some #'bounds-of-thing-at-point '(sexp symbol word))))
+      (cond
+       ;; If there are bounds and point is within them, kill the region
+       ((and bounds (< (car bounds) (point)))
+        (kill-region (car bounds) (point)))
+       ;; If there's whitespace before point, delete it
+       ((thing-at-point-looking-at "\\([ \n]+\\)")
+        (if (< (match-beginning 1) (point))
+            (kill-region (match-beginning 1) (point))
+          (kill-backward-chars 1)))
+       ;; If none of the above, delete one character backward
+       (t
+        (kill-backward-chars 1)))))
+  (defun smahm006/kill-region-or-line ()
+    "Kill the region if active, otherwise kill the current line.
+     With a prefix argument, copy the entire buffer content to the kill-ring."
+    (interactive)
+    (if current-prefix-arg
+        (progn
+          (kill-new (buffer-string))
+          (delete-region (point-min) (point-max)))
+      (if (use-region-p)
+          (kill-region (region-beginning) (region-end) t)
+        (kill-region (line-beginning-position) (line-beginning-position 2)))))
+  :custom
+  (yank-from-kill-ring-rotate t)
+  (set-mark-command-repeat-pop t))
+#+end_src
+*** [[https://github.com/szermatt/visual-replace][visual-replace]]
+Nicer interface to Query-Replace
+#+begin_src emacs-lisp
+  (use-package visual-replace
+    :bind (([remap query-replace] . visual-replace)
+           :map isearch-mode-map
+           ("M-%" . visual-replace-from-isearch))
+    :config
+    (define-key visual-replace-mode-map [remap yank] nil)
+    (define-key visual-replace-mode-map [remap yank-pop] nil)
+    (define-key visual-replace-mode-map (kbd "M-%")
+                visual-replace-secondary-mode-map))
+#+end_src
+*** [[https://github.com/magnars/multiple-cursors.el][multiple-cursors]]
+Edit multiple lines at once
+#+begin_src emacs-lisp
+  (use-package multiple-cursors
+    :bind (:map smahm006/mc-map
+  			  ("<escape>" . mc/keyboard-quit)
+  			  ("r" . mc/mark-all-in-region-regexp)
+  			  ("b" . mc/edit-beginnings-of-lines)
+  			  ("e" . mc/edit-ends-of-lines)
+  			  :repeat-map smahm006/mc-map
+  			  ("n" . mc/mark-next-like-this)
+  			  ("p" . mc/mark-previous-like-this)
+  			  :exit
+  			  ("a" . mc/mark-all-like-this)
+  			  ("m" . mc/edit-lines)))
+#+end_src
 ** Navigation
-** Search and Replace
+*** navigation
+Better navigation bindings
+#+begin_src emacs-lisp
+  (use-package simple
+    :ensure nil
+    :bind (("M-p" . smahm006/move-line-up)
+  		 ("M-n" . smahm006/move-line-down)
+  		 ("C-a" . smahm006/smarter-move-beginning-of-line)
+  		 ("C-<return>" . smahm006/smart-open-line-below)
+  		 ("M-<return>" . smahm006/smart-open-line-above)
+  		 ("M-<backspace>" . smahm006/smart-kill-line-backwards)
+  		 ([remap kill-whole-line] . smahm006/smart-kill-whole-line))
+    :preface
+    (defun smahm006/smarter-move-beginning-of-line (arg)
+      "Move point back to indentation of beginning of line."
+      (interactive "^p")
+      (setq arg (or arg 1))
+      (when (/= arg 1)
+        (let ((line-move-visual nil))
+          (forward-line (1- arg))))
+      (let ((orig-point (point)))
+        (back-to-indentation)
+        (when (= orig-point (point))
+          (move-beginning-of-line 1))))
+    (defun smahm006/smart-kill-whole-line (&optional arg)
+      "A simple wrapper around `kill-whole-line' that respects indentation."
+      (interactive "P")
+      (kill-whole-line arg)
+      (back-to-indentation))
+    (defun smahm006/move-line-up ()
+      "Move up the current line."
+      (interactive)
+      (transpose-lines 1)
+      (forward-line -2)
+      (indent-according-to-mode))
+    (defun smahm006/move-line-down ()
+      "Move down the current line."
+      (interactive)
+      (forward-line 1)
+      (transpose-lines 1)
+      (forward-line -1)
+      (indent-according-to-mode))
+    (defun smahm006/smart-open-line-below ()
+      "Insert an empty line after the current line.
+          Position the cursor at its beginning, according to the current mode."
+      (interactive)
+      (move-end-of-line nil)
+      (newline-and-indent))
+    (defun smahm006/smart-open-line-above ()
+      "Insert an empty line above the current line.
+        Position the cursor at it's beginning, according to the current mode."
+      (interactive)
+      (move-beginning-of-line nil)
+      (newline-and-indent)
+      (forward-line -1)
+      (indent-according-to-mode))
+    (defun smahm006/smart-kill-line-backwards ()
+      "Insert an empty line above the current line.
+        Position the cursor at it's beginning, according to the current mode."
+      (interactive)
+      (kill-line 0)
+      (indent-according-to-mode)))
+#+end_src
+*** isearch
+Better search bindings
+#+begin_src emacs-lisp
+  (use-package isearch
+    :ensure nil
+    :bind (:map smahm006/search-map
+  	 ("f" . consult-find)
+           ("F" . consult-locate)
+           ("g" . consult-grep)
+           ("G" . consult-git-grep)
+           ("r" . consult-ripgrep)
+           ("l" . consult-line)
+           ("L" . consult-line-multi)
+           ("k" . consult-keep-lines)
+           ("u" . consult-focus-lines)
+           ("e" . consult-isearch-history)
+           :map isearch-mode-map
+           ("M-e" . consult-isearch-history)
+           ("M-s e" . consult-isearch-history)
+           ("M-s l" . consult-line)
+           ("M-s L" . consult-line-multi)))
+#+end_src
+*** [[https://github.com/abo-abo/avy][avy]]
+Jump to visible text using a char-based decision tree
+#+begin_src emacs-lisp
+  (use-package avy
+    :bind (:map smahm006/search-map
+  	      ("a" . avy-goto-char-timer))
+    :preface
+    (defun avy-action-embark (pt)
+      (unwind-protect
+          (save-excursion
+            (goto-char pt)
+            (embark-act))
+        (select-window
+         (cdr (ring-ref avy-ring 0))))
+      t)
+    :config
+    (setf (alist-get ?. avy-dispatch-alist) 'avy-action-embark))
+#+end_src
+** Undo/Redo
+*** [[https://github.com/emacs-straight/vundo.git][vundo]]
+Vundo (visual undo) displays the undo history as a tree and lets you move in the tree to go back to previous buffer states.
+#+begin_src emacs-lisp
+  (use-package vundo
+    :bind
+    (:map ctl-x-map
+          ("u". vundo))
+    :config
+    (when (display-graphic-p)
+      (setq vundo-glyph-alist vundo-unicode-symbols)))
+#+end_src
+*** [[https://github.com/emacsmirror/undo-fu][undo-fu]]
+Light weight wrapper for Emacs built-in undo system, adding convenient undo/redo without losing access to the full undo history,
+#+begin_src emacs-lisp
+  (use-package undo-fu
+    :bind (([remap undo] . undo-fu-only-undo)
+           ([remap undo-redo] . undo-fu-only-redo))
+    :config
+    (setq undo-limit 67108864) ; 64MB.
+    (setq undo-strong-limit 100663296) ; 96MB.
+    (setq undo-outer-limit 1006632960)) ; 960MB
+#+end_src
 ** Spellchecking
-** Multi-Cursor
-** Undo & Redo
-** Privileged
+*** ispell
+Default spell checker
+#+begin_src emacs-lisp
+  (use-package ispell
+    :ensure nil
+    :after flyspell
+    :if (executable-find "hunspell")
+    :custom
+    (ispell-program-name "hunspell")
+    (ispell-dictionary "en_US,de_DE")
+    :config
+    (ispell-set-spellchecker-params)
+    (ispell-hunspell-add-multi-dic "en_US,de_DE"))
+#+end_src
+*** [[https://github.com/minad/jinx.git][jinx]]
+Enchanted Spell Checker.
+#+begin_src emacs-lisp
+  (use-package jinx
+    :if (executable-find "enchant-2")
+    :hook (emacs-startup . global-jinx-mode)
+    :bind (("M-$" . jinx-correct)
+           ("C-M-$" . jinx-languages))
+    :custom
+    (jinx-languages "en_US"))
+#+end_src
+** Footer
+#+begin_src text
+;; smahm006-editing.el end
+(provide 'smahm006-editing)
+#+end_src
 * Development
 ** Tree-sitter
 ** Version Control
@@ -1466,5 +1761,3 @@ Project.el is more than enough for my project management needs
 *** C
 *** C++
 *** Rust
-
-
