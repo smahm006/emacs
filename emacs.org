@@ -34,13 +34,13 @@ This is the configuration for my personal GNU Emacs setup.
   - [[#header-3][Header]]
   - [[#ui-defaults][UI Defaults]]
   - [[#appearance][Appearance]]
-  - [[#lines][Lines]]
-  - [[#modeline][Modeline]]
+  - [[#line-guides][Line Guides]]
+  - [[#mode-line][Mode Line]]
   - [[#footer-3][Footer]]
 - [[#user-experience][User Experience]]
   - [[#header-4][Header]]
   - [[#ux-defaults][UX Defaults]]
-  - [[#completion][Completion]]
+  - [[#ux-completion][UX Completion]]
   - [[#window-management][Window Management]]
   - [[#buffer-management][Buffer Management]]
   - [[#file-management][File Management]]
@@ -48,17 +48,19 @@ This is the configuration for my personal GNU Emacs setup.
 - [[#user-editing][User Editing]]
   - [[#header-5][Header]]
   - [[#editing-defaults][Editing Defaults]]
-  - [[#text-manipulation][Text Manipulation]]
   - [[#navigation][Navigation]]
+  - [[#text-manipulation][Text Manipulation]]
+  - [[#inline-completion][Inline Completion]]
   - [[#undoredo][Undo/Redo]]
-  - [[#spellchecking][Spellchecking]]
+  - [[#spell-checking][Spell Checking]]
   - [[#footer-5][Footer]]
 - [[#user-development][User Development]]
   - [[#header-6][Header]]
   - [[#shell--remote-access][Shell & Remote Access]]
   - [[#version-control][Version Control]]
   - [[#language-server-protocol][Language Server Protocol]]
-  - [[#linters-and-documentation][Linters and Documentation]]
+  - [[#syntax-and-documentation][Syntax and Documentation]]
+  - [[#debugging][Debugging]]
   - [[#snippets][Snippets]]
   - [[#virtualization][Virtualization]]
   - [[#footer-6][Footer]]
@@ -277,7 +279,10 @@ This is the configuration for my personal GNU Emacs setup.
     :hook
     (kill-emacs . (lambda () (setq kill-ring (mapcar 'substring-no-properties kill-ring))))
     :config
-    (add-to-list 'load-path (expand-file-name (format "%s/emacs/lisp/" xdg-config))))
+    (add-to-list 'load-path (expand-file-name (format "%s/emacs/lisp/" xdg-config)))
+    ;; Disable suspend keys
+    (global-unset-key (kbd "C-z"))
+    (global-unset-key (kbd "C-x C-z")))
 #+end_src
 ** Functions
 Some useful utility functions
@@ -317,26 +322,32 @@ Keymaps used for important built-in command or commands from other packages
   (use-package emacs
     :ensure nil
     :preface
-    (defvar smahm006/search-map (make-sparse-keymap) "key-map for searching")
-    (defvar smahm006/goto-map (make-sparse-keymap) "key-map for going to places")
+    (defvar smahm006/org-map (make-sparse-keymap) "key-map for org commands")
+    (defvar smahm006/note-map (make-sparse-keymap) "key-map for note taking commands")
     (defvar smahm006/window-map (make-sparse-keymap) "key-map for window commands")
     (defvar smahm006/buffer-map (make-sparse-keymap) "key-map for buffer commands")
     (defvar smahm006/file-map (make-sparse-keymap) "key-map for file commands")
-    (defvar smahm006/org-map (make-sparse-keymap) "key-map for org commands")
-    (defvar smahm006/note-map (make-sparse-keymap) "key-map for note taking commands")
+    (defvar smahm006/search-map (make-sparse-keymap) "key-map for searching")
+    (defvar smahm006/goto-map (make-sparse-keymap) "key-map for going to places")
+    (defvar smahm006/toggle-map (make-sparse-keymap) "key-map for toggle commands")
     (defvar smahm006/mc-map (make-sparse-keymap) "key-map for multiple cursors commands")
     (defvar smahm006/vc-map (make-sparse-keymap) "key-map for version control commands")
+    (defvar smahm006/lsp-map (make-sparse-keymap) "key-map for language server protocol commands")
+    (defvar smahm006/debug-map (make-sparse-keymap) "key-map for debugginng commands")
     :config
-    (define-key mode-specific-map (kbd "s") (cons "search" smahm006/search-map))
-    (define-key mode-specific-map (kbd "g") (cons "goto" smahm006/goto-map))
+    (define-key mode-specific-map (kbd "o") (cons "org" smahm006/org-map))
+    (define-key mode-specific-map (kbd "n") (cons "note" smahm006/note-map))
     (define-key mode-specific-map (kbd "w") (cons "window" smahm006/window-map))
     (define-key mode-specific-map (kbd "b") (cons "buffer" smahm006/buffer-map))
     (define-key mode-specific-map (kbd "f") (cons "file" smahm006/file-map))
     (define-key mode-specific-map (kbd "p") (cons "project" project-prefix-map))
-    (define-key mode-specific-map (kbd "o") (cons "org" smahm006/org-map))
-    (define-key mode-specific-map (kbd "n") (cons "note" smahm006/note-map))
+    (define-key mode-specific-map (kbd "s") (cons "search" smahm006/search-map))
+    (define-key mode-specific-map (kbd "g") (cons "goto" smahm006/goto-map))
+    (define-key mode-specific-map (kbd "t") (cons "toggle" smahm006/toggle-map))
     (define-key mode-specific-map (kbd "m") (cons "multi" smahm006/mc-map))
-  (define-key mode-specific-map (kbd "v") (cons "version control" smahm006/vc-map)))
+    (define-key mode-specific-map (kbd "v") (cons "version control" smahm006/vc-map))
+    (define-key mode-specific-map (kbd "l") (cons "langauge server protocol" smahm006/lsp-map))
+    (define-key mode-specific-map (kbd "d") (cons "debugging" smahm006/debug-map)))
 #+end_src
 ** Modes
 #+begin_src emacs-lisp
@@ -741,7 +752,6 @@ make our reading easier.
   (set-face-attribute 'default nil :font "JetBrainsMonoNerdFont 14")
   (set-fontset-font t 'latin "Noto Sans")
 #+end_src
-*** Icons
 *** [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
 A library for Nerd Font icons. Required for many icons used in other packages
 #+begin_src emacs-lisp
@@ -757,6 +767,20 @@ A library for Nerd Font icons. Required for many icons used in other packages
     (marginalia-mode . nerd-icons-completion-marginalia-setup)
     :config
     (nerd-icons-completion-mode))
+#+end_src
+*** [[https://github.com/LuigiPiucco/nerd-icons-corfu.git][nerd-icons-corfu]]
+Icons for corfu via nerd-icons.
+#+begin_src emacs-lisp
+  (use-package nerd-icons-corfu
+    :after nerd-icons corfu
+    :init
+    (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)
+    :config
+    (setq nerd-icons-corfu-mapping
+  		'((array :style "cod" :icon "symbol_array" :face font-lock-type-face)
+  		  (boolean :style "cod" :icon "symbol_boolean" :face font-lock-builtin-face)
+  		  (file :fn nerd-icons-icon-for-file :face font-lock-string-face)
+  		  (t :style "cod" :icon "code" :face font-lock-warning-face))))
 #+end_src
 *** [[https://github.com/hlissner/emacs-solaire-mode][solaire-mode]]
 Distinguish "work" buffers from "side" ones
@@ -793,7 +817,7 @@ An extensible emacs startup screen showing you what’s most important.
          dashboard-insert-items
          dashboard-insert-newline)))
 #+end_src
-** Lines
+** Line Guides
 *** display-line-numbers
 Enable line numbers for some modes
 #+begin_src emacs-lisp
@@ -840,7 +864,7 @@ Fast, configurable indentation guide-bars for Emacs.
     :hook
     ((python-base-mode yaml-ts-mode emacs-lisp-mode) . indent-bars-mode))
 #+end_src
-** Modeline
+** Mode Line
 *** [[https://github.com/dbordak/telephone-line/][telephone-line]]
 Power-line style mode line which seems to work best with nyan mode
 #+begin_src emacs-lisp
@@ -901,7 +925,7 @@ An Emacs plugin that hides (or masks) the current buffer's mode-line.
     (pixel-scroll-precision-use-momentum t)              ; Enable momentum for scrolling lagre buffers
     )
 #+end_src
-** Completion
+** UX Completion
 *** [[https://github.com/justbur/emacs-which-key.git][which-key]]
 The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
 #+begin_src emacs-lisp
@@ -977,20 +1001,8 @@ Additional featureful completion commands.
   (use-package consult
     :bind (([remap Info-searpch] . consult-info)
            ([remap bookmark-jump] . consult-bookmark)
-           ([remap goto-line] . consult-goto-line)
-           ([remap imenu] . consult-imenu)
-           ([remap locate] . consult-locate)
            ([remap load-theme] . consult-theme)
            ([remap man] . consult-man)
-           :map smahm006/goto-map
-           ("e" . consult-compile-error)
-           ("f" . consult-flymake)
-           ("g" . consult-goto-line)
-           ("o" . consult-outline)
-           ("m" . consult-mark)
-           ("k" . consult-global-mark)
-           ("i" . consult-imenu)
-           ("I" . consult-imenu-multi)
            :map minibuffer-local-map
            ("M-s" . consult-history)
            ("M-r" . consult-history))
@@ -1362,7 +1374,8 @@ Dirvish is an improved version built on Emacs's builtin file manager Dired.
     :init
     (dirvish-override-dired-mode)
     :bind
-    ("<f1>" . dirvish-side)
+    (:map smahm006/toggle-map
+  	("d" . dirvish-side))
     (:map smahm006/file-map
   	("d" . dirvish)
   	("f" . dirvish-fd))
@@ -1503,78 +1516,6 @@ Project.el is more than enough for my project management needs
     (set-terminal-coding-system 'utf-8)
     (set-selection-coding-system 'utf-8))
 #+end_src
-** Text Manipulation
-*** kill/yank
-Better kill and yank bindings
-#+begin_src emacs-lisp
-(use-package simple
-  :ensure nil
-  :hook (before-save . delete-trailing-whitespace)
-  :bind (([remap yank-pop] . consult-yank-pop)
-         ([remap kill-region] . smahm006/kill-region-or-line)
-         ("C-<backspace>" . smahm006/backward-kill-thing)
-         ("C-M-d" . smahm006/delete-surround-at-point))
-  :preface
-  (defun smahm006/backward-kill-thing ()
-    "Delete sexp, symbol, word or whitespace backward depending on the context at point."
-    (interactive)
-    (let ((bounds (seq-some #'bounds-of-thing-at-point '(sexp symbol word))))
-      (cond
-       ;; If there are bounds and point is within them, kill the region
-       ((and bounds (< (car bounds) (point)))
-        (kill-region (car bounds) (point)))
-       ;; If there's whitespace before point, delete it
-       ((thing-at-point-looking-at "\\([ \n]+\\)")
-        (if (< (match-beginning 1) (point))
-            (kill-region (match-beginning 1) (point))
-          (kill-backward-chars 1)))
-       ;; If none of the above, delete one character backward
-       (t
-        (kill-backward-chars 1)))))
-  (defun smahm006/kill-region-or-line ()
-    "Kill the region if active, otherwise kill the current line.
-     With a prefix argument, copy the entire buffer content to the kill-ring."
-    (interactive)
-    (if current-prefix-arg
-        (progn
-          (kill-new (buffer-string))
-          (delete-region (point-min) (point-max)))
-      (if (use-region-p)
-          (kill-region (region-beginning) (region-end) t)
-        (kill-region (line-beginning-position) (line-beginning-position 2)))))
-  :custom
-  (yank-from-kill-ring-rotate t)
-  (set-mark-command-repeat-pop t))
-#+end_src
-*** [[https://github.com/szermatt/visual-replace][visual-replace]]
-Nicer interface to Query-Replace
-#+begin_src emacs-lisp
-  (use-package visual-replace
-    :bind (([remap query-replace] . visual-replace)
-           :map isearch-mode-map
-           ("M-%" . visual-replace-from-isearch))
-    :config
-    (define-key visual-replace-mode-map [remap yank] nil)
-    (define-key visual-replace-mode-map [remap yank-pop] nil)
-    (define-key visual-replace-mode-map (kbd "M-%")
-                visual-replace-secondary-mode-map))
-#+end_src
-*** [[https://github.com/magnars/multiple-cursors.el][multiple-cursors]]
-Edit multiple lines at once
-#+begin_src emacs-lisp
-  (use-package multiple-cursors
-    :bind (:map smahm006/mc-map
-  			  ("<escape>" . mc/keyboard-quit)
-  			  ("r" . mc/mark-all-in-region-regexp)
-  			  ("b" . mc/edit-beginnings-of-lines)
-  			  ("e" . mc/edit-ends-of-lines)
-  			  :repeat-map smahm006/mc-map
-  			  ("n" . mc/mark-next-like-this)
-  			  ("p" . mc/mark-previous-like-this)
-  			  :exit
-  			  ("a" . mc/mark-all-like-this)
-  			  ("m" . mc/edit-lines)))
-#+end_src
 ** Navigation
 *** navigation
 Better navigation bindings
@@ -1587,7 +1528,17 @@ Better navigation bindings
   		 ("C-<return>" . smahm006/smart-open-line-below)
   		 ("M-<return>" . smahm006/smart-open-line-above)
   		 ("M-<backspace>" . smahm006/smart-kill-line-backwards)
-  		 ([remap kill-whole-line] . smahm006/smart-kill-whole-line))
+  		 ([remap kill-whole-line] . smahm006/smart-kill-whole-line)
+           ([remap goto-line] . consult-goto-line)
+           :map smahm006/goto-map
+           ("e" . consult-compile-error)
+           ("f" . consult-flymake)
+           ("g" . consult-goto-line)
+           ("o" . consult-outline)
+           ("m" . consult-mark)
+           ("k" . consult-global-mark)
+           ("i" . consult-imenu)
+           ("I" . consult-imenu-multi))
     :preface
     (defun smahm006/smarter-move-beginning-of-line (arg)
       "Move point back to indentation of beginning of line."
@@ -1679,6 +1630,170 @@ Jump to visible text using a char-based decision tree
     :config
     (setf (alist-get ?. avy-dispatch-alist) 'avy-action-embark))
 #+end_src
+** Text Manipulation
+*** kill/yank
+Better kill and yank bindings
+#+begin_src emacs-lisp
+(use-package simple
+  :ensure nil
+  :hook (before-save . delete-trailing-whitespace)
+  :bind (([remap yank-pop] . consult-yank-pop)
+         ([remap kill-region] . smahm006/kill-region-or-line)
+         ("C-<backspace>" . smahm006/backward-kill-thing)
+         ("C-M-d" . smahm006/delete-surround-at-point))
+  :preface
+  (defun smahm006/backward-kill-thing ()
+    "Delete sexp, symbol, word or whitespace backward depending on the context at point."
+    (interactive)
+    (let ((bounds (seq-some #'bounds-of-thing-at-point '(sexp symbol word))))
+      (cond
+       ;; If there are bounds and point is within them, kill the region
+       ((and bounds (< (car bounds) (point)))
+        (kill-region (car bounds) (point)))
+       ;; If there's whitespace before point, delete it
+       ((thing-at-point-looking-at "\\([ \n]+\\)")
+        (if (< (match-beginning 1) (point))
+            (kill-region (match-beginning 1) (point))
+          (kill-backward-chars 1)))
+       ;; If none of the above, delete one character backward
+       (t
+        (kill-backward-chars 1)))))
+  (defun smahm006/kill-region-or-line ()
+    "Kill the region if active, otherwise kill the current line.
+     With a prefix argument, copy the entire buffer content to the kill-ring."
+    (interactive)
+    (if current-prefix-arg
+        (progn
+          (kill-new (buffer-string))
+          (delete-region (point-min) (point-max)))
+      (if (use-region-p)
+          (kill-region (region-beginning) (region-end) t)
+        (kill-region (line-beginning-position) (line-beginning-position 2)))))
+  :custom
+  (yank-from-kill-ring-rotate t)
+  (set-mark-command-repeat-pop t))
+#+end_src
+*** [[https://github.com/szermatt/visual-replace][visual-replace]]
+Nicer interface to Query-Replace
+#+begin_src emacs-lisp
+  (use-package visual-replace
+    :bind (([remap query-replace] . visual-replace)
+           :map isearch-mode-map
+           ("M-%" . visual-replace-from-isearch))
+    :config
+    (define-key visual-replace-mode-map [remap yank] nil)
+    (define-key visual-replace-mode-map [remap yank-pop] nil)
+    (define-key visual-replace-mode-map (kbd "M-%")
+                visual-replace-secondary-mode-map))
+#+end_src
+*** [[https://github.com/magnars/multiple-cursors.el][multiple-cursors]]
+Edit multiple lines at once
+#+begin_src emacs-lisp
+  (use-package multiple-cursors
+    :bind (:map smahm006/mc-map
+  			  ("<escape>" . mc/keyboard-quit)
+  			  ("r" . mc/mark-all-in-region-regexp)
+  			  ("b" . mc/edit-beginnings-of-lines)
+  			  ("e" . mc/edit-ends-of-lines)
+  			  :repeat-map smahm006/mc-map
+  			  ("n" . mc/mark-next-like-this)
+  			  ("p" . mc/mark-previous-like-this)
+  			  :exit
+  			  ("a" . mc/mark-all-like-this)
+  			  ("m" . mc/edit-lines)))
+#+end_src
+*** [[https://github.com/paldepind/smart-comment][smart-comment]]
+ Smarter commenting + decommenting and marking comments for deletion
+#+begin_src emacs-lisp
+(use-package smart-comment
+  :bind ("M-;" . smart-comment))
+#+end_src
+** Inline Completion
+*** [[https://github.com/minad/cape.git][cape]]
+Cape provides Completion At Point Extensions
+#+begin_src emacs-lisp
+  (use-package cape
+    :init
+    ;; Note: The order matters! File is first
+    (add-to-list 'completion-at-point-functions #'cape-dict)
+    (add-to-list 'completion-at-point-functions #'cape-keyword)
+    (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+    (add-to-list 'completion-at-point-functions #'cape-history)
+    (add-to-list 'completion-at-point-functions #'cape-file)
+    :bind ("C-<tab>" . cape-prefix-map))
+#+end_src
+*** [[https://github.com/emacs-straight/corfu.git][corfu]]
+Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
+#+begin_src emacs-lisp
+  (use-package corfu
+    :hook
+    ((after-init . global-corfu-mode)
+     (after-init . corfu-popupinfo-mode)
+     (after-init . corfu-echo-mode)
+     (after-init . corfu-history-mode)
+     (minibuffer-setup . smahm006/corfu-enable-always-in-minibuffer)
+     ;; Disable auto completion for termintal
+     (eat-mode . (lambda () (setq-local corfu-auto nil) (corfu-mode))))
+    :bind
+    (:map corfu-map
+     ("<tab>"     . corfu-insert)
+     ("TAB"       . corfu-insert)
+     ("SPC"       . corfu-insert-separator)
+     ("<escape>"  . corfu-quit))
+    :preface
+    ;; Completing in the minibuffer
+    (defun smahm006/corfu-enable-always-in-minibuffer ()
+      "Enable Corfu in the minibuffer if Vertico/Mct are not active."
+      (unless (or (bound-and-true-p mct--active)
+                  (bound-and-true-p vertico--input)
+                  (eq (current-local-map) read-passwd-map))
+        (setq-local corfu-echo-delay nil
+                    corfu-popupinfo-delay nil)
+        (corfu-mode 1)))
+    :custom
+    (corfu-cycle t)                     ; Enable cycling for `corfu-next/previous'
+    (corfu-auto t)                      ; Enable auto completion
+    (corfu-quit-no-match 'separator)    ; Quit auto complete if there is no match
+    (corfu-auto-prefix 2)               ; Complete with less prefix keys
+    (corfu-quit-at-boundary 'separator) ; Never quit at completion boundary
+    (corfu-preview-current nil)         ; Disable current candidate preview
+    (corfu-preselect 'directory)        ; Preselect the fisrt canidate exept for directories select the prompt
+    (completion-cycle-threshold nil)    ; TAB cycle if there are only few candidates
+    (tab-always-indent t)               ; Enable indentation+completion using the TAB key.
+    ;; Hide commands in M-x which do not apply to the current mode.
+    (read-extended-command-predicate
+     #'command-completion-default-include-p)
+    :config
+    ;; Free the RET key for less intrusive behavior.
+    (keymap-unset corfu-map "RET")
+    (require 'corfu-echo)
+    (require 'corfu-history)
+    (require 'corfu-popupinfo)
+    (eldoc-add-command #'corfu-insert))
+#+end_src
+*** dabrev
+Dynamic abbrevs allow the meanings of abbreviations to be determined automatically from the contents of the buffer
+#+begin_src emacs-lisp
+(use-package dabbrev
+  :ensure nil
+  ;; Swap M-/ and C-M-/
+  :bind (("M-/" . dabbrev-completion)
+         ("C-M-/" . dabbrev-expand))
+  :custom
+  (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
+#+end_src
+*** completion-preview
+Preview completion candidate
+#+begin_src emacs-lisp
+  (use-package completion-preview
+    :ensure nil
+    :hook (prog-mode . completion-preview-mode)
+    :bind
+    (:map completion-preview-active-mode-map
+  	("M-n" . completion-preview-next-candidate)
+  	("M-p" . completion-preview-prev-candidate)))
+
+#+end_src
 ** Undo/Redo
 *** [[https://github.com/emacs-straight/vundo.git][vundo]]
 Vundo (visual undo) displays the undo history as a tree and lets you move in the tree to go back to previous buffer states.
@@ -1702,7 +1817,7 @@ Light weight wrapper for Emacs built-in undo system, adding convenient undo/redo
     (setq undo-strong-limit 100663296) ; 96MB.
     (setq undo-outer-limit 1006632960)) ; 960MB
 #+end_src
-** Spellchecking
+** Spell Checking
 *** ispell
 Default spell checker
 #+begin_src emacs-lisp
@@ -1716,6 +1831,25 @@ Default spell checker
     :config
     (ispell-set-spellchecker-params)
     (ispell-hunspell-add-multi-dic "en_US,de_DE"))
+#+end_src
+*** flyspell
+#+begin_src emacs-lisp
+  (use-package flyspell
+    :if (not (executable-find "enchant-2"))
+    :ensure nil
+    :hook
+    (((text-mode org-mode LaTeX-mode) . flyspell-mode)
+     ((prog-mode conf-mode) . flyspell-prog-mode)
+     (ispell-change-dictionary . restart-flyspell-mode))
+    :preface
+    (defun my/restart-flyspell-mode ()
+      (when flyspell-mode
+        (flyspell-mode-off)
+        (flyspell-mode-on)
+        (flyspell-buffer)))
+    :custom
+    (flyspell-issue-welcome-flag nil)
+    (flyspell-issue-message-flag nil))
 #+end_src
 *** [[https://github.com/minad/jinx.git][jinx]]
 Enchanted Spell Checker.
@@ -1770,7 +1904,7 @@ Eat is the best terminal emulator which three modes to switch from
 #+begin_src emacs-lisp
   (use-package eat
     :bind
-    ("C-c t" . eat)
+    ("C-x t" . eat)
     :config
     (define-key eat-semi-char-mode-map (kbd "M-o") nil) ;; M-o is used to switch windows
     (define-key eat-semi-char-mode-map (kbd "M-u") nil) ;; M-u is used to fullscreen buffer
@@ -1885,8 +2019,278 @@ Step through historic versions of git controlled file
     (:map smahm006/vc-map
           ("t" . git-timemachine)))
 #+end_src
+*** ediff
+The ediff package is utilized to handle file differences in emacs.
+#+begin_src emacs-lisp
+  (use-package ediff
+    :ensure nil
+    :hook
+    ((ediff-before-setup . smahm006/store-pre-ediff-winconfig)
+     (ediff-quit . smahm006/restore-pre-ediff-winconfig))
+    :preface
+    (defvar smahm006-ediff-original-windows nil)
+    (defun smahm006/store-pre-ediff-winconfig ()
+      "This function stores the current window configuration before opening ediff."
+      (setq smahm006/ediff-original-windows (current-window-configuration)))
+    (defun smahm006/restore-pre-ediff-winconfig ()
+      "This function resets the original window arrangement."
+      (set-window-configuration smahm006/ediff-original-windows))
+    :custom
+    (ediff-window-setup-function 'ediff-setup-windows-plain)
+    (ediff-split-window-function 'split-window-horizontally))
+#+end_src
 ** Language Server Protocol
-** Linters and Documentation
+*** [[https://github.com/emacs-straight/eglot.git][eglot]]
+A client for Language Server Protocol servers.
+#+begin_src emacs-lisp
+    (use-package eglot
+      :ensure nil
+      :after project
+      :hook
+      ((eglot-managed-mode . my/eglot-capf))
+      :bind
+      (:map smahm006/lsp-map
+            ("l" . eglot)
+            ("f" . eglot-format-buffer)
+            ("R" . eglot-reconnect)
+            ("f" . eglot-find-declaration)
+            ("i" . eglot-find-implementation)
+            ("k" . eglot-shutdown)
+            ("o" . eglot-code-action-organize-imports)
+            ("q" . eglot-code-action-quickfix)
+            ("r" . eglot-rename))
+      :preface
+      (defun smahm006/eglot-capf ()
+        (setq-local completion-at-point-functions
+                    (cons (cape-capf-super
+                           #'cape-file
+                           #'eglot-completion-at-point
+                           #'tempel-complete)
+                          completion-at-point-functions)))
+      :custom
+      ;; Filter list of all possible completions with Orderless
+      ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
+      (completion-category-defaults nil)
+      (eglot-autoshutdown t)
+      (eglot-send-changes-idle-time 3)
+      (flymake-no-changes-timeout 5)
+      :config
+      ;; Continuously update the candidates using cape cache buster
+      (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
+      ;; Don't log every event
+      (fset #'jsonrpc--log-event #'ignore))
+#+end_src
+*** [[https://github.com/jdtsmith/eglot-booster.git][eglot-booster]]
+Boost eglot using [[https://github.com/blahgeek/emacs-lsp-booster][lsp-booster]].
+#+begin_src emacs-lisp
+  (use-package eglot-booster
+    :after eglot
+    :vc (:url "https://github.com/jdtsmith/eglot-booster" :branch "main")
+    :init (eglot-booster-mode))
+#+end_src
+*** [[https://github.com/renzmann/treesit-auto.git][treesit-auto]]
+Built-in tree-sitter integration for Emacs
+#+begin_src emacs-lisp
+  (use-package treesit-auto
+    :hook
+    (after-init . global-treesit-auto-mode)
+    :custom
+    (treesit-auto-install 'prompt))
+#+end_src
+*** [[https://github.com/emacs-tree-sitter/treesit-fold.git][treesit-fold]]
+Code-folding using tree-sitter
+#+begin_src emacs-lisp
+  (use-package treesit-fold
+    :vc (:url "https://github.com/emacs-tree-sitter/treesit-fold" :branch "master")
+    :hook
+    ((yaml-ts-mode) . treesit-fold-indicators-mode)
+    :bind
+    (:map treesit-fold-mode-map
+          ("C-<tab>" . treesit-fold-toggle))
+    :custom
+    ;; Reduce indicators priority to draw below other fringe indicators like diff-hl.
+    (treesit-fold-indicators-priority -1))
+#+end_src
+** Syntax and Documentation
+*** [[https://github.com/emacs-straight/eldoc.git][eldoc]]
+Configure emacs documentation support.
+#+begin_src emacs-lisp
+  (use-package eldoc
+    :ensure nil
+    :custom
+    (eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
+    :bind
+    (:map smahm006/lsp-map
+          ("d" . eldoc-doc-buffer))
+    :config
+    (eldoc-add-command-completions "paredit-")
+    (with-eval-after-load 'combobulate
+      (eldoc-add-command-completions "combobulate-")))
+#+end_src
+*** [[https://github.com/casouri/eldoc-box.git][eldoc-box]]
+Childframe doc for eglot and anything that uses eldoc.
+#+begin_src emacs-lisp
+  (use-package eldoc-box
+    :after eglot
+    :bind
+    (:map smahm006/lsp-map
+          ("D" . eldoc-box-hover-at-point-mode))
+    :config
+    (with-eval-after-load 'pixel-scroll
+      (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-precision)
+      (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-start-momentum)))
+#+end_src
+*** [[https://github.com/emacs-straight/flymake.git][flymake]]
+Universal on-the-fly syntax checker for Emacs.
+#+begin_src emacs-lisp
+  (use-package flymake
+    :ensure nil
+    :after project
+    :custom
+    ;; Let git gutter have left fringe, flymake can have right fringe
+    (flymake-fringe-indicator-position 'right-fringe))
+    #+end_src
+*** speedbar
+#+begin_src emacs-lisp
+  (use-package speedbar
+    :ensure nil
+    :hook
+    ((speedbar-mode . (lambda()
+                        ;; Disable word wrapping in speedbar if you always enable it globally.
+                        (visual-line-mode 0)
+                        ;; Change speedbar's text size.  May need to alter the icon size if you change size.
+                        (text-scale-adjust -1))))
+    :bind (:map speedbar-file-key-map
+  			  ("<tab>" . speedbar-expand-line )
+  			  ("<backtab>" . speedbar-contract-line ))
+    :custom
+    (speedbar-frame-parameters
+     '((name . "speedbar")
+       (title . "speedbar")
+       (minibuffer . nil)
+       (border-width . 2)
+       (menu-bar-lines . 0)
+       (tool-bar-lines . 0)
+       (unsplittable . t)
+       (left-fringe . 10)))
+    ;; Increase the indentation for better useability.
+    (speedbar-indentation-width 3)
+    ;; make speedbar update automaticaly, and dont use ugly icons(images)
+    (speedbar-update-flag t)
+    (speedbar-use-images nil)
+    :config
+    ;; list of supported file-extensions
+    ;; feel free to add to this list
+    (speedbar-add-supported-extension
+     (list
+      ;; lua and fennel(lisp that transpiles to lua)
+      ".lua"
+      ".fnl"
+      ".fennel"
+      ;; shellscript
+      ".sh"
+      ".bash";;is this ever used?
+      ;; web languages
+      ;; Hyper-Text-markup-language(html) and php
+      ".php"
+      ".html"
+      ".htm"
+      ;; ecma(java/type)-script
+      ".js"
+      ".json"
+      ".ts"
+      ;; stylasheets
+      ".css"
+      ".less"
+      ".scss"
+      ".sass"
+      ;; c/c++ and makefiles
+      ".c"
+      ".cpp"
+      ".h"
+      "makefile"
+      "MAKEFILE"
+      "Makefile"
+      ;; runs on JVM, java,kotlin etc
+      ".java"
+      ".kt";;this is for kotlin
+      ".mvn"
+      ".gradle" ".properties";; this is for gradle-projects
+      ".clj";;lisp on the JVM
+      ;; lisps
+      ".cl"
+      ".el"
+      ".scm"
+      ".lisp"
+      ;; configuration
+      ".yaml"
+      ".toml"
+      ;; json is already in this list
+      ;; notes,markup and orgmode
+      ".md"
+      ".markdown"
+      ".org"
+      ".txt"
+      "README"
+      ;; Jupyter Notebooks
+      ".ipynb")))
+#+end_src
+*** [[https://github.com/emacsorphanage/sr-speedbar.git][sr-speedbar]]
+Same frame speedbar.
+#+begin_src emacs-lisp
+  (use-package sr-speedbar
+    :custom
+    (sr-speedbar-right-side nil)
+    :bind
+    (:map smahm006/toggle-map
+          ("s" . sr-speedbar-toggle)))
+#+end_src
+** Debugging
+*** [[https://github.com/svaante/dape.git][dape]]
+Debug Adapter Protocol for Emacs.
+#+begin_src emacs-lisp
+  (use-package dape
+    :hook
+    (prog-mode . dape-breakpoint-global-mode)
+    (dape-on-start-hooks . (lambda () (save-some-buffers t t)))
+    :bind
+    (("<left-fringe> C-<mouse-1>" . dape-mouse-breakpoint-toggle)
+     :repeat-map smahm006/debug-map
+     ("d" . dape)
+     ("p" . dape-pause)
+     ("c" . dape-continue)
+     ("n" . dape-next)
+     ("s" . dape-step-in)
+     ("o" . dape-step-out)
+     ("r" . dape-restart)
+     ("i" . dape-info)
+     ("R" . dape-repl)
+     ("m" . dape-read-memory)
+     ("l" . dape-breakpoint-log)
+     ("e" . dape-breakpoint-expression)
+     ("b" . dape-breakpoint-toggle)
+     ("B" . dape-breakpoint-remove-all)
+     ("t" . dape-select-thread)
+     ("S" . dape-select-stack)
+     ("x" . dape-evaluate-expression)
+     ("w" . dape-watch-dwim)
+     ("D" . dape-disconnect-quit)
+     :exit
+     ("q" . dape-quit))
+    :config
+    (setq dape-buffer-window-arrangement 'right))
+  ;; To not display info and/or buffers on startup
+  ;; (remove-hook 'dape-on-start-hooks 'dape-info)
+  ;; (remove-hook 'dape-on-start-hooks 'dape-repl)
+  ;; To display info and/or repl buffers on stopped
+  ;; (add-hook 'dape-on-stopped-hooks 'dape-info)
+  ;; (add-hook 'dape-on-stopped-hooks 'dape-repl)
+  ;; By default dape uses gdb keybinding prefix
+  ;; If you do not want to use any prefix, set it to nil.
+  ;; (setq dape-key-prefix "\C-x\C-a")
+  ;; Projectile users
+  ;; (setq dape-cwd-fn 'projectile-project-root)
+#+end_src
 ** Snippets
 ** Virtualization
 ** Footer
