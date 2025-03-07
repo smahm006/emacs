@@ -26,7 +26,7 @@ This is the configuration for my personal GNU Emacs setup.
   - [[#header-2][Header]]
   - [[#org-defaults][Org Defaults]]
   - [[#styling][Styling]]
-  - [[#capture][Capture]]
+  - [[#note-taking][Note Taking]]
   - [[#agenda][Agenda]]
   - [[#finance][Finance]]
   - [[#footer-2][Footer]]
@@ -50,6 +50,7 @@ This is the configuration for my personal GNU Emacs setup.
   - [[#editing-defaults][Editing Defaults]]
   - [[#navigation][Navigation]]
   - [[#text-manipulation][Text Manipulation]]
+  - [[#parenthesis][Parenthesis]]
   - [[#inline-completion][Inline Completion]]
   - [[#undoredo][Undo/Redo]]
   - [[#spell-checking][Spell Checking]]
@@ -59,8 +60,7 @@ This is the configuration for my personal GNU Emacs setup.
   - [[#shell--remote-access][Shell & Remote Access]]
   - [[#version-control][Version Control]]
   - [[#language-server-protocol][Language Server Protocol]]
-  - [[#syntax-and-documentation][Syntax and Documentation]]
-  - [[#debugging][Debugging]]
+  - [[#code-feedback--hints][Code Feedback & Hints]]
   - [[#snippets][Snippets]]
   - [[#virtualization][Virtualization]]
   - [[#footer-6][Footer]]
@@ -329,7 +329,6 @@ Keymaps used for important built-in command or commands from other packages
     (defvar smahm006/file-map (make-sparse-keymap) "key-map for file commands")
     (defvar smahm006/search-map (make-sparse-keymap) "key-map for searching")
     (defvar smahm006/goto-map (make-sparse-keymap) "key-map for going to places")
-    (defvar smahm006/toggle-map (make-sparse-keymap) "key-map for toggle commands")
     (defvar smahm006/mc-map (make-sparse-keymap) "key-map for multiple cursors commands")
     (defvar smahm006/vc-map (make-sparse-keymap) "key-map for version control commands")
     (defvar smahm006/lsp-map (make-sparse-keymap) "key-map for language server protocol commands")
@@ -343,7 +342,6 @@ Keymaps used for important built-in command or commands from other packages
     (define-key mode-specific-map (kbd "p") (cons "project" project-prefix-map))
     (define-key mode-specific-map (kbd "s") (cons "search" smahm006/search-map))
     (define-key mode-specific-map (kbd "g") (cons "goto" smahm006/goto-map))
-    (define-key mode-specific-map (kbd "t") (cons "toggle" smahm006/toggle-map))
     (define-key mode-specific-map (kbd "m") (cons "multi" smahm006/mc-map))
     (define-key mode-specific-map (kbd "v") (cons "version control" smahm006/vc-map))
     (define-key mode-specific-map (kbd "l") (cons "langauge server protocol" smahm006/lsp-map))
@@ -523,11 +521,34 @@ Org short for organization of my life mainly by using org-mode
     (org-enforce-todo-dependencies t)                    ; Cannot set a headline to DONE if children aren’t DONE
     (org-log-done 'time)                                 ; Add timstamp to items when done
 
+    ;; Todo
+    (org-todo-keywords
+     '((sequence
+        "TODO(t)"  ; A task that needs doing & is ready to do
+        "NEXT(n)"  ; Next task in a project
+        "|"
+        "DONE(d)"  ; Task successfully completed
+        )
+       (sequence
+        "WAIT(w)"  ; Something external is holding up this task
+        "HOLD(h)"  ; This task is paused/on hold because of me
+        "|"
+        "KILL(k)"  ; Task was cancelled, aborted or is no longer applicable
+        )))
+    (org-todo-keyword-faces
+     '(("TODO" :foreground "red" :weight bold)
+       ("NEXT" :foreground "blue" :weight bold)
+       ("DONE" :foreground "forest green" :weight bold)
+       ("WAIT" :foreground "orange" :weight bold)
+       ("HOLD" :foreground "magenta" :weight bold)
+       ("KILL" :foreground "forest green" :weight bold)))
+
     ;; Languages to autoload for babel
-    (org-babel-load-languages '((emacs-lisp . t)
-                                (shell . t)
-  			      (python . t)
-  			      (ledger . t))))
+    (org-babel-load-languages
+     '((emacs-lisp . t)
+       (shell . t)
+  	 (python . t)
+  	 (ledger . t))))
 #+end_src
 *** [[https://github.com/snosov1/toc-org.git][toc-org]]
 Toc-org is an Emacs utility to have an up-to-date table of contents in the org files without exporting (useful primarily for readme files on GitHub).
@@ -551,19 +572,19 @@ Using the async package and the org-babel-tangle command, the code below will ex
     (defcustom smahm006/show-async-tangle-results nil
       "Whether to keep async tangle result buffers for later inspection."
       :type 'boolean)
-(defun smahm006/async-babel-tangle (org-file)
-    "Asynchronously tangle the given ORG-FILE."
-    (let ((start-time (current-time)))
-      (async-start
-       `(lambda ()
-          (require 'org)
-          (org-babel-tangle-file ,org-file))
-       (unless smahm006/show-async-tangle-results
-         `(lambda (result)
-            (message "[%s] %s tangled in %.2fs"
-                     (if result "✓" "✗")
-                     ,org-file
-                     (float-time (time-subtract (current-time) ',start-time))))))))
+    (defun smahm006/async-babel-tangle (org-file)
+      "Asynchronously tangle the given ORG-FILE."
+      (let ((start-time (current-time)))
+        (async-start
+         `(lambda ()
+            (require 'org)
+            (org-babel-tangle-file ,org-file))
+         (unless smahm006/show-async-tangle-results
+           `(lambda (result)
+              (message "[%s] %s tangled in %.2fs"
+                       (if result "✓" "✗")
+                       ,org-file
+                       (float-time (time-subtract (current-time) ',start-time))))))))
     (defun smahm006/config-updated-p ()
       "Return non-nil if the configuration file has been modified since the last tangle."
       (time-less-p smahm006/config-last-change
@@ -578,7 +599,9 @@ Using the async package and the org-babel-tangle command, the code below will ex
 *** [[https://github.com/minad/org-modern][org-modern]]
 Modernize the look of org
 #+begin_src emacs-lisp
-  (use-package org-modern
+  (use-package org-superstar
+    :hook
+    (org-mode . org-superstar-mode)
     :custom
     (org-ellipsis "…")
     (org-pretty-entities t)
@@ -588,9 +611,7 @@ Modernize the look of org
     (org-agenda-tags-column 0)
     (org-catch-invisible-edits 'show-and-error)
     (org-special-ctrl-a/e t)
-    (org-insert-heading-respect-content t)
-    :config
-    (set-face-attribute 'org-ellipsis nil :inherit 'default :box nil))
+    (org-insert-heading-respect-content t))
 #+end_src
 *** [[https://github.com/awth13/org-appear][org-appear]]
 Toggle visibility of hidden Org mode element parts upon entering and leaving an element.
@@ -601,33 +622,7 @@ Toggle visibility of hidden Org mode element parts upon entering and leaving an 
     :custom
     (org-appear-autolinks t))
 #+end_src
-** Capture
-#+begin_src emacs-lisp :tangle init.el
-  (use-package org-capture
-    :ensure nil
-    :custom
-    ;; Todo
-    (org-todo-keywords
-     '((sequence
-        "TODO(t)"  ; A task that needs doing & is ready to do
-        "NEXT(n)"  ; Next task in a project
-        "|"
-        "DONE(d)"  ; Task successfully completed
-        )
-       (sequence
-        "WAIT(w)"  ; Something external is holding up this task
-        "HOLD(h)"  ; This task is paused/on hold because of me
-        "|"
-        "KILL(k)"  ; Task was cancelled, aborted or is no longer applicable
-        )))
-    (org-todo-keyword-faces
-     '(("TODO" :foreground "red" :weight bold)
-       ("NEXT" :foreground "blue" :weight bold)
-       ("DONE" :foreground "forest green" :weight bold)
-       ("WAIT" :foreground "orange" :weight bold)
-       ("HOLD" :foreground "magenta" :weight bold)
-       ("KILL" :foreground "forest green" :weight bold))))
-#+end_src
+** Note Taking
 *** [[https://github.com/protesilaos/denote][denote]]
 Simple notes with an efficient file-naming scheme
 #+begin_src emacs-lisp
@@ -647,6 +642,12 @@ Simple notes with an efficient file-naming scheme
       (smahm006/mkdir org-notes-directory)
       (setq denote-directory org-notes-directory))
     (denote-rename-buffer-mode 1))
+#+end_src
+*** [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
+Distraction-free writing for Emacs.
+#+begin_src emacs-lisp
+  (use-package writeroom-mode
+    :bind (("<f3>" . writeroom-mode)))
 #+end_src
 ** Agenda
 #+begin_src emacs-lisp :tangle init.el
@@ -1374,8 +1375,7 @@ Dirvish is an improved version built on Emacs's builtin file manager Dired.
     :init
     (dirvish-override-dired-mode)
     :bind
-    (:map smahm006/toggle-map
-  	("d" . dirvish-side))
+    ("<f1>" . dirvish-side)
     (:map smahm006/file-map
   	("d" . dirvish)
   	("f" . dirvish-fd))
@@ -1630,6 +1630,100 @@ Jump to visible text using a char-based decision tree
     :config
     (setf (alist-get ?. avy-dispatch-alist) 'avy-action-embark))
 #+end_src
+*** speedbar
+#+begin_src emacs-lisp
+  (use-package speedbar
+    :ensure nil
+    :hook
+    ((speedbar-mode . (lambda()
+                        ;; Disable word wrapping in speedbar if you always enable it globally.
+                        (visual-line-mode 0)
+                        ;; Change speedbar's text size.  May need to alter the icon size if you change size.
+                        (text-scale-adjust -1))))
+    :bind (:map speedbar-file-key-map
+  			  ("<tab>" . speedbar-expand-line )
+  			  ("<backtab>" . speedbar-contract-line ))
+    :custom
+    (speedbar-frame-parameters
+     '((name . "speedbar")
+       (title . "speedbar")
+       (minibuffer . nil)
+       (border-width . 2)
+       (menu-bar-lines . 0)
+       (tool-bar-lines . 0)
+       (unsplittable . t)
+       (left-fringe . 10)))
+    ;; Increase the indentation for better useability.
+    (speedbar-indentation-width 3)
+    ;; make speedbar update automaticaly, and dont use ugly icons(images)
+    (speedbar-update-flag t)
+    (speedbar-use-images nil)
+    :config
+    ;; list of supported file-extensions
+    ;; feel free to add to this list
+    (speedbar-add-supported-extension
+     (list
+      ;; lua and fennel(lisp that transpiles to lua)
+      ".lua"
+      ".fnl"
+      ".fennel"
+      ;; shellscript
+      ".sh"
+      ".bash";;is this ever used?
+      ;; web languages
+      ;; Hyper-Text-markup-language(html) and php
+      ".php"
+      ".html"
+      ".htm"
+      ;; ecma(java/type)-script
+      ".js"
+      ".json"
+      ".ts"
+      ;; stylasheets
+      ".css"
+      ".less"
+      ".scss"
+      ".sass"
+      ;; c/c++ and makefiles
+      ".c"
+      ".cpp"
+      ".h"
+      "makefile"
+      "MAKEFILE"
+      "Makefile"
+      ;; runs on JVM, java,kotlin etc
+      ".java"
+      ".kt";;this is for kotlin
+      ".mvn"
+      ".gradle" ".properties";; this is for gradle-projects
+      ".clj";;lisp on the JVM
+      ;; lisps
+      ".cl"
+      ".el"
+      ".scm"
+      ".lisp"
+      ;; configuration
+      ".yaml"
+      ".toml"
+      ;; json is already in this list
+      ;; notes,markup and orgmode
+      ".md"
+      ".markdown"
+      ".org"
+      ".txt"
+      "README"
+      ;; Jupyter Notebooks
+      ".ipynb")))
+#+end_src
+*** [[https://github.com/emacsorphanage/sr-speedbar.git][sr-speedbar]]
+Same frame speedbar.
+#+begin_src emacs-lisp
+  (use-package sr-speedbar
+    :custom
+    (sr-speedbar-right-side nil)
+    :bind
+    ("<f2>" . sr-speedbar-toggle))
+#+end_src
 ** Text Manipulation
 *** kill/yank
 Better kill and yank bindings
@@ -1707,6 +1801,27 @@ Edit multiple lines at once
 #+begin_src emacs-lisp
 (use-package smart-comment
   :bind ("M-;" . smart-comment))
+#+end_src
+** Parenthesis
+*** elec-pair
+Automatically add closing parentheses, quotes, etc.
+#+begin_src emacs-lisp
+  (use-package elec-pair
+    :ensure nil
+    :hook
+    ((prog-mode conf-mode) . electric-pair-mode))
+#+end_src
+*** paren
+Paren mode for highlighting matching parenthesis
+#+begin_src emacs-lisp
+  (use-package paren
+    :ensure nil
+    :custom
+    (show-paren-style 'parenthesis)
+    (show-paren-when-point-in-periphery t)
+    (show-paren-when-point-inside-paren nil)
+    :hook
+    (prog-mode . show-paren-mode))
 #+end_src
 ** Inline Completion
 *** [[https://github.com/minad/cape.git][cape]]
@@ -2111,7 +2226,7 @@ Code-folding using tree-sitter
     ;; Reduce indicators priority to draw below other fringe indicators like diff-hl.
     (treesit-fold-indicators-priority -1))
 #+end_src
-** Syntax and Documentation
+** Code Feedback & Hints
 *** [[https://github.com/emacs-straight/eldoc.git][eldoc]]
 Configure emacs documentation support.
 #+begin_src emacs-lisp
@@ -2150,149 +2265,63 @@ Universal on-the-fly syntax checker for Emacs.
     ;; Let git gutter have left fringe, flymake can have right fringe
     (flymake-fringe-indicator-position 'right-fringe))
     #+end_src
-*** speedbar
+*** [[https://github.com/lassik/emacs-format-all-the-code.git][format-all]]
+Auto-format source code in many languages with one command.
 #+begin_src emacs-lisp
-  (use-package speedbar
-    :ensure nil
-    :hook
-    ((speedbar-mode . (lambda()
-                        ;; Disable word wrapping in speedbar if you always enable it globally.
-                        (visual-line-mode 0)
-                        ;; Change speedbar's text size.  May need to alter the icon size if you change size.
-                        (text-scale-adjust -1))))
-    :bind (:map speedbar-file-key-map
-  			  ("<tab>" . speedbar-expand-line )
-  			  ("<backtab>" . speedbar-contract-line ))
-    :custom
-    (speedbar-frame-parameters
-     '((name . "speedbar")
-       (title . "speedbar")
-       (minibuffer . nil)
-       (border-width . 2)
-       (menu-bar-lines . 0)
-       (tool-bar-lines . 0)
-       (unsplittable . t)
-       (left-fringe . 10)))
-    ;; Increase the indentation for better useability.
-    (speedbar-indentation-width 3)
-    ;; make speedbar update automaticaly, and dont use ugly icons(images)
-    (speedbar-update-flag t)
-    (speedbar-use-images nil)
-    :config
-    ;; list of supported file-extensions
-    ;; feel free to add to this list
-    (speedbar-add-supported-extension
-     (list
-      ;; lua and fennel(lisp that transpiles to lua)
-      ".lua"
-      ".fnl"
-      ".fennel"
-      ;; shellscript
-      ".sh"
-      ".bash";;is this ever used?
-      ;; web languages
-      ;; Hyper-Text-markup-language(html) and php
-      ".php"
-      ".html"
-      ".htm"
-      ;; ecma(java/type)-script
-      ".js"
-      ".json"
-      ".ts"
-      ;; stylasheets
-      ".css"
-      ".less"
-      ".scss"
-      ".sass"
-      ;; c/c++ and makefiles
-      ".c"
-      ".cpp"
-      ".h"
-      "makefile"
-      "MAKEFILE"
-      "Makefile"
-      ;; runs on JVM, java,kotlin etc
-      ".java"
-      ".kt";;this is for kotlin
-      ".mvn"
-      ".gradle" ".properties";; this is for gradle-projects
-      ".clj";;lisp on the JVM
-      ;; lisps
-      ".cl"
-      ".el"
-      ".scm"
-      ".lisp"
-      ;; configuration
-      ".yaml"
-      ".toml"
-      ;; json is already in this list
-      ;; notes,markup and orgmode
-      ".md"
-      ".markdown"
-      ".org"
-      ".txt"
-      "README"
-      ;; Jupyter Notebooks
-      ".ipynb")))
-#+end_src
-*** [[https://github.com/emacsorphanage/sr-speedbar.git][sr-speedbar]]
-Same frame speedbar.
-#+begin_src emacs-lisp
-  (use-package sr-speedbar
-    :custom
-    (sr-speedbar-right-side nil)
+  (use-package format-all
     :bind
     (:map smahm006/toggle-map
-          ("s" . sr-speedbar-toggle)))
-#+end_src
-** Debugging
-*** [[https://github.com/svaante/dape.git][dape]]
-Debug Adapter Protocol for Emacs.
-#+begin_src emacs-lisp
-  (use-package dape
-    :hook
-    (prog-mode . dape-breakpoint-global-mode)
-    (dape-on-start-hooks . (lambda () (save-some-buffers t t)))
-    :bind
-    (("<left-fringe> C-<mouse-1>" . dape-mouse-breakpoint-toggle)
-     :repeat-map smahm006/debug-map
-     ("d" . dape)
-     ("p" . dape-pause)
-     ("c" . dape-continue)
-     ("n" . dape-next)
-     ("s" . dape-step-in)
-     ("o" . dape-step-out)
-     ("r" . dape-restart)
-     ("i" . dape-info)
-     ("R" . dape-repl)
-     ("m" . dape-read-memory)
-     ("l" . dape-breakpoint-log)
-     ("e" . dape-breakpoint-expression)
-     ("b" . dape-breakpoint-toggle)
-     ("B" . dape-breakpoint-remove-all)
-     ("t" . dape-select-thread)
-     ("S" . dape-select-stack)
-     ("x" . dape-evaluate-expression)
-     ("w" . dape-watch-dwim)
-     ("D" . dape-disconnect-quit)
-     :exit
-     ("q" . dape-quit))
-    :config
-    (setq dape-buffer-window-arrangement 'right))
-  ;; To not display info and/or buffers on startup
-  ;; (remove-hook 'dape-on-start-hooks 'dape-info)
-  ;; (remove-hook 'dape-on-start-hooks 'dape-repl)
-  ;; To display info and/or repl buffers on stopped
-  ;; (add-hook 'dape-on-stopped-hooks 'dape-info)
-  ;; (add-hook 'dape-on-stopped-hooks 'dape-repl)
-  ;; By default dape uses gdb keybinding prefix
-  ;; If you do not want to use any prefix, set it to nil.
-  ;; (setq dape-key-prefix "\C-x\C-a")
-  ;; Projectile users
-  ;; (setq dape-cwd-fn 'projectile-project-root)
+          ("f" . format-all-buffer)))
 #+end_src
 ** Snippets
+*** [[https://github.com/minad/tempel.git][tempel]]
+Enable snippets for with completions
+#+begin_src emacs-lisp
+  (use-package tempel
+    :hook
+    (conf-mode . smahm006/tempel-setup-capf)
+    (prog-mode . smahm006/tempel-setup-capf)
+    (text-mode . smahm006/tempel-setup-capf)
+    :bind (("M-+" . tempel-expand)
+           ("M-*" . tempel-insert)
+           (:map tempel-map (("C-n" . tempel-next)
+                             ("C-p" . tempel-previous))))
+    :preface
+    ;; Setup completion at point
+    (defun smahm006/tempel-setup-capf ()
+      ;; Add the Tempel Capf to `completion-at-point-functions'.
+      (setq-local completion-at-point-functions
+                  (cons #'tempel-complete
+                        completion-at-point-functions)))
+    :custom
+    (tempel-path (format "%s/snippets/*.eld" user-emacs-directory))
+    :config
+    (defvar my-global-templates
+      '((today (format-time-string "%Y-%m-%d"))
+  	  (NOW (format-time-string "%Y-%m-%d %a %H:%M"))
+  	  (yesterday (format-time-string "%Y-%m-%d" (time-subtract nil (* 24 60 60))))
+  	  (tomorrow (format-time-string "%Y-%m-%d" (time-add nil (* 24 60 60)))))
+  	  "My global templates.")
+    (add-to-list 'tempel-template-sources 'my-global-templates))
+#+end_src
 ** Virtualization
+*** [[https://github.com/Silex/docker.el][docker]]
+#+begin_src emacs-lisp
+  (use-package docker
+    :commands docker)
+  (use-package tramp-container
+    :ensure nil
+    :after docker)
+#+end_src
+*** [[https://github.com/spotify/dockerfile-mode.git][dockerfile-mode]]
+An emacs mode for handling Dockerfiles.
+#+begin_src emacs-lisp
+  (use-package dockerfile-mode
+    :mode "/Dockerfile\\'"
+    :mode "/Containerfile\\'"
+    :mode "\\.dockerfile\\'"
+    :mode "\\.containerfile\\'")
+#+end_src
 ** Footer
 #+begin_src text
 ;; smahm006-development.el end
@@ -2314,3 +2343,4 @@ Debug Adapter Protocol for Emacs.
 *** C
 *** C++
 *** Rust
+*** Zig
