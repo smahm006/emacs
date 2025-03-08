@@ -3,7 +3,7 @@
 #+AUTHOR: Sohaib Mahmood
 #+STARTUP: show2levels indent
 #+EXCLUDE_TAGS: noexport
-#+VERSION: 1.2.0
+#+VERSION: 2.0.0
 This is the configuration for my personal GNU Emacs setup.
 * Table of Contents :TOC_2_gh:noexport:
 - [[#early-emacs-initialization][Early Emacs Initialization]]
