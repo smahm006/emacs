@@ -185,40 +185,45 @@ This is the configuration for my personal GNU Emacs setup.
 #+end_src
 ** Runtime optimizations
 #+begin_src emacs-lisp
-  ;; PERF: A second, case-insensitive pass over `auto-mode-alist' is time wasted.
-  (setq auto-mode-case-fold nil)
+;; PERF: A second, case-insensitive pass over `auto-mode-alist' is time wasted.
+(setq auto-mode-case-fold nil)
 
-  ;; PERF: Disable bidirectional text scanning for a modest performance boost.
-  ;;   I've set this to `nil' in the past, but the `bidi-display-reordering's docs
-  ;;   say that is an undefined state and suggest this to be just as good:
-  (setq-default bidi-display-reordering 'left-to-right
-                bidi-paragraph-direction 'left-to-right)
+;; PERF: Disable bidirectional text scanning for a modest performance boost.
+;;   I've set this to `nil' in the past, but the `bidi-display-reordering's docs
+;;   say that is an undefined state and suggest this to be just as good:
+(setq-default bidi-display-reordering 'left-to-right
+              bidi-paragraph-direction 'left-to-right)
 
-  ;; PERF: Disabling BPA makes redisplay faster, but might produce incorrect
-  ;;   reordering of bidirectional text with embedded parentheses (and other
-  ;;   bracket characters whose 'paired-bracket' Unicode property is non-nil).
-  (setq bidi-inhibit-bpa t)  ; Emacs 27+ only
+;; PERF: Disabling BPA makes redisplay faster, but might produce incorrect
+;;   reordering of bidirectional text with embedded parentheses (and other
+;;   bracket characters whose 'paired-bracket' Unicode property is non-nil).
+(setq bidi-inhibit-bpa t)  ; Emacs 27+ only
 
-  ;; Reduce rendering/line scan work for Emacs by not rendering cursors or regions
-  ;; in non-focused windows.
-  (setq-default cursor-in-non-selected-windows nil)
-  (setq highlight-nonselected-windows nil)
+;; Reduce rendering/line scan work for Emacs by not rendering cursors or regions
+;; in non-focused windows.
+(setq-default cursor-in-non-selected-windows nil)
+(setq highlight-nonselected-windows nil)
 
-  ;; Don't ping things that look like domain names.
-  (setq ffap-machine-p-known 'reject)
+;; Don't ping things that look like domain names.
+(setq ffap-machine-p-known 'reject)
 
-  ;; Emacs "updates" its ui more often than it needs to, so slow it down slightly
-  (setq idle-update-delay 1.0)  ; default is 0.5
+;; Emacs "updates" its ui more often than it needs to, so slow it down slightly
+(setq idle-update-delay 1.0)  ; default is 0.5
 
-  ;; Font compacting can be terribly expensive, especially for rendering icon
-  ;; fonts on Windows. Whether disabling it has a notable affect on Linux and Mac
-  ;; hasn't been determined, but do it anyway, just in case. This increases memory
-  ;; usage, however!
-  (setq inhibit-compacting-font-caches t)
+;; Font compacting can be terribly expensive, especially for rendering icon
+;; fonts on Windows. Whether disabling it has a notable affect on Linux and Mac
+;; hasn't been determined, but do it anyway, just in case. This increases memory
+;; usage, however!
+(setq inhibit-compacting-font-caches t)
 
-  ;; Introduced in Emacs HEAD (b2f8c9f), this inhibits fontification while
-  ;; receiving input, which should help a little with scrolling performance.
-  (setq redisplay-skip-fontification-on-input t)
+;; Introduced in Emacs HEAD (b2f8c9f), this inhibits fontification while
+;; receiving input, which should help a little with scrolling performance.
+(setq redisplay-skip-fontification-on-input t)
+
+;; Move native compilation cache directory to xdg-cache
+(when (boundp 'native-comp-eln-load-path)
+  (startup-redirect-eln-cache
+   (expand-file-name (format "%s/emacs/eln-cache/" xdg-cache))))
 #+end_src
 ** Footer
 #+begin_src text
@@ -352,64 +357,64 @@ Keymaps used for important built-in command or commands from other packages
 #+end_src
 ** Modes
 #+begin_src emacs-lisp
-  (define-minor-mode sensitive-mode
-    "https://anirudhsasikumar.net/blog/2005.01.21.html
+(define-minor-mode sensitive-mode
+  "https://anirudhsasikumar.net/blog/2005.01.21.html
 
      For sensitive files like password lists.
      It disables backup creation and auto saving.
      With no argument, this command toggles the mode.
      Non-null prefix argument turns on the mode.
      Null prefix argument turns off the mode."
-    ;; The initial value.
-    nil
-    ;; The indicator for the mode line.
-    " Sensitive"
-    ;; The minor mode bindings.
-    nil
-    (if (symbol-value sensitive-mode)
-        (progn
-  	;; Disable backups
-  	(set (make-local-variable 'backup-inhibited) t)
-  	;; Disable auto-save
-  	(if auto-save-default
-  	    (auto-save-mode -1)))
-      ;; Resort to default value of backup-inhibited
-      (kill-local-variable 'backup-inhibited)
-      ;; Resort to default auto save setting
-      (if auto-save-default
-  	(auto-save-mode 1))))
+  ;; The initial value.
+  nil
+  ;; The indicator for the mode line.
+  " Sensitive"
+  ;; The minor mode bindings.
+  nil
+  (if (symbol-value sensitive-mode)
+      (progn
+  		;; Disable backups
+  		(set (make-local-variable 'backup-inhibited) t)
+  		;; Disable auto-save
+  		(if auto-save-default
+  			(auto-save-mode -1)))
+    ;; Resort to default value of backup-inhibited
+    (kill-local-variable 'backup-inhibited)
+    ;; Resort to default auto save setting
+    (if auto-save-default
+  		(auto-save-mode 1))))
 #+end_src
 ** Packages
 To manage packages, I use [[https://github.com/jwiegley/use-package/][use-package]].
 *** Package Configuration
 To manage the package configurations with use-package, we add some required libraries
 #+begin_src emacs-lisp
-  (use-package use-package
-    :ensure nil
-    :custom
-    (use-package-always-ensure t)    ;; Always make sure package is downloaded
-    (use-package-always-defer t)     ;; Defer package Enable lazy loading per default
-    :config
-    ;; Load packages from these archives
-    (setq package-archives '(("elpa" . "https://elpa.gnu.org/packages/")
-                             ("melpa" . "https://melpa.org/packages/")
-                             ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
-    ;; Highest number gets priority (what is not mentioned has priority 0)
-    (setq package-archive-priorities
+(use-package use-package
+  :ensure nil
+  :custom
+  (use-package-always-ensure t)    ;; Always make sure package is downloaded
+  (use-package-always-defer t)     ;; Defer package Enable lazy loading per default
+  :config
+  ;; Load packages from these archives
+  (setq package-archives '(("elpa" . "https://elpa.gnu.org/packages/")
+                           ("melpa" . "https://melpa.org/packages/")
+                           ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+  ;; Highest number gets priority (what is not mentioned has priority 0)
+  (setq package-archive-priorities
       	'(("gnu-elpa" . 3)
-            ("melpa" . 2)
-            ("nongnu" . 1)))
-    ;; Make use-package more verbose when `--debug-init` flag is passed
-    (when init-file-debug
-      (setq use-package-verbose t
-  	  use-package-expand-minimally nil
-  	  use-package-compute-statistics t
-  	  jka-compr-verbose t
-  	  warning-minimum-level :warning
-  	  byte-compile-warnings t
-  	  byte-compile-verbose t
-  	  native-comp-warning-on-missing-source t
-  	  debug-on-error t)))
+          ("melpa" . 2)
+          ("nongnu" . 1)))
+  ;; Make use-package more verbose when `--debug-init` flag is passed
+  (when init-file-debug
+    (setq use-package-verbose t
+  		  use-package-expand-minimally nil
+  		  use-package-compute-statistics t
+  		  jka-compr-verbose t
+  		  warning-minimum-level :warning
+  		  byte-compile-warnings t
+  		  byte-compile-verbose t
+  		  native-comp-warning-on-missing-source t
+  		  debug-on-error t)))
 #+end_src
 *** Package Automatic Updates
 There is no default way to auto update packages so we will use the
@@ -429,56 +434,56 @@ auto-package-update package
 **** [[https://github.com/purcell/exec-path-from-shell][exec-path-from-shell]]
 By default not all environment variables are copied to Emacs. This package ensures proper synchronization between the two.
 #+begin_src emacs-lisp
-  (use-package exec-path-from-shell
-    :hook
-    (after-init . exec-path-from-shell-initialize)
-    :custom
-    (epg-pinentry-mode 'loopback)
-    (exec-path-from-shell-variables '("PATH" "SHELL" "GOPATH"))
-    :config
-    (setenv "SSH_AUTH_SOCK" (string-chop-newline (shell-command-to-string "gpgconf --list-dirs agent-ssh-socket"))))
+(use-package exec-path-from-shell
+  :hook
+  (after-init . exec-path-from-shell-initialize)
+  :custom
+  (epg-pinentry-mode 'loopback)
+  (exec-path-from-shell-variables '("PATH" "SHELL" "GOPATH"))
+  :config
+  (setenv "SSH_AUTH_SOCK" (string-chop-newline (shell-command-to-string "gpgconf --list-dirs agent-ssh-socket"))))
 #+end_src
 **** [[https://github.com/emacscollective/no-littering][no-littering]]
 The default paths used to store configuration files and persistent data are not consistent across Emacs packages. This isn’t just a problem with third-party packages but even with built-in packages. The following package helps sort that out.
 #+begin_src emacs-lisp
-  (use-package no-littering
-    :demand t
-    :init
-    ;; Store backup and auto-save files in no-littering-var-directory
-    (setq no-littering-etc-directory (format "%s/emacs/etc/" xdg-data))
-    (smahm006/mkdir no-littering-etc-directory)
-    (setq no-littering-var-directory (format "%s/emacs/var/" xdg-data))
-    (smahm006/mkdir no-littering-var-directory)
-    (setq no-littering-cache-directory (format "%s/emacs/cache/" xdg-cache))
-    (smahm006/mkdir no-littering-cache-directory)
-    :config
-    ;; Store backup and auto-save files in no-littering-var-directory
-    (no-littering-theme-backups)
-    ;; Store cookies in cache directory
-    (setq url-cookie-file (no-littering-expand-var-file-name "cookies"))
-    ;; Store lock files in no-littering-var-directory
-    (let ((lock-files-dir (no-littering-expand-var-file-name "lock-files/")))
-      (smahm006/mkdir lock-files-dir)
-      (setq lock-file-name-transforms `((".*" ,lock-files-dir t))))
-    ;; Store customization file in no-littering-etc-directory
-    (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
-    (add-hook 'after-init-hook (lambda () (load custom-file 'noerror 'nomessage)) -99))
+(use-package no-littering
+  :demand t
+  :init
+  ;; Store backup and auto-save files in no-littering-var-directory
+  (setq no-littering-etc-directory (format "%s/emacs/etc/" xdg-data))
+  (smahm006/mkdir no-littering-etc-directory)
+  (setq no-littering-var-directory (format "%s/emacs/var/" xdg-data))
+  (smahm006/mkdir no-littering-var-directory)
+  (setq no-littering-cache-directory (format "%s/emacs/cache/" xdg-cache))
+  (smahm006/mkdir no-littering-cache-directory)
+  :config
+  ;; Store backup and auto-save files in no-littering-var-directory
+  (no-littering-theme-backups)
+  ;; Store cookies in cache directory
+  (setq url-cookie-file (no-littering-expand-var-file-name "cookies"))
+  ;; Store lock files in no-littering-var-directory
+  (let ((lock-files-dir (no-littering-expand-var-file-name "lock-files/")))
+    (smahm006/mkdir lock-files-dir)
+    (setq lock-file-name-transforms `((".*" ,lock-files-dir t))))
+  ;; Store customization file in no-littering-etc-directory
+  (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
+  (add-hook 'after-init-hook (lambda () (load custom-file 'noerror 'nomessage)) -99))
 #+end_src
 *** Authentication
 I use a GPG key stored in a Yubikey for most of my authentication
 #+begin_src emacs-lisp
-  (use-package epa-file
-    :ensure nil
-    :init
-    (epa-file-enable)
-    (setq epg-pinentry-mode 'loopback)
-    :config
-    ;; Disable backup and autosave of .vcf and .gpg files
-    ;; Alternatively, to protect only some files, like some .txt files, use a line like
-    ;; // -*-mode:asciidoc; mode:sensitive-minor; fill-column:132-*-
-    (setq auto-mode-alist
-  	(append
-  	 (list '("\\.\\(vcf\\|gpg\\)$" . sensitive-minor-mode)) auto-mode-alist)))
+(use-package epa-file
+  :ensure nil
+  :init
+  (epa-file-enable)
+  (setq epg-pinentry-mode 'loopback)
+  :config
+  ;; Disable backup and autosave of .vcf and .gpg files
+  ;; Alternatively, to protect only some files, like some .txt files, use a line like
+  ;; // -*-mode:asciidoc; mode:sensitive-minor; fill-column:132-*-
+  (setq auto-mode-alist
+  		(append
+  		 (list '("\\.\\(vcf\\|gpg\\)$" . sensitive-minor-mode)) auto-mode-alist)))
 #+end_src
 ** Footer
 #+begin_src text
@@ -490,7 +495,7 @@ I use a GPG key stored in a Yubikey for most of my authentication
 :END:
 ** Header
 #+begin_src emacs-lisp :tangle init.el
-  (require 'smahm006-org)
+(require 'smahm006-org)
 #+end_src
 #+begin_src text
 ;; init.el - Org configuration file, managing structure, defaults, and integrations
@@ -502,161 +507,161 @@ I use a GPG key stored in a Yubikey for most of my authentication
 *** org
 Org short for organization of my life mainly by using org-mode
 #+begin_src emacs-lisp
-  (use-package org
-    :ensure org-contrib
-    :init
-    (setq org-directory (format "%s/org/" xdg-home))
-    (let ((org-archive-directory (format "%s/archives/" org-directory)))
-      (smahm006/mkdir org-archive-directory)
-      (setq org-archive-location (format "%s/%%s::" org-archive-directory)))
-    :hook
-    (org-mode . org-indent-mode)
-    (org-mode . visual-line-mode)
-    :bind
-    (:map smahm006/org-map
-          ("c" . org-capture)
-          ("a" . org-agenda))
-    :custom
-    (org-confirm-babel-evaluate nil)                     ; Do not ask about code evaluation
-    (org-return-follows-link t)                          ; Follow links if entered on
-    (org-mouse-1-follows-link t)                         ; Follow links if clicked on
-    (org-link-descriptive t)                             ; Show links by description not URL
-    (org-enforce-todo-dependencies t)                    ; Cannot set a headline to DONE if children aren’t DONE
-    (org-log-done 'time)                                 ; Add timstamp to items when done
+(use-package org
+  :ensure org-contrib
+  :init
+  (setq org-directory (format "%s/org/" xdg-home))
+  (let ((org-archive-directory (format "%s/archives/" org-directory)))
+    (smahm006/mkdir org-archive-directory)
+    (setq org-archive-location (format "%s/%%s::" org-archive-directory)))
+  :hook
+  (org-mode . org-indent-mode)
+  (org-mode . visual-line-mode)
+  :bind
+  (:map smahm006/org-map
+        ("c" . org-capture)
+        ("a" . org-agenda))
+  :custom
+  (org-confirm-babel-evaluate nil)                     ; Do not ask about code evaluation
+  (org-return-follows-link t)                          ; Follow links if entered on
+  (org-mouse-1-follows-link t)                         ; Follow links if clicked on
+  (org-link-descriptive t)                             ; Show links by description not URL
+  (org-enforce-todo-dependencies t)                    ; Cannot set a headline to DONE if children aren’t DONE
+  (org-log-done 'time)                                 ; Add timstamp to items when done
 
-    ;; Todo
-    (org-todo-keywords
-     '((sequence
-        "TODO(t)"  ; A task that needs doing & is ready to do
-        "NEXT(n)"  ; Next task in a project
-        "|"
-        "DONE(d)"  ; Task successfully completed
-        )
-       (sequence
-        "WAIT(w)"  ; Something external is holding up this task
-        "HOLD(h)"  ; This task is paused/on hold because of me
-        "|"
-        "KILL(k)"  ; Task was cancelled, aborted or is no longer applicable
-        )))
-    (org-todo-keyword-faces
-     '(("TODO" :foreground "red" :weight bold)
-       ("NEXT" :foreground "blue" :weight bold)
-       ("DONE" :foreground "forest green" :weight bold)
-       ("WAIT" :foreground "orange" :weight bold)
-       ("HOLD" :foreground "magenta" :weight bold)
-       ("KILL" :foreground "forest green" :weight bold)))
+  ;; Todo
+  (org-todo-keywords
+   '((sequence
+      "TODO(t)"  ; A task that needs doing & is ready to do
+      "NEXT(n)"  ; Next task in a project
+      "|"
+      "DONE(d)"  ; Task successfully completed
+      )
+     (sequence
+      "WAIT(w)"  ; Something external is holding up this task
+      "HOLD(h)"  ; This task is paused/on hold because of me
+      "|"
+      "KILL(k)"  ; Task was cancelled, aborted or is no longer applicable
+      )))
+  (org-todo-keyword-faces
+   '(("TODO" :foreground "red" :weight bold)
+     ("NEXT" :foreground "blue" :weight bold)
+     ("DONE" :foreground "forest green" :weight bold)
+     ("WAIT" :foreground "orange" :weight bold)
+     ("HOLD" :foreground "magenta" :weight bold)
+     ("KILL" :foreground "forest green" :weight bold)))
 
-    ;; Babel
-    (org-src-fontify-natively t)
-    (org-src-window-setup 'current-window)
-    (org-src-strip-leading-and-trailing-blank-lines t)
-    (org-src-preserve-indentation t)
-    (org-src-tab-acts-natively t)
-    (org-babel-load-languages
-     '((emacs-lisp . t)
-       (shell . t)
+  ;; Babel
+  (org-src-fontify-natively t)
+  (org-src-window-setup 'current-window)
+  (org-src-strip-leading-and-trailing-blank-lines t)
+  (org-src-preserve-indentation t)
+  (org-src-tab-acts-natively t)
+  (org-babel-load-languages
+   '((emacs-lisp . t)
+     (shell . t)
   	 (python . t)
   	 (ledger . t))))
 #+end_src
 *** [[https://github.com/snosov1/toc-org.git][toc-org]]
 Toc-org is an Emacs utility to have an up-to-date table of contents in the org files without exporting (useful primarily for readme files on GitHub).
 #+begin_src emacs-lisp
-  (use-package toc-org
-    :after org
-    :hook
-    (org-mode . toc-org-mode))
+(use-package toc-org
+  :after org
+  :hook
+  (org-mode . toc-org-mode))
 #+end_src
 *** [[https://github.com/jwiegley/emacs-async][async]]
 Using the async package and the org-babel-tangle command, the code below will executes org-babel-tangle asynchronously when emacs.org is saved
 #+begin_src emacs-lisp :noweb yes
-  (use-package async
-      :hook ((org-mode . smahm006/config-tangle)
-  		   (after-save . smahm006/config-tangle))
-    :preface
-    (defcustom smahm006/config-file (expand-file-name "emacs.org" user-emacs-directory)
-      "Path to the main configuration Org file."
-      :type 'string)
-    (defvar smahm006/config-last-change (nth 5 (file-attributes smahm006/config-file))
-      "Timestamp of the last modification to the config file.")
-    (defcustom smahm006/show-async-tangle-results nil
-      "Whether to keep async tangle result buffers for later inspection."
-      :type 'boolean)
-    (defun smahm006/async-babel-tangle (org-file)
-      "Asynchronously tangle the given ORG-FILE."
-      (let ((start-time (current-time)))
-        (async-start
-         `(lambda ()
-            (require 'org)
-            (org-babel-tangle-file ,org-file))
-         (unless smahm006/show-async-tangle-results
-           `(lambda (result)
-              (message "[%s] %s tangled in %.2fs"
-                       (if result "✓" "✗")
-                       ,org-file
-                       (float-time (time-subtract (current-time) ',start-time))))))))
-    (defun smahm006/config-updated-p ()
-      "Return non-nil if the configuration file has been modified since the last tangle."
-      (time-less-p smahm006/config-last-change
-                   (nth 5 (file-attributes smahm006/config-file))))
-    (defun smahm006/config-tangle ()
-      "Asynchronously tangle the Org config file if it has been updated."
-      (when (smahm006/config-updated-p)
-        (setq smahm006/config-last-change (nth 5 (file-attributes smahm006/config-file)))
-        (smahm006/async-babel-tangle smahm006/config-file))))
+(use-package async
+  :hook ((org-mode . smahm006/config-tangle)
+  		 (after-save . smahm006/config-tangle))
+  :preface
+  (defcustom smahm006/config-file (expand-file-name "emacs.org" user-emacs-directory)
+    "Path to the main configuration Org file."
+    :type 'string)
+  (defvar smahm006/config-last-change (nth 5 (file-attributes smahm006/config-file))
+    "Timestamp of the last modification to the config file.")
+  (defcustom smahm006/show-async-tangle-results nil
+    "Whether to keep async tangle result buffers for later inspection."
+    :type 'boolean)
+  (defun smahm006/async-babel-tangle (org-file)
+    "Asynchronously tangle the given ORG-FILE."
+    (let ((start-time (current-time)))
+      (async-start
+       `(lambda ()
+          (require 'org)
+          (org-babel-tangle-file ,org-file))
+       (unless smahm006/show-async-tangle-results
+         `(lambda (result)
+            (message "[%s] %s tangled in %.2fs"
+                     (if result "✓" "✗")
+                     ,org-file
+                     (float-time (time-subtract (current-time) ',start-time))))))))
+  (defun smahm006/config-updated-p ()
+    "Return non-nil if the configuration file has been modified since the last tangle."
+    (time-less-p smahm006/config-last-change
+                 (nth 5 (file-attributes smahm006/config-file))))
+  (defun smahm006/config-tangle ()
+    "Asynchronously tangle the Org config file if it has been updated."
+    (when (smahm006/config-updated-p)
+      (setq smahm006/config-last-change (nth 5 (file-attributes smahm006/config-file)))
+      (smahm006/async-babel-tangle smahm006/config-file))))
 #+end_src
 ** Styling
 *** [[https://github.com/minad/org-modern][org-modern]]
 Modernize the look of org
 #+begin_src emacs-lisp
-  (use-package org-superstar
-    :hook
-    (org-mode . org-superstar-mode)
-    :custom
-    (org-ellipsis "…")
-    (org-pretty-entities t)
-    (org-hide-emphasis-markers t)
-    (org-auto-align-tags nil)
-    (org-tags-column 0)
-    (org-agenda-tags-column 0)
-    (org-catch-invisible-edits 'show-and-error)
-    (org-special-ctrl-a/e t)
-    (org-insert-heading-respect-content t))
+(use-package org-superstar
+  :hook
+  (org-mode . org-superstar-mode)
+  :custom
+  (org-ellipsis "…")
+  (org-pretty-entities t)
+  (org-hide-emphasis-markers t)
+  (org-auto-align-tags nil)
+  (org-tags-column 0)
+  (org-agenda-tags-column 0)
+  (org-catch-invisible-edits 'show-and-error)
+  (org-special-ctrl-a/e t)
+  (org-insert-heading-respect-content t))
 #+end_src
 *** [[https://github.com/awth13/org-appear][org-appear]]
 Toggle visibility of hidden Org mode element parts upon entering and leaving an element.
 #+begin_src emacs-lisp
-  (use-package org-appear
-    :after org
-    :hook (org-mode . org-appear-mode)
-    :custom
-    (org-appear-autolinks t))
+(use-package org-appear
+  :after org
+  :hook (org-mode . org-appear-mode)
+  :custom
+  (org-appear-autolinks t))
 #+end_src
 ** Note Taking
 *** [[https://github.com/protesilaos/denote][denote]]
 Simple notes with an efficient file-naming scheme
 #+begin_src emacs-lisp
-  ;; Another basic setup with a little more to it.
-  (use-package denote
-    :ensure t
-    :hook (dired-mode . denote-dired-mode)
-    :bind
-    (:map smahm006/note-map
-  	(("n" . denote)
-  	 ("r" . denote-rename-file)
-  	 ("l" . denote-link)
-  	 ("b" . denote-backlinks)
-  	 ("d" . denote-sort-dired)))
-    :config
-    (let ((org-notes-directory (format "%s/notes/" org-directory)))
-      (smahm006/mkdir org-notes-directory)
-      (setq denote-directory org-notes-directory))
-    (denote-rename-buffer-mode 1))
+;; Another basic setup with a little more to it.
+(use-package denote
+  :ensure t
+  :hook (dired-mode . denote-dired-mode)
+  :bind
+  (:map smahm006/note-map
+  		(("n" . denote)
+  		 ("r" . denote-rename-file)
+  		 ("l" . denote-link)
+  		 ("b" . denote-backlinks)
+  		 ("d" . denote-sort-dired)))
+  :config
+  (let ((org-notes-directory (format "%s/notes/" org-directory)))
+    (smahm006/mkdir org-notes-directory)
+    (setq denote-directory org-notes-directory))
+  (denote-rename-buffer-mode 1))
 #+end_src
 *** [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
 Distraction-free writing for Emacs.
 #+begin_src emacs-lisp
-  (use-package writeroom-mode
-    :bind (("<f3>" . writeroom-mode)))
+(use-package writeroom-mode
+  :bind (("<f3>" . writeroom-mode)))
 #+end_src
 ** Agenda
 #+begin_src emacs-lisp :tangle init.el
@@ -715,14 +720,14 @@ the UNIX command line.
 :END:
 ** Header
 #+begin_src emacs-lisp :tangle init.el
-  (require 'smahm006-ui)
+(require 'smahm006-ui)
 #+end_src
 #+begin_src text
 ;; init.el - Configures themes, fonts, icons, and other UI enhancements for a polished experience
 ;; Copyright (C) 2023-2025 Sohaib Mahmood
 ;; Homepage: https://github.com/smahm006/emacs
 ;; Code:
-#+end_src
+nnnnn#+end_src
 ** UI Defaults
 #+begin_src emacs-lisp
   (use-package emacs
@@ -912,7 +917,7 @@ An Emacs plugin that hides (or masks) the current buffer's mode-line.
 :END:
 ** Header
 #+begin_src emacs-lisp :tangle init.el
-  (require 'smahm006-ux)
+(require 'smahm006-ux)
 #+end_src
 #+begin_src text
 ;; init.el - Adds better completion, configures window/buffer/file management
@@ -1476,7 +1481,7 @@ Project.el is more than enough for my project management needs
 :END:
 ** Header
 #+begin_src emacs-lisp :tangle init.el
-  (require 'smahm006-editing)
+(require 'smahm006-editing)
 #+end_src
 #+begin_src text
 ;; init.el - Editing
@@ -1977,7 +1982,7 @@ Enchanted Spell Checker.
 :END:
 ** Header
 #+begin_src emacs-lisp :tangle init.el
-  (require 'smahm006-development)
+(require 'smahm006-development)
 #+end_src
 #+begin_src text
 ;; init.el - Development
@@ -2314,7 +2319,7 @@ Enable snippets for with completions
 :END:
 ** Header
 #+begin_src emacs-lisp :tangle init.el
-  (require 'smahm006-languages)
+(require 'smahm006-languages)
 #+end_src
 #+begin_src text
 ;; init.el - Languages
