@@ -757,10 +757,15 @@ the UNIX command line.
 *** Theme
 I switch themes quite often but usually I prefer high contrast dark themes.
 #+begin_src emacs-lisp
-(use-package gruber-darker-theme
+(use-package doom-themes
   :if (and (display-graphic-p) (string= (smahm006/location) "home"))
   :init
-  (load-theme 'gruber-darker t))
+  (load-theme 'doom-tomorrow-night t)
+  :custom
+  (doom-themes-enable-bold t)
+  (doom-themes-enable-italic t)
+  :config
+  (doom-themes-visual-bell-config))
 #+end_src
 *** Fonts
 Spending most of our time on GNU Emacs, it is important to use a font that will
@@ -882,24 +887,35 @@ Fast, configurable indentation guide-bars for Emacs.
     ((python-base-mode yaml-ts-mode emacs-lisp-mode) . indent-bars-mode))
 #+end_src
 ** Mode Line
-*** [[https://github.com/dbordak/telephone-line/][telephone-line]]
-Power-line style mode line which seems to work best with nyan mode
+*** [[https://github.com/emacsmirror/mood-line][mood-line]]
+A lightweight, drop-in replacement for the default Emacs mode line configuration.
 #+begin_src emacs-lisp
-  (use-package telephone-line
-    :ensure nyan-mode
-    :hook
-    (((after-init) . telephone-line-mode)
-      ((telephone-line-mode) . nyan-mode))
-    :config
-    (setq telephone-line-lhs
-          '((accent . (telephone-line-vc-segment
-                       telephone-line-erc-modified-channels-segment))
-            (nil    . (telephone-line-buffer-segment
-                       telephone-line-nyan-segment))))
-    (setq telephone-line-rhs
-          '((nil    . (telephone-line-misc-info-segment))
-            (accent . (telephone-line-major-mode-segment))
-            (evil   . (telephone-line-airline-position-segment)))))
+(use-package mood-line
+  :hook (after-init . mood-line-mode)
+  :custom
+  (mood-line-glyph-alist mood-line-glyphs-fira-code)
+  (mode-line-position-column-line-format '(" +%l:%c"))
+  :config
+  (setq mood-line-format
+        (mood-line-defformat
+         :left
+		 (((mood-line-segment-buffer-status) . " ")
+		  ((mood-line-segment-major-mode) . " - ")
+		  ((mood-line-segment-buffer-name) . " "))
+         :right
+		 (((mood-line-segment-multiple-cursors) . " | ")
+		  ((mood-line-segment-cursor-position) . " ")
+		  ((mood-line-segment-vc) . " ")
+		  ((mood-line-segment-checker) . " "))
+		 :padding " ")))
+#+end_src
+*** [[https://github.com/tarsius/minions][minions]]
+Nest all major and minor modes in mode line
+#+begin_src emacs-lisp
+(use-package minions
+  :after mood-line
+  :hook
+  (mood-line-mode . minions-mode))
 #+end_src
 *** [[https://github.com/hlissner/emacs-hide-mode-line.git][hide-mode-line]]
 An Emacs plugin that hides (or masks) the current buffer's mode-line.
@@ -1898,7 +1914,7 @@ Preview completion candidate
 #+begin_src emacs-lisp
   (use-package completion-preview
     :ensure nil
-    :hook (prog-mode . completion-preview-mode)
+    :hook ((prog-mode conf-mode) . completion-preview-mode)
     :bind
     (:map completion-preview-active-mode-map
   	("M-n" . completion-preview-next-candidate)
