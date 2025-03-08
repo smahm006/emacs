@@ -545,7 +545,12 @@ Org short for organization of my life mainly by using org-mode
        ("HOLD" :foreground "magenta" :weight bold)
        ("KILL" :foreground "forest green" :weight bold)))
 
-    ;; Languages to autoload for babel
+    ;; Babel
+    (org-src-fontify-natively t)
+    (org-src-window-setup 'current-window)
+    (org-src-strip-leading-and-trailing-blank-lines t)
+    (org-src-preserve-indentation t)
+    (org-src-tab-acts-natively t)
     (org-babel-load-languages
      '((emacs-lisp . t)
        (shell . t)
@@ -1250,7 +1255,6 @@ We can also view the diff between backups and selectively restore one
     :preface
     (defun smahm006/backup-buffer ()
       "Make a session backup at the first save of each emacs session and a save backup on each subsequent save."
-      (setq backup-directory-alist `(("." . ,backup-save-dir)))
       (when (not buffer-backed-up)
         (let ((backup-directory-alist `(("." . ,backup-session-dir)))
   	    (kept-new-versions 3))
@@ -1264,7 +1268,7 @@ We can also view the diff between backups and selectively restore one
     (version-control t)                                ; Version numbers for backup files
     (make-backup-files t)                              ; Backup of a file the first time it is saved.
     (kept-new-versions 100)                            ; Number of newest versions to keep
-    (kept-old-versions 100)                            ; Number of oldest versions to keep
+    (kept-old-versions 2)                              ; Number of oldest versions to keep
     (delete-old-versions t)                            ; Delete excess backup files silently
     (delete-by-moving-to-trash t)                      ; Delete backups to trash
 
@@ -1272,6 +1276,7 @@ We can also view the diff between backups and selectively restore one
     (auto-save-default t)                              ; Auto-save every buffer that visits a file
     (auto-save-timeout 30)                             ; Number of seconds between auto-save
     (auto-save-interval 300)                           ; Number of keystrokes between auto-saves
+	(auto-save-list-file-prefix nil)                   ; Do not record saved files
 
     ;; Command history backup
     (history-delete-duplicates t)                      ; Delete duplicates in history
@@ -2319,35 +2324,54 @@ Enable snippets for with completions
 ** Markup & Configuration
 *** HTML
 *** JSON
+**** json-ts-mode
+#+begin_src emacs-lisp
+  (use-package json
+    :ensure nil
+    :mode (("\\.json\\'"  . json-ts-mode))
+    :hook
+    (json-ts-mode . (lambda ()
+  			(define-key smahm006/run-map (kbd "f") #'smahm006/json-format)))
+    :preface
+(defun smahm006/json-format ()
+  "Format the current buffer as JSON using jq if available, else python -m json.tool."
+  (interactive)
+  (let* ((jq-exists (executable-find "jq"))
+         (cmd (if jq-exists
+                  (format "out=$(jq . < %s) && echo \"$out\" > %s"
+                          (shell-quote-argument buffer-file-name)
+                          (shell-quote-argument buffer-file-name))
+                (format "out=$(python -m json.tool %s) && echo \"$out\" > %s"
+                        (shell-quote-argument buffer-file-name)
+                        (shell-quote-argument buffer-file-name))))
+         (output (shell-command cmd)))
+    (message "%s" output)
+    (smahm006/revert-buffer-no-confirm))))
+#+end_src
 *** TOML
 *** XML
 *** YAML
 **** yaml-ts-mode
-Yaml development environment
 #+begin_src emacs-lisp
   (use-package yaml
     :ensure nil
     :mode (("\\.yml\\'"  . yaml-ts-mode)
            ("\\.yaml\\'" . yaml-ts-mode))
     :hook
-    (yaml-ts-mode . eglot-ensure)
     (yaml-ts-mode . (lambda ()
                       (define-key smahm006/run-map (kbd "c") #'smahm006/yaml-check)
-  					(define-key smahm006/run-map (kbd "f") #'smahm006/yaml-format)))
+  		      (define-key smahm006/run-map (kbd "f") #'smahm006/yaml-format)))
     :preface
     (defun smahm006/yaml-format ()
   	"Format buffer using yamlfmt"
   	(interactive)
-  	(let ((output (shell-command-to-string (format "yamlfmt -quiet %s" buffer-file-name))))
+  	(let ((output (shell-command-to-string (format "yamlfmt -quiet %s" (shell-quote-argument buffer-file-name)))))
   	  (message "%s" (string-trim output)))
   	(smahm006/revert-buffer-no-confirm))
     (defun smahm006/yaml-check ()
       "Compile current buffer file with yaml."
       (interactive)
-      (compile (format "yamllint -f standard %s" buffer-file-name)))
-    :config
-    (with-eval-after-load 'eglot
-  	(add-to-list 'eglot-server-programs '((yaml-ts-mode) . ("yaml-language-server" "--stdio")))))
+      (compile (format "yamllint -f standard %s" (shell-quote-argument buffer-file-name)))))
 #+end_src
 **** [[https://github.com/zkry/yaml-pro][yaml-pro]]
 #+begin_src emacs-lisp
@@ -2368,11 +2392,11 @@ Yaml development environment
     (python-ts-mode . eglot-ensure)
     :hook
     (python-ts-mode . (lambda ()
-  					  (define-key smahm006/run-map (kbd "v") #'smahm006/pyrightconfig-write)
+  			(define-key smahm006/run-map (kbd "v") #'smahm006/pyrightconfig-write)
     			(define-key smahm006/run-map (kbd "V") #'smahm006/python-venv-setup)
     			(define-key smahm006/run-map (kbd "r") #'smahm006/python-run)
     			(define-key smahm006/run-map (kbd "c") #'smahm006/python-check)
-  					  (define-key smahm006/run-map (kbd "f") #'smahm006/python-format)))
+  			(define-key smahm006/run-map (kbd "f") #'smahm006/python-format)))
     :preface
     (defun smahm006/pyrightconfig-write (virtualenv)
     	"Write a `pyrightconfig.json' file at the Git root of a project
@@ -2405,23 +2429,23 @@ Yaml development environment
     (defun smahm006/python-run ()
       "Compile current buffer file with python."
       (interactive)
-      (compile (format "python3 %s" buffer-file-name)))
+      (compile (format "python3 %s" (shell-quote-argument buffer-file-name))))
     (defun smahm006/python-format ()
   	"Format buffer using ruff"
   	(interactive)
-  	(let ((output (shell-command-to-string (format "ruff format %s" buffer-file-name))))
+  	(let ((output (shell-command-to-string (format "ruff format %s" (shell-quote-argument buffer-file-name)))))
   	  (message "%s" (string-trim output)))
   	(smahm006/revert-buffer-no-confirm))
     (defun smahm006/python-fix ()
   	"Check for and fix any errors"
   	(interactive)
-  	(let ((output (shell-command-to-string (format "ruff check --fix %s" buffer-file-name))))
+  	(let ((output (shell-command-to-string (format "ruff check --fix %s" (shell-quote-argument buffer-file-name)))))
   	  (message "%s" (string-trim output)))
   	(smahm006/revert-buffer-no-confirm))
     (defun smahm006/python-check ()
       "Compile current buffer file with python."
       (interactive)
-      (compile (format "ruff check %s" buffer-file-name)))
+      (compile (format "ruff check %s" (shell-quote-argument buffer-file-name))))
     :config
     (with-eval-after-load 'eglot
     	(add-to-list 'eglot-server-programs
@@ -2506,17 +2530,17 @@ Generate Sphinx friendly docstrings for Python functions in Emacs.
     (defun smahm006/go-run ()
       "Compile current buffer file with go."
       (interactive)
-      (compile (format "go run %s" buffer-file-name)))
+      (compile (format "go run %s" (shell-quote-argument buffer-file-name))))
     (defun smahm006/go-format ()
       "Format current buffer file with goimports."
       (interactive)
-    	(let ((output (shell-command-to-string (format "goimports -w %s && gofumpt -w %s" buffer-file-name buffer-file-name))))
+    	(let ((output (shell-command-to-string (format "goimports -w %s && gofumpt -w %s" (shell-quote-argument buffer-file-name) (shell-quote-argument buffer-file-name)))))
     	  (message "%s" (string-trim output)))
     	(smahm006/revert-buffer-no-confirm))
     (defun smahm006/go-check ()
       "Check current buffer file with goimports."
       (interactive)
-      (compile (format "gofumpt -e %s" buffer-file-name)))
+      (compile (format "gofumpt -e %s" (shell-quote-argument buffer-file-name))))
     :custom
     (go-ts-mode-indent-offset 4))
 #+end_src
