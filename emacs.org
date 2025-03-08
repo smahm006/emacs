@@ -575,8 +575,10 @@ Toc-org is an Emacs utility to have an up-to-date table of contents in the org f
 Using the async package and the org-babel-tangle command, the code below will executes org-babel-tangle asynchronously when emacs.org is saved
 #+begin_src emacs-lisp :noweb yes
 (use-package async
-  :hook ((org-mode . smahm006/config-tangle)
-  		 (after-save . smahm006/config-tangle))
+  :init
+  (add-hook 'org-mode-hook
+			(lambda ()
+              (add-hook 'after-save-hook 'smahm006/config-tangle nil 'make-it-local)))
   :preface
   (defcustom smahm006/config-file (expand-file-name "emacs.org" user-emacs-directory)
     "Path to the main configuration Org file."
