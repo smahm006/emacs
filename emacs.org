@@ -1220,7 +1220,7 @@ To manage them better, I use the ibuffer built-in package instead of buffer-menu
     (eglot-shutdown-all)
     (mapc 'kill-buffer
           (cl-remove-if
-           (lambda (nx)
+           (lambda (x)
              (or
               (eq x (current-buffer))
               (member (buffer-name x) protected-buffers)))
