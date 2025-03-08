@@ -4,5 +4,4 @@
 # Except the following files
 !README.md
 !.gitignore
-!config.org
-!init.el
+!emacs.org

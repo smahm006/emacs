@@ -4,7 +4,7 @@
 
 List of files:
 
-* [`config.org`](https://github.com/smahm006/emacs/blob/main/config.org):
+* [`emacs.org`](https://github.com/smahm006/emacs/blob/main/emacs.org):
   main configuration file.
 
 * [`init.el`](https://github.com/smahm006/emacs/blob/main/init.el):
