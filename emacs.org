@@ -61,14 +61,16 @@ This is the configuration for my personal GNU Emacs setup.
   - [[#version-control][Version Control]]
   - [[#language-server-protocol][Language Server Protocol]]
   - [[#code-feedback--hints][Code Feedback & Hints]]
-  - [[#snippets][Snippets]]
   - [[#virtualization][Virtualization]]
+  - [[#snippets][Snippets]]
   - [[#footer-6][Footer]]
 - [[#languages][Languages]]
+  - [[#header-7][Header]]
   - [[#markup--configuration][Markup & Configuration]]
   - [[#scripting][Scripting]]
   - [[#application-programming][Application Programming]]
   - [[#software-programming][Software Programming]]
+  - [[#footer-7][Footer]]
 
 * Early Emacs Initialization
 :PROPERTIES:
@@ -332,7 +334,7 @@ Keymaps used for important built-in command or commands from other packages
     (defvar smahm006/mc-map (make-sparse-keymap) "key-map for multiple cursors commands")
     (defvar smahm006/vc-map (make-sparse-keymap) "key-map for version control commands")
     (defvar smahm006/lsp-map (make-sparse-keymap) "key-map for language server protocol commands")
-    (defvar smahm006/debug-map (make-sparse-keymap) "key-map for debugginng commands")
+    (defvar smahm006/run-map (make-sparse-keymap) "key-map for running program specific commands")
     :config
     (define-key mode-specific-map (kbd "o") (cons "org" smahm006/org-map))
     (define-key mode-specific-map (kbd "n") (cons "note" smahm006/note-map))
@@ -345,7 +347,7 @@ Keymaps used for important built-in command or commands from other packages
     (define-key mode-specific-map (kbd "m") (cons "multi" smahm006/mc-map))
     (define-key mode-specific-map (kbd "v") (cons "version control" smahm006/vc-map))
     (define-key mode-specific-map (kbd "l") (cons "langauge server protocol" smahm006/lsp-map))
-    (define-key mode-specific-map (kbd "d") (cons "debugging" smahm006/debug-map)))
+    (define-key mode-specific-map (kbd "r") (cons "run" smahm006/run-map)))
 #+end_src
 ** Modes
 #+begin_src emacs-lisp
@@ -562,7 +564,8 @@ Toc-org is an Emacs utility to have an up-to-date table of contents in the org f
 Using the async package and the org-babel-tangle command, the code below will executes org-babel-tangle asynchronously when emacs.org is saved
 #+begin_src emacs-lisp :noweb yes
   (use-package async
-    :hook (after-save . smahm006/config-tangle)
+      :hook ((org-mode . smahm006/config-tangle)
+  		   (after-save . smahm006/config-tangle))
     :preface
     (defcustom smahm006/config-file (expand-file-name "emacs.org" user-emacs-directory)
       "Path to the main configuration Org file."
@@ -948,9 +951,6 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
   (use-package vertico
     :init
     (require 'vertico-directory)
-    :bind
-    (:map vertico-map
-          ("<return>" . vertico-directory-enter))
     :hook
     ((minibuffer-setup . cursor-intangible-mode)
      (after-init . vertico-mode))
@@ -963,19 +963,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     (read-extended-command-predicate           ; Vertico commands are hidden in normal buffers.
      #'command-completion-default-include-p)
     (enable-recursive-minibuffers t)           ; Enable recursive minibuffers
-    (vertico-mouse-mode t)                     ; Enable Mouse support
-    :preface
-    ;; Add prompt indicator to `completing-read-multiple'.
-    ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
-    (defun crm-indicator (args)
-      (cons (format "[CRM%s] %s"
-                    (replace-regexp-in-string
-                     "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
-                     crm-separator)
-                    (car args))
-            (cdr args)))
-    :config
-    (advice-add #'completing-read-multiple :filter-args #'crm-indicator))
+    (vertico-mouse-mode t))                    ; Enable Mouse support
 #+end_src
 *** [[https://github.com/minad/marginalia.git][marginalia]]
 Richer annotations in the minibuffer.
@@ -1019,11 +1007,9 @@ Embark makes it easy to choose a command to run based on what is near point, bot
   (use-package embark
     :after which-key
     :bind
-    (("C-." . embark-act)         ;; pick some com fortable binding
-     ("C-:" . embark-dwim)        ;; good alternative: M-.
-     ("C-h B" . embark-bindings)  ;; alternative for `describe-bindings'
-     :map vertico-map
-     ("C-SPC" . embark-select))   ;; good alternative: M-.
+    (("C-." . embark-act)          ;; pick some com fortable binding
+     ("C-:" . embark-dwim)         ;; good alternative: M-.
+     ("C-h B" . embark-bindings))  ;; alternative for `describe-bindings'
     :custom
     ;; Optionally replace the key help with a completing-read interface
     (prefix-help-command #'embark-prefix-help-command)
@@ -1260,7 +1246,7 @@ We can also view the diff between backups and selectively restore one
       (smahm006/mkdir backup-save-dir)
       (smahm006/mkdir auto-save-dir)
       (setq auto-save-file-name-transforms `((".*" ,auto-save-dir t))))
-    (setq backup-directory-alist `(("." . ,backup-session-dir)))
+    (setq backup-directory-alist `(("." . ,backup-save-dir)))
     :preface
     (defun smahm006/backup-buffer ()
       "Make a session backup at the first save of each emacs session and a save backup on each subsequent save."
@@ -1831,11 +1817,12 @@ Cape provides Completion At Point Extensions
     :init
     ;; Note: The order matters! File is first
     (add-to-list 'completion-at-point-functions #'cape-dict)
-    (add-to-list 'completion-at-point-functions #'cape-keyword)
+    (add-to-list 'completion-at-point-functions #'cape-abbrev)
     (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+    (add-to-list 'completion-at-point-functions #'cape-keyword)
     (add-to-list 'completion-at-point-functions #'cape-history)
     (add-to-list 'completion-at-point-functions #'cape-file)
-    :bind ("C-<tab>" . cape-prefix-map))
+    :bind ("M-/" . cape-prefix-map))
 #+end_src
 *** [[https://github.com/emacs-straight/corfu.git][corfu]]
 Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
@@ -1851,10 +1838,11 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
      (eat-mode . (lambda () (setq-local corfu-auto nil) (corfu-mode))))
     :bind
     (:map corfu-map
-     ("<tab>"     . corfu-insert)
-     ("TAB"       . corfu-insert)
-     ("SPC"       . corfu-insert-separator)
-     ("<escape>"  . corfu-quit))
+  		("TAB" . corfu-next)
+  		([tab] . corfu-next)
+  		("S-TAB" . corfu-previous)
+  		([backtab] . corfu-previous)
+  		("<escape>"  . corfu-quit))
     :preface
     ;; Completing in the minibuffer
     (defun smahm006/corfu-enable-always-in-minibuffer ()
@@ -1868,10 +1856,9 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     :custom
     (corfu-cycle t)                     ; Enable cycling for `corfu-next/previous'
     (corfu-auto t)                      ; Enable auto completion
-    (corfu-quit-no-match 'separator)    ; Quit auto complete if there is no match
+    (corfu-quit-no-match t)             ; Quit auto complete if there is no match
     (corfu-auto-prefix 2)               ; Complete with less prefix keys
-    (corfu-quit-at-boundary 'separator) ; Never quit at completion boundary
-    (corfu-preview-current nil)         ; Disable current candidate preview
+    (corfu-preview-current t)           ; Disable current candidate preview
     (corfu-preselect 'directory)        ; Preselect the fisrt canidate exept for directories select the prompt
     (completion-cycle-threshold nil)    ; TAB cycle if there are only few candidates
     (tab-always-indent t)               ; Enable indentation+completion using the TAB key.
@@ -1879,8 +1866,8 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     (read-extended-command-predicate
      #'command-completion-default-include-p)
     :config
-    ;; Free the RET key for less intrusive behavior.
-    (keymap-unset corfu-map "RET")
+    (define-key corfu-map [remap previous-line] nil)
+    (define-key corfu-map [remap next-line] nil)
     (require 'corfu-echo)
     (require 'corfu-history)
     (require 'corfu-popupinfo)
@@ -1891,9 +1878,6 @@ Dynamic abbrevs allow the meanings of abbreviations to be determined automatical
 #+begin_src emacs-lisp
 (use-package dabbrev
   :ensure nil
-  ;; Swap M-/ and C-M-/
-  :bind (("M-/" . dabbrev-completion)
-         ("C-M-/" . dabbrev-expand))
   :custom
   (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
 #+end_src
@@ -1907,7 +1891,6 @@ Preview completion candidate
     (:map completion-preview-active-mode-map
   	("M-n" . completion-preview-next-candidate)
   	("M-p" . completion-preview-prev-candidate)))
-
 #+end_src
 ** Undo/Redo
 *** [[https://github.com/emacs-straight/vundo.git][vundo]]
@@ -2162,7 +2145,7 @@ A client for Language Server Protocol servers.
       :ensure nil
       :after project
       :hook
-      ((eglot-managed-mode . my/eglot-capf))
+      ((eglot-managed-mode . smahm006/eglot-capf))
       :bind
       (:map smahm006/lsp-map
             ("l" . eglot)
@@ -2265,13 +2248,23 @@ Universal on-the-fly syntax checker for Emacs.
     ;; Let git gutter have left fringe, flymake can have right fringe
     (flymake-fringe-indicator-position 'right-fringe))
     #+end_src
-*** [[https://github.com/lassik/emacs-format-all-the-code.git][format-all]]
-Auto-format source code in many languages with one command.
+** Virtualization
+*** [[https://github.com/Silex/docker.el][docker]]
 #+begin_src emacs-lisp
-  (use-package format-all
-    :bind
-    (:map smahm006/toggle-map
-          ("f" . format-all-buffer)))
+  (use-package docker
+    :commands docker)
+  (use-package tramp-container
+    :ensure nil
+    :after docker)
+#+end_src
+*** [[https://github.com/spotify/dockerfile-mode.git][dockerfile-mode]]
+An emacs mode for handling Dockerfiles.
+#+begin_src emacs-lisp
+  (use-package dockerfile-mode
+    :mode "/Dockerfile\\'"
+    :mode "/Containerfile\\'"
+    :mode "\\.dockerfile\\'"
+    :mode "\\.containerfile\\'")
 #+end_src
 ** Snippets
 *** [[https://github.com/minad/tempel.git][tempel]]
@@ -2294,33 +2287,18 @@ Enable snippets for with completions
                   (cons #'tempel-complete
                         completion-at-point-functions)))
     :custom
-    (tempel-path (format "%s/snippets/*.eld" user-emacs-directory))
-    :config
-    (defvar my-global-templates
-      '((today (format-time-string "%Y-%m-%d"))
-  	  (NOW (format-time-string "%Y-%m-%d %a %H:%M"))
-  	  (yesterday (format-time-string "%Y-%m-%d" (time-subtract nil (* 24 60 60))))
-  	  (tomorrow (format-time-string "%Y-%m-%d" (time-add nil (* 24 60 60)))))
-  	  "My global templates.")
+    (tempel-path (format "%s/snippets/*.eld" user-emacs-directory)))
+#+end_src
+*** global snippets
+#+begin_src emacs-lisp
+  (defvar my-global-templates
+    '((today (format-time-string "%Y-%m-%d"))
+    	(NOW (format-time-string "%Y-%m-%d %a %H:%M"))
+    	(yesterday (format-time-string "%Y-%m-%d" (time-subtract nil (* 24 60 60))))
+    	(tomorrow (format-time-string "%Y-%m-%d" (time-add nil (* 24 60 60)))))
+    "My global templates.")
+  (with-eval-after-load 'tempel
     (add-to-list 'tempel-template-sources 'my-global-templates))
-#+end_src
-** Virtualization
-*** [[https://github.com/Silex/docker.el][docker]]
-#+begin_src emacs-lisp
-  (use-package docker
-    :commands docker)
-  (use-package tramp-container
-    :ensure nil
-    :after docker)
-#+end_src
-*** [[https://github.com/spotify/dockerfile-mode.git][dockerfile-mode]]
-An emacs mode for handling Dockerfiles.
-#+begin_src emacs-lisp
-  (use-package dockerfile-mode
-    :mode "/Dockerfile\\'"
-    :mode "/Containerfile\\'"
-    :mode "\\.dockerfile\\'"
-    :mode "\\.containerfile\\'")
 #+end_src
 ** Footer
 #+begin_src text
@@ -2328,19 +2306,148 @@ An emacs mode for handling Dockerfiles.
 (provide 'smahm006-development)
 #+end_src
 * Languages
+:PROPERTIES:
+:header-args: :tangle lisp/smahm006-languages.el :mkdirp yes
+:END:
+** Header
+#+begin_src emacs-lisp :tangle init.el
+  (require 'smahm006-languages)
+#+end_src
+#+begin_src text
+;; init.el - Languages
+;; Copyright (C) 2023-2025 Sohaib Mahmood
+;; Homepage: https://github.com/smahm006/emacs
+;; Code:
+#+end_src
 ** Markup & Configuration
 *** HTML
 *** JSON
 *** TOML
 *** XML
 *** YAML
+**** yaml-ts-mode
+Yaml development environment
+#+begin_src emacs-lisp
+  (use-package yaml
+    :ensure nil
+    :mode (("\\.yml\\'"  . yaml-ts-mode)
+           ("\\.yaml\\'" . yaml-ts-mode))
+    :hook
+    (yaml-ts-mode . eglot-ensure)
+    (yaml-ts-mode . (lambda ()
+                      (define-key smahm006/run-map (kbd "c") #'smahm006/yaml-check)
+  					(define-key smahm006/run-map (kbd "f") #'smahm006/yaml-format)))
+    :preface
+    (defun smahm006/yaml-format ()
+  	"Format buffer using yamlfmt"
+  	(interactive)
+  	(let ((output (shell-command-to-string (format "yamlfmt -quiet %s" buffer-file-name))))
+  	  (message "%s" (string-trim output)))
+  	(smahm006/revert-buffer-no-confirm))
+    (defun smahm006/yaml-check ()
+      "Compile current buffer file with yaml."
+      (interactive)
+      (compile (format "yamllint -f standard %s" buffer-file-name)))
+    :config
+    (with-eval-after-load 'eglot
+  	(add-to-list 'eglot-server-programs '((yaml-ts-mode) . ("yaml-language-server" "--stdio")))))
+#+end_src
+**** [[https://github.com/zkry/yaml-pro][yaml-pro]]
+#+begin_src emacs-lisp
+  (use-package yaml-pro
+    :hook
+    (yaml-ts-mode . yaml-pro-ts-mode))
+#+end_src
 ** Scripting
 *** Bash
 ** Application Programming
 *** Python
+**** pyhton-ts-mode
+#+begin_src emacs-lisp
+  (use-package python
+    :ensure nil
+    :mode (("\\.py\\'" . python-ts-mode))
+    :hook
+    (python-ts-mode . eglot-ensure)
+    :hook
+    (python-ts-mode . (lambda ()
+  					  (define-key smahm006/run-map (kbd "v") #'smahm006/pyrightconfig-write)
+    			(define-key smahm006/run-map (kbd "V") #'smahm006/python-venv-setup)
+    			(define-key smahm006/run-map (kbd "r") #'smahm006/python-run)
+    			(define-key smahm006/run-map (kbd "c") #'smahm006/python-check)
+  					  (define-key smahm006/run-map (kbd "f") #'smahm006/python-format)))
+    :preface
+    (defun smahm006/pyrightconfig-write (virtualenv)
+    	"Write a `pyrightconfig.json' file at the Git root of a project
+         with `venvPath' and `venv' set to the absolute path of
+         `virtualenv'. When run interactively, prompts for a directory."
+    	(interactive "DEnv: ")
+    	(let* ((venv-dir (if (featurep 'tramp)
+  						 (tramp-file-local-name (file-truename virtualenv))
+                         (file-truename virtualenv)))
+  		   (venv-file-name (directory-file-name venv-dir))
+  		   (venvPath (file-name-directory venv-file-name))
+  		   (venv (file-name-base venv-file-name))
+  		   (base-dir (vc-git-root default-directory))
+  		   (out-file (expand-file-name "pyrightconfig.json" base-dir))
+  		   (out-contents (json-encode (list :venvPath venvPath :venv venv))))
+  	  (with-temp-file out-file (insert out-contents))
+  	  (message "Configured `%s` to use environment `%s`" out-file venv-dir)))
+
+    (defun smahm006/python-venv-setup ()
+      "Install .pyvenv virtual environment at the root of the project.
+         Additionally installed libraries from requirements.txt if it exists."
+      (interactive)
+      (let* ((base-dir (vc-git-root default-directory)) (venv-dir (concat base-dir ".venv")))
+        (progn
+          (save-window-excursion
+            (shell-command (s-concat "python3 -m venv " venv-dir)pp)
+            (when (file-exists-p (concat base-dir "requirements.txt"))
+              (shell-command (s-concat "source " venv-dir "/bin/activate && pip3 install -r " base-dir "requirements.txt")))
+            (smahm006/pyrightconfig-write venv-dir)))
+        (message (concat "Created " venv-dir))))
+    (defun smahm006/python-run ()
+      "Compile current buffer file with python."
+      (interactive)
+      (compile (format "python3 %s" buffer-file-name)))
+    (defun smahm006/python-format ()
+  	"Format buffer using ruff"
+  	(interactive)
+  	(let ((output (shell-command-to-string (format "ruff format %s" buffer-file-name))))
+  	  (message "%s" (string-trim output)))
+  	(smahm006/revert-buffer-no-confirm))
+    (defun smahm006/python-fix ()
+  	"Check for and fix any errors"
+  	(interactive)
+  	(let ((output (shell-command-to-string (format "ruff check --fix %s" buffer-file-name))))
+  	  (message "%s" (string-trim output)))
+  	(smahm006/revert-buffer-no-confirm))
+    (defun smahm006/python-check ()
+      "Compile current buffer file with python."
+      (interactive)
+      (compile (format "ruff check %s" buffer-file-name)))
+    :config
+    (with-eval-after-load 'eglot
+    	(add-to-list 'eglot-server-programs
+    				 '(python-ts-mode . ("basedpyright-langserver" "--stdio")))))
+#+end_src
+**** [[https://github.com/eanopolsky/sphinx-doc.el.git][sphinx-doc]]
+Generate Sphinx friendly docstrings for Python functions in Emacs.
+#+begin_src emacs-lisp
+  (use-package sphinx-doc
+    :hook
+    (python-ts-mode . sphinx-doc-mode)
+    (python-ts-mode . (lambda ()
+                        (define-key smahm006/run-map (kbd "d") #'sphinx-doc))))
+#+end_src
 *** Go
 ** Software Programming
 *** C
 *** C++
 *** Rust
 *** Zig
+** Footer
+#+begin_src text
+;; 'smahm006-languages.el end
+(provide 'smahm006-languages)
+#+end_src
