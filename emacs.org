@@ -2381,6 +2381,37 @@ Enable snippets for with completions
 #+end_src
 ** Scripting
 *** Bash
+#+begin_src emacs-lisp
+(use-package bash
+  :ensure nil
+  :mode (("\\.sh\\'"  . bash-ts-mode))
+  :interpreter ("bash" . bash-ts-mode)
+  :hook
+  (bash-ts-mode . eglot-ensure)
+  :hook
+  (bash-ts-mode . (lambda ()
+    			(define-key smahm006/run-map (kbd "r") #'smahm006/bash-run)
+    			(define-key smahm006/run-map (kbd "c") #'smahm006/bash-check)
+  			(define-key smahm006/run-map (kbd "f") #'smahm006/bash-format)))
+  :preface
+  (defun smahm006/bash-run ()
+    "Compile current buffer file with sh."
+    (interactive)
+    (compile (format "bash %s" buffer-file-name)))
+  (defun smahm006/bash-format ()
+    "Compile current buffer file with sh."
+    (interactive)
+	(let ((output (shell-command-to-string (format "shfmt -w %s" (shell-quote-argument buffer-file-name)))))
+	  (message "%s" (string-trim output)))
+	(smahm006/revert-buffer-no-confirm))
+  (defun smahm006/bash-check ()
+    "Compile current buffer file with sh."
+    (interactive)
+    (compile (format "shellcheck %s" buffer-file-name)))
+  (with-eval-after-load 'eglot
+    	(add-to-list 'eglot-server-programs
+    				 '(bash-ts-mode . ("bash-language-server" "start")))))
+#+end_src
 ** Application Programming
 *** Python
 **** pyhton-ts-mode
