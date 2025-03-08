@@ -22,7 +22,7 @@ This is the configuration for my personal GNU Emacs setup.
   - [[#packages][Packages]]
   - [[#system-configuration][System Configuration]]
   - [[#footer-1][Footer]]
-- [[#org][Org]]
+- [[#user-org][User Org]]
   - [[#header-2][Header]]
   - [[#org-defaults][Org Defaults]]
   - [[#styling][Styling]]
@@ -489,7 +489,7 @@ I use a GPG key stored in a Yubikey for most of my authentication
 #+begin_src text
 ;; init.el end
 #+end_src
-* Org
+* User Org
 :PROPERTIES:
 :header-args: :tangle lisp/smahm006-org.el :mkdirp yes
 :END:
