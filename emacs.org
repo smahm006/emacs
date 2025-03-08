@@ -278,6 +278,7 @@ This is the configuration for my personal GNU Emacs setup.
     (windmove-mode nil)                                  ; Diasble windmove mode
     (comment-auto-fill-only-comments t)                  ; Use auto fill mode only in comments
     (custom-buffer-done-kill t)                          ; Kill custom buffer when done
+	(compilation-scroll-output 'first-error)             ; Scroll compilation up to first error
     :hook
     (kill-emacs . (lambda () (setq kill-ring (mapcar 'substring-no-properties kill-ring))))
     :config
@@ -1198,7 +1199,7 @@ To manage them better, I use the ibuffer built-in package instead of buffer-menu
             (set-visited-file-name new-name t t)))))))
   (defun smahm006/delete-file-and-buffer ()
     "Kill the current buffer and deletes the file it is visiting."
-    p     (interactive)
+    (interactive)
     (let ((filename (buffer-file-name)))
       (when filename
         (if (vc-backend filename)
@@ -2324,7 +2325,7 @@ Enable snippets for with completions
 ** Markup & Configuration
 *** HTML
 *** JSON
-**** json-ts-mode
+**** json-ts
 #+begin_src emacs-lisp
   (use-package json
     :ensure nil
@@ -2351,7 +2352,7 @@ Enable snippets for with completions
 *** TOML
 *** XML
 *** YAML
-**** yaml-ts-mode
+**** yaml-ts
 #+begin_src emacs-lisp
   (use-package yaml
     :ensure nil
@@ -2381,6 +2382,7 @@ Enable snippets for with completions
 #+end_src
 ** Scripting
 *** Bash
+**** bash-ts
 #+begin_src emacs-lisp
 (use-package bash
   :ensure nil
@@ -2399,9 +2401,10 @@ Enable snippets for with completions
     (interactive)
     (compile (format "bash %s" buffer-file-name)))
   (defun smahm006/bash-format ()
-    "Compile current buffer file with sh."
+    "Format current buffer with shfmt."
     (interactive)
-	(let ((output (shell-command-to-string (format "shfmt -w %s" (shell-quote-argument buffer-file-name)))))
+	(let ((output (shell-command-to-string
+				   (format "shfmt -w %s" (shell-quote-argument buffer-file-name)))))
 	  (message "%s" (string-trim output)))
 	(smahm006/revert-buffer-no-confirm))
   (defun smahm006/bash-check ()
@@ -2412,9 +2415,21 @@ Enable snippets for with completions
     	(add-to-list 'eglot-server-programs
     				 '(bash-ts-mode . ("bash-language-server" "start")))))
 #+end_src
+
+**** bash snippets
+#+begin_src lisp-data :tangle snippets/bash.eld :mkdirp yes
+sh-mode sh-ts-mode bash-ts-mode
+(shbang "#!/usr/bin/env bash")
+(if "if " p n "then" n> p n "fi" > q)
+(else "if " p n "then" n> p n "else" n> p n "fi" > q)
+(elif "if " p n "then" n> p n "elif " p n "then" n> p n "else" n> p n "fi" > q)
+(varempty "[ -z \"${" p "}\" ]")
+(varexists "[ -n \"${" p "}\" ]")
+(direxists "[ -d \"" p "\" ]")
+#+end_src
 ** Application Programming
 *** Python
-**** pyhton-ts-mode
+**** pyhton-ts
 #+begin_src emacs-lisp
   (use-package python
     :ensure nil
@@ -2541,7 +2556,7 @@ Generate Sphinx friendly docstrings for Python functions in Emacs.
   (with "with " p p ":" n> q)
 #+end_src
 *** Go
-**** go-ts-mode
+**** go-ts
 #+begin_src emacs-lisp
   (use-package go
     :ensure nil
@@ -2586,12 +2601,12 @@ Generate Sphinx friendly docstrings for Python functions in Emacs.
 go-mode go-ts-mode
 (imp "import " q)
 (impn "import (" n> q n ")")
-(pr "fmt.Printf(\"\\n" p "\\n%#v\\n\", " q ")")
-(pl "fmt.Println(" q ")")
+(pf "fmt.Printf(\"\\n" p "\\n%#v\\n\", " q ")")
+(pln "fmt.Println(" q ")")
 (db "Debug.Printf(\"\\n" p "\\n\\n%#v\\n\", " q ")")
 (dl "Debug.Println(" q ")")
 (lf "log.Printf(\"\\n%#v\\n\", " q ")")
-(ln "log.Println(" q ")")
+(lln "log.Println(" q ")")
 (stt "type " p " struct {" n> q n "}")
 (inf "type " p " interface {" n> q n "}")
 (cnt "const " p " = " q )
@@ -2614,8 +2629,136 @@ go-mode go-ts-mode
 #+end_src
 ** Software Programming
 *** C
+**** c-ts-mode
+#+begin_src emacs-lisp
+(use-package c
+  :ensure nil
+  :mode (("\\.c" . c-ts-mode))
+  :hook
+  (c-ts-mode . eglot-ensure)
+  (c-ts-mode . (lambda ()
+      	  	      (define-key smahm006/run-map (kbd "r") #'smahm006/c-run)
+      		      (define-key smahm006/run-map (kbd "c") #'smahm006/c-check)
+    	              (define-key smahm006/run-map (kbd "f") #'smahm006/c-format)))
+  :preface
+  (defun smahm/c-run ()
+    "Compile current buffer file with c."
+    (interactive)
+    (compile (format "clang -Wall %s -o %s.out && %s.out"
+					 (shell-quote-argument buffer-file-name)
+					 (shell-quote-argument buffer-file-name)
+					 (shell-quote-argument buffer-file-name))))
+  (defun smahm006/c-format ()
+    "Format current buffer file with clang-format."
+    (interactive)
+    (let ((output (shell-command-to-string
+				   (format "clang-format -i %s" (shell-quote-argument buffer-file-name)))))
+      (message "%s" (string-trim output)))
+    (smahm006/revert-buffer-no-confirm))
+  (defun smahm006/c-check ()
+    "Check current buffer file with clang-check"
+    (interactive)
+    (compile (format "clang-check %s" buffer-file-name)))
+  :config
+  (with-eval-after-load 'eglot
+    (add-to-list 'eglot-server-programs
+				 '(c-ts-mode . ("clangd"
+								"-j=8"
+								"--log=error"
+								"--malloc-trim"
+								"--background-index"
+								"--clang-tidy"
+								"--all-scopes-completion"
+								"--completion-style=detailed"
+								"--pch-storage=memory"
+								"--header-insertion=never"
+								"--header-insertion-decorators=0")))))
+#+end_src
 *** C++
+#+begin_src emacs-lisp
+(use-package c++
+  :ensure nil
+  :mode (("\\.cc\\'" . c++-ts-mode)
+         ("\\.cpp\\'" . c++-ts-mode))
+  :hook
+  (c++-ts-mode . eglot-ensure)
+  (c++-ts-mode . (lambda ()
+      	  	       (define-key smahm006/run-map (kbd "r") #'smahm006/c++-run)
+      		       (define-key smahm006/run-map (kbd "c") #'smahm006/c++-check)
+    	           (define-key smahm006/run-map (kbd "f") #'smahm006/c++-format)))
+  :preface
+  (defun smahm/c++-run ()
+    "Compile current buffer file with c."
+    (interactive)
+    (compile (format "clang++ -Wall %s -o %s.out && %s.out"
+					 (shell-quote-argument buffer-file-name)
+					 (shell-quote-argument buffer-file-name)
+					 (shell-quote-argument buffer-file-name))))
+  (defun smahm006/c++-format ()
+    "Format current buffer file with clang-format."
+    (interactive)
+    (let ((output (shell-command-to-string
+				   (format "clang-format -i %s" (shell-quote-argument buffer-file-name)))))
+      (message "%s" (string-trim output)))
+    (smahm006/revert-buffer-no-confirm))
+  (defun smahm006/c++-check ()
+    "Check current buffer file with clang-check"
+    (interactive)
+    (compile (format "clang-check %s" buffer-file-name)))
+  :config
+  (with-eval-after-load 'eglot
+    (add-to-list 'eglot-server-programs
+				 '(c++-ts-mode . ("clangd"
+								  "-j=8"
+								  "--log=error"
+								  "--malloc++-trim"
+								  "--background-index"
+								  "--clang-tidy"
+								  "--all-scopes-completion"
+								  "--completion-style=detailed"
+								  "--pch-storage=memory"
+								  "--header-insertion=never"
+								  "--header-insertion-decorators=0")))))
+#+end_src
 *** Rust
+**** rust-ts
+#+begin_src emacs-lisp
+(use-package rust
+  :ensure nil
+  :mode ("\\.rs\\'" . rust-ts-mode)
+  :hook
+  (rust-ts-mode . eglot-ensure)
+  (rust-ts-mode . (lambda ()
+      	  	    (define-key smahm006/run-map (kbd "r") #'smahm006/rust-run)
+      		    (define-key smahm006/run-map (kbd "c") #'smahm006/rust-check)
+    	            (define-key smahm006/run-map (kbd "f") #'smahm006/rust-format)))
+  :preface
+  (defun smahm006/rust-run ()
+    "Compile current buffer file with rust."
+    (interactive)
+    (compile (format "rustc %s" buffer-file-name)))
+  (defun smahm006/rust-format ()
+    "Format currenpt buffer file with rustimports."
+    (interactive)
+	(let ((output (shell-command-to-string
+				   (format "rustfmt -q %s" (shell-quote-argument buffer-file-name)))))
+      (message "%s" (string-trim output)))
+    (smahm006/revert-buffer-no-confirm))
+  (defun smahm006/rust-check ()
+    "Check current buffer file with rustimports."
+    (interactive)
+    (compile (format "rustfmt --color never --check %s" buffer-file-name)))
+  :config
+  (with-eval-after-load 'eglot
+    (add-to-list 'eglot-server-programs
+				 '(rust-ts-mode . ("rust-analyzer" :initializationOptions (:check (:command "clippy")))))))
+#+end_src
+**** [[https://github.com/ayrat555/cargo-mode][cargo-mode]]
+#+begin_src emacs-lisp
+(use-package cargo-mode
+  :hook
+  (rust-ts-mode . cargo-minor-mode))
+#+end_src
 *** Zig
 ** Footer
 #+begin_src text
