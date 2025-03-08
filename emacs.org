@@ -727,7 +727,7 @@ the UNIX command line.
 ;; Copyright (C) 2023-2025 Sohaib Mahmood
 ;; Homepage: https://github.com/smahm006/emacs
 ;; Code:
-nnnnn#+end_src
+#+end_src
 ** UI Defaults
 #+begin_src emacs-lisp
   (use-package emacs
@@ -937,8 +937,7 @@ An Emacs plugin that hides (or masks) the current buffer's mode-line.
     (fast-but-imprecise-scrolling t)                     ; More performant rapid scrolling over unfontified regions
     (pixel-scroll-precision-interpolate-mice nil)        ; Disable interpolation (causes wired jumps)
     (pixel-scroll-precision-mode (display-graphic-p))    ; Enable pixel-wise scrolling
-    (pixel-scroll-precision-use-momentum t)              ; Enable momentum for scrolling lagre buffers
-    )
+    (pixel-scroll-precision-use-momentum t))             ; Enable momentum for scrolling lagre buffers
 #+end_src
 ** UX Completion
 *** [[https://github.com/justbur/emacs-which-key.git][which-key]]
@@ -2332,29 +2331,34 @@ Enable snippets for with completions
 *** JSON
 **** json-ts
 #+begin_src emacs-lisp
-  (use-package json
-    :ensure nil
-    :mode (("\\.json\\'"  . json-ts-mode))
-    :hook
-    (json-ts-mode . (lambda ()
-  			(define-key smahm006/run-map (kbd "f") #'smahm006/json-format)))
-    :preface
-(defun smahm006/json-format ()
-  "Format the current buffer as JSON using jq if available, else python -m json.tool."
-  (interactive)
-  (let* ((jq-exists (executable-find "jq"))
-         (cmd (if jq-exists
-                  (format "out=$(jq . < %s) && echo \"$out\" > %s"
+(use-package json
+  :ensure nil
+  :mode (("\\.json\\'"  . json-ts-mode))
+  :hook
+  (json-ts-mode . (lambda ()
+  		      (define-key smahm006/run-map (kbd "f") #'smahm006/json-format)))
+  :preface
+  (defun smahm006/json-format ()
+	"Format the current buffer as JSON using jq if available, else python -m json.tool."
+	(interactive)
+	(let* ((jq-exists (executable-find "jq"))
+           (cmd (if jq-exists
+					(format "out=$(jq . < %s) && echo \"$out\" > %s"
+							(shell-quote-argument buffer-file-name)
+							(shell-quote-argument buffer-file-name))
+                  (format "out=$(python -m json.tool %s) && echo \"$out\" > %s"
                           (shell-quote-argument buffer-file-name)
-                          (shell-quote-argument buffer-file-name))
-                (format "out=$(python -m json.tool %s) && echo \"$out\" > %s"
-                        (shell-quote-argument buffer-file-name)
-                        (shell-quote-argument buffer-file-name))))
-         (output (shell-command cmd)))
-    (message "%s" output)
-    (smahm006/revert-buffer-no-confirm))))
+                          (shell-quote-argument buffer-file-name))))
+           (output (shell-command cmd)))
+      (message "%s" output)
+      (smahm006/revert-buffer-no-confirm))))
 #+end_src
 *** TOML
+#+begin_src emacs-lisp
+(use-package toml
+  :ensure nil
+  :mode (("\\.toml\\'"  . toml-ts-mode)))
+#+end_src
 *** XML
 *** YAML
 **** yaml-ts
