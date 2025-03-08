@@ -2650,7 +2650,7 @@ go-mode go-ts-mode
       		      (define-key smahm006/run-map (kbd "c") #'smahm006/c-check)
     	              (define-key smahm006/run-map (kbd "f") #'smahm006/c-format)))
   :preface
-  (defun smahm/c-run ()
+  (defun smahm006/c-run ()
     "Compile current buffer file with c."
     (interactive)
     (compile (format "clang -Wall %s -o %s.out && %s.out"
@@ -2694,9 +2694,9 @@ go-mode go-ts-mode
   (c++-ts-mode . (lambda ()
       	  	       (define-key smahm006/run-map (kbd "r") #'smahm006/c++-run)
       		       (define-key smahm006/run-map (kbd "c") #'smahm006/c++-check)
-    	           (define-key smahm006/run-map (kbd "f") #'smahm006/c++-format)))
+    	               (define-key smahm006/run-map (kbd "f") #'smahm006/c++-format)))
   :preface
-  (defun smahm/c++-run ()
+  (defun smahm006/c++-run ()
     "Compile current buffer file with c."
     (interactive)
     (compile (format "clang++ -Wall %s -o %s.out && %s.out"
