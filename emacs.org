@@ -2381,25 +2381,29 @@ Enable snippets for with completions
 *** YAML
 **** yaml-ts
 #+begin_src emacs-lisp
-  (use-package yaml
-    :ensure nil
-    :mode (("\\.yml\\'"  . yaml-ts-mode)
-           ("\\.yaml\\'" . yaml-ts-mode))
-    :hook
-    (yaml-ts-mode . (lambda ()
-                      (define-key smahm006/run-map (kbd "c") #'smahm006/yaml-check)
-  		      (define-key smahm006/run-map (kbd "f") #'smahm006/yaml-format)))
-    :preface
-    (defun smahm006/yaml-format ()
+(use-package yaml
+  :ensure nil
+  :mode (("\\.yml\\'"  . yaml-ts-mode)
+         ("\\.yaml\\'" . yaml-ts-mode))
+  :hook
+  (yaml-ts-mode . (lambda ()
+                    (define-key smahm006/run-map (kbd "c") #'smahm006/yaml-check)
+  		    (define-key smahm006/run-map (kbd "f") #'smahm006/yaml-format)))
+  :preface
+  (defun smahm006/yaml-format ()
   	"Format buffer using yamlfmt"
   	(interactive)
   	(let ((output (shell-command-to-string (format "yamlfmt -quiet %s" (shell-quote-argument buffer-file-name)))))
   	  (message "%s" (string-trim output)))
   	(smahm006/revert-buffer-no-confirm))
-    (defun smahm006/yaml-check ()
-      "Compile current buffer file with yaml."
-      (interactive)
-      (compile (format "yamllint -f standard %s" (shell-quote-argument buffer-file-name)))))
+  (defun smahm006/yaml-check ()
+    "Compile current buffer file with yaml."
+    (interactive)
+    (compile (format "yamllint -f standard %s" (shell-quote-argument buffer-file-name))))
+  :config
+  (with-eval-after-load 'eglot
+    (add-to-list 'eglot-server-programs
+    			 '(yaml-ts-mode . ("yaml-language-server" "--stdio")))))
 #+end_src
 **** [[https://github.com/zkry/yaml-pro][yaml-pro]]
 #+begin_src emacs-lisp
@@ -2628,7 +2632,7 @@ Generate Sphinx friendly docstrings for Python functions in Emacs.
 go-mode go-ts-mode
 (imp "import " q)
 (impn "import (" n> q n ")")
-(pf "fmt.Printf(\"\\n" p "\\n%#v\\n\", " q ")")
+(pf "fmt.Printf("q")")
 (pln "fmt.Println(" q ")")
 (db "Debug.Printf(\"\\n" p "\\n\\n%#v\\n\", " q ")")
 (dl "Debug.Println(" q ")")
