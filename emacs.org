@@ -366,11 +366,11 @@ Keymaps used for important built-in command or commands from other packages
 (define-minor-mode sensitive-mode
   "https://anirudhsasikumar.net/blog/2005.01.21.html
 
-     For sensitive files like password lists.
-     It disables backup creation and auto saving.
-     With no argument, this command toggles the mode.
-     Non-null prefix argument turns on the mode.
-     Null prefix argument turns off the mode."
+  For sensitive files like password lists.
+  It disables backup creation and auto saving.
+  With no argument, this command toggles the mode.
+  Non-null prefix argument turns on the mode.
+  Null prefix argument turns off the mode."
   ;; The initial value.
   nil
   ;; The indicator for the mode line.
@@ -478,18 +478,26 @@ The default paths used to store configuration files and persistent data are not 
 *** Authentication
 I use a GPG key stored in a Yubikey for most of my authentication
 #+begin_src emacs-lisp
+**** epa
 (use-package epa-file
   :ensure nil
   :init
   (epa-file-enable)
-  (setq epg-pinentry-mode 'loopback)
   :config
   ;; Disable backup and autosave of .vcf and .gpg files
   ;; Alternatively, to protect only some files, like some .txt files, use a line like
   ;; // -*-mode:asciidoc; mode:sensitive-minor; fill-column:132-*-
   (setq auto-mode-alist
   		(append
-  		 (list '("\\.\\(vcf\\|gpg\\)$" . sensitive-minor-mode)) auto-mode-alist)))
+  		 (list '("\\.\\(vcf\\|gpg\\)$" . sensitive-mode)) auto-mode-alist)))
+#+end_src
+**** [[https://elpa.gnu.org/devel/pinentry.html][pinentry]]
+#+begin_src emacs-lisp
+(use-package pinentry
+  :init
+  (pinentry-start)
+  :config
+  (setenv "GPG_AGENT_INFO" nil))
 #+end_src
 ** Footer
 #+begin_src text
