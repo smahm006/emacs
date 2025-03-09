@@ -674,6 +674,19 @@ Simple notes with an efficient file-naming scheme
     (setq denote-directory org-notes-directory))
   (denote-rename-buffer-mode 1))
 #+end_src
+*** [[https://github.com/emacs-straight/consult-denote.git][consult-denote]]
+#+begin_src emacs-lisp
+  (use-package consult-denote
+    :after denote consult
+    :bind
+    (:map smahm006/note-map
+          ("f" . consult-denote-find)
+          ("g" . consult-denote-grep))
+	:custom
+	(consult-denote-grep-command 'consult-ripgrep)
+    :config
+    (consult-denote-mode 1))
+#+end_src
 *** [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
 Distraction-free writing for Emacs.
 #+begin_src emacs-lisp
@@ -757,7 +770,7 @@ the UNIX command line.
     (make-pointer-invisible t)                           ; Hide mouse pointer when typing
 
     ;; Cursor
-    (cursor-type bar)                                    ; Underline-shaped cursor
+    (cursor-type t)                                      ; Default block shaped cursor
     (cursor-intangible-mode t)                           ; Enforce cursor intangibility
     (x-stretch-cursor nil)                               ; Don't stretch cursor to the glyph width
     (blink-cursor-mode t)                                ; Blink cursor
