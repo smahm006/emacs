@@ -245,6 +245,8 @@ This is the configuration for my personal GNU Emacs setup.
 #+begin_src emacs-lisp
   (use-package emacs
     :ensure nil
+    :hook
+    (kill-emacs . (lambda () (setq kill-ring (mapcar 'substring-no-properties kill-ring))))
     :custom
     ;; User details
     (user-full-name "Sohaib Mahmood")                     ; Set the full name of the current user
@@ -277,6 +279,10 @@ This is the configuration for my personal GNU Emacs setup.
     (select-active-regions 'only)                        ; Emacs hangs when large selections contain mixed line endings.
     (vc-handled-backends '(Git SVN))                     ; Remove unused VC backend
 
+	;; Merge system's and Emacs' clipboard
+	(select-enable-clipboard t)
+	(x-select-enable-clipboard t)
+
     ;; Miscellaneous
     (native-comp-async-report-warnings-errors 'silent)   ; Disable native compiler warnings
     (fringes-outside-margins t)                          ; DOOM: add some space between fringe it and buffer.
@@ -284,8 +290,6 @@ This is the configuration for my personal GNU Emacs setup.
     (comment-auto-fill-only-comments t)                  ; Use auto fill mode only in comments
     (custom-buffer-done-kill t)                          ; Kill custom buffer when done
 	(compilation-scroll-output 'first-error)             ; Scroll compilation up to first error
-    :hook
-    (kill-emacs . (lambda () (setq kill-ring (mapcar 'substring-no-properties kill-ring))))
     :config
     (add-to-list 'load-path (expand-file-name (format "%s/emacs/lisp/" xdg-config)))
     ;; Disable suspend keys
@@ -340,6 +344,7 @@ Keymaps used for important built-in command or commands from other packages
     (defvar smahm006/mc-map (make-sparse-keymap) "key-map for multiple cursors commands")
     (defvar smahm006/vc-map (make-sparse-keymap) "key-map for version control commands")
     (defvar smahm006/lsp-map (make-sparse-keymap) "key-map for language server protocol commands")
+	(defvar smahm006/container-map (make-sparse-keymap) "key-map for container commands")
     (defvar smahm006/run-map (make-sparse-keymap) "key-map for running program specific commands")
     :config
     (define-key mode-specific-map (kbd "o") (cons "org" smahm006/org-map))
@@ -353,6 +358,7 @@ Keymaps used for important built-in command or commands from other packages
     (define-key mode-specific-map (kbd "m") (cons "multi" smahm006/mc-map))
     (define-key mode-specific-map (kbd "v") (cons "version control" smahm006/vc-map))
     (define-key mode-specific-map (kbd "l") (cons "langauge server protocol" smahm006/lsp-map))
+	(define-key mode-specific-map (kbd "c") (cons "container" smahm006/container-map))
     (define-key mode-specific-map (kbd "r") (cons "run" smahm006/run-map)))
 #+end_src
 ** Modes
@@ -667,16 +673,16 @@ Distraction-free writing for Emacs.
 #+end_src
 ** Agenda
 #+begin_src emacs-lisp :tangle init.el
-  (use-package org-agenda
-    :ensure nil
-    :bind (:map org-agenda-mode-map
-                ("C-n" . org-agenda-next-item)
-                ("C-p" . org-agenda-previous-item)
-                ("g" . org-agenda-goto))
-    :config
-    (let ((org-agenda-directory (format "%s/agenda/" org-directory)))
-      (smahm006/mkdir org-agenda-directory)
-      (org-agenda-files org-agenda-directory)))
+(use-package org-agenda
+  :ensure nil
+  :bind (:map org-agenda-mode-map
+              ("C-n" . org-agenda-next-item)
+              ("C-p" . org-agenda-previous-item)
+              ("g" . org-agenda-goto))
+  :config
+  (let ((org-agenda-directory (format "%s/agenda/" org-directory)))
+    (smahm006/mkdir org-agenda-directory)
+    (org-agenda-files org-agenda-directory)))
  #+end_src
 ** Finance
 *** [[https://github.com/ledger/ledger-mode][ledger-mode]]
@@ -758,9 +764,12 @@ the UNIX command line.
 I switch themes quite often but usually I prefer high contrast dark themes.
 #+begin_src emacs-lisp
 (use-package doom-themes
-  :if (and (display-graphic-p) (string= (smahm006/location) "home"))
+  :if (display-graphic-p)
   :init
-  (load-theme 'doom-tomorrow-night t)
+  (load-theme (if (string= (smahm006/location) "home")
+                  'doom-homage-black
+                'doom-gruvbox)
+              t)
   :custom
   (doom-themes-enable-bold t)
   (doom-themes-enable-italic t)
@@ -1841,65 +1850,64 @@ Paren mode for highlighting matching parenthesis
 *** [[https://github.com/minad/cape.git][cape]]
 Cape provides Completion At Point Extensions
 #+begin_src emacs-lisp
-  (use-package cape
-    :init
-    ;; Note: The order matters! File is first
-    (add-to-list 'completion-at-point-functions #'cape-dict)
-    (add-to-list 'completion-at-point-functions #'cape-abbrev)
-    (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-    (add-to-list 'completion-at-point-functions #'cape-keyword)
-    (add-to-list 'completion-at-point-functions #'cape-history)
-    (add-to-list 'completion-at-point-functions #'cape-file)
-    :bind ("M-/" . cape-prefix-map))
+(use-package cape
+  :init
+  ;; Note: The order matters! File is first
+  (add-to-list 'completion-at-point-functions #'cape-dict)
+  (add-to-list 'completion-at-point-functions #'cape-abbrev)
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-keyword)
+  (add-to-list 'completion-at-point-functions #'cape-history)
+  (add-to-list 'completion-at-point-functions #'cape-file))
 #+end_src
 *** [[https://github.com/emacs-straight/corfu.git][corfu]]
 Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
 #+begin_src emacs-lisp
-  (use-package corfu
-    :hook
-    ((after-init . global-corfu-mode)
-     (after-init . corfu-popupinfo-mode)
-     (after-init . corfu-echo-mode)
-     (after-init . corfu-history-mode)
-     (minibuffer-setup . smahm006/corfu-enable-always-in-minibuffer)
-     ;; Disable auto completion for termintal
-     (eat-mode . (lambda () (setq-local corfu-auto nil) (corfu-mode))))
-    :bind
-    (:map corfu-map
+(use-package corfu
+  :hook
+  ((after-init . global-corfu-mode)
+   (after-init . corfu-popupinfo-mode)
+   (after-init . corfu-echo-mode)
+   (after-init . corfu-history-mode)
+   (minibuffer-setup . smahm006/corfu-enable-always-in-minibuffer)
+   ;; Disable auto completion for termintal
+   (eat-mode . (lambda () (setq-local corfu-auto nil) (corfu-mode))))
+  :bind
+  (:map corfu-map
   		("TAB" . corfu-next)
   		([tab] . corfu-next)
   		("S-TAB" . corfu-previous)
   		([backtab] . corfu-previous)
   		("<escape>"  . corfu-quit))
-    :preface
-    ;; Completing in the minibuffer
-    (defun smahm006/corfu-enable-always-in-minibuffer ()
-      "Enable Corfu in the minibuffer if Vertico/Mct are not active."
-      (unless (or (bound-and-true-p mct--active)
-                  (bound-and-true-p vertico--input)
-                  (eq (current-local-map) read-passwd-map))
-        (setq-local corfu-echo-delay nil
-                    corfu-popupinfo-delay nil)
-        (corfu-mode 1)))
-    :custom
-    (corfu-cycle t)                     ; Enable cycling for `corfu-next/previous'
-    (corfu-auto t)                      ; Enable auto completion
-    (corfu-quit-no-match t)             ; Quit auto complete if there is no match
-    (corfu-auto-prefix 2)               ; Complete with less prefix keys
-    (corfu-preview-current t)           ; Disable current candidate preview
-    (corfu-preselect 'directory)        ; Preselect the fisrt canidate exept for directories select the prompt
-    (completion-cycle-threshold nil)    ; TAB cycle if there are only few candidates
-    (tab-always-indent t)               ; Enable indentation+completion using the TAB key.
-    ;; Hide commands in M-x which do not apply to the current mode.
-    (read-extended-command-predicate
-     #'command-completion-default-include-p)
-    :config
-    (define-key corfu-map [remap previous-line] nil)
-    (define-key corfu-map [remap next-line] nil)
-    (require 'corfu-echo)
-    (require 'corfu-history)
-    (require 'corfu-popupinfo)
-    (eldoc-add-command #'corfu-insert))
+  :preface
+  ;; Completing in the minibuffer
+  (defun smahm006/corfu-enable-always-in-minibuffer ()
+    "Enable Corfu in the minibuffer if Vertico/Mct are not active."
+    (unless (or (bound-and-true-p mct--active)
+                (bound-and-true-p vertico--input)
+                (eq (current-local-map) read-passwd-map))
+      (setq-local corfu-echo-delay nil
+                  corfu-popupinfo-delay nil)
+      (corfu-mode 1)))
+  :custom
+  (corfu-cycle t)                     ; Enable cycling for `corfu-next/previous'
+  (corfu-auto t)                      ; Enable auto completion
+  (corfu-quit-no-match t)             ; Quit auto complete if there is no match
+  (corfu-auto-prefix 2)               ; Complete with less prefix keys
+  (corfu-preview-current t)           ; Disable current candidate preview
+  (corfu-preselect 'directory)        ; Preselect the fisrt canidate exept for directories select the prompt
+  (completion-cycle-threshold nil)    ; TAB cycle if there are only few candidates
+  (tab-always-indent t)               ; Enable indentation+completion using the TAB key.
+  ;; Hide commands in M-x which do not apply to the current mode.
+  (read-extended-command-predicate
+   #'command-completion-default-include-p)
+  :config
+  (define-key corfu-map [remap previous-line] nil)
+  (define-key corfu-map [remap next-line] nil)
+  (require 'corfu-echo)
+  (require 'corfu-history)
+  (require 'corfu-popupinfo)
+  (eldoc-add-command #'corfu-insert))
 #+end_src
 *** dabrev
 Dynamic abbrevs allow the meanings of abbreviations to be determined automatically from the contents of the buffer
@@ -1938,10 +1946,11 @@ Light weight wrapper for Emacs built-in undo system, adding convenient undo/redo
   (use-package undo-fu
     :bind (([remap undo] . undo-fu-only-undo)
            ([remap undo-redo] . undo-fu-only-redo))
-    :config
-    (setq undo-limit 67108864) ; 64MB.
-    (setq undo-strong-limit 100663296) ; 96MB.
-    (setq undo-outer-limit 1006632960)) ; 960MB
+	:custom
+	(undo-fu-allow-undo-in-region t)
+    (undo-limit 67108864) ; 64MB.
+    (undo-strong-limit 100663296) ; 96MB.
+    (undo-outer-limit 1006632960)) ; 960MB
 #+end_src
 ** Spell Checking
 *** ispell
@@ -2277,22 +2286,44 @@ Universal on-the-fly syntax checker for Emacs.
     (flymake-fringe-indicator-position 'right-fringe))
     #+end_src
 ** Virtualization
-*** [[https://github.com/Silex/docker.el][docker]]
-#+begin_src emacs-lisp
-  (use-package docker
-    :commands docker)
+*** tramp-continer
   (use-package tramp-container
     :ensure nil
     :after docker)
+*** [[https://github.com/Silex/docker.el][docker]]
+#+begin_src emacs-lisp
+(use-package docker
+  :bind
+  (:map smahm006/container-map
+		("d c" . docker-containers)
+		("d i" . docker-images)
+		("d u" . docker-compose-up)
+		("d d" . docker-compose-down)
+		("d b" . docker-compose-build)))
 #+end_src
 *** [[https://github.com/spotify/dockerfile-mode.git][dockerfile-mode]]
 An emacs mode for handling Dockerfiles.
 #+begin_src emacs-lisp
-  (use-package dockerfile-mode
-    :mode "/Dockerfile\\'"
-    :mode "/Containerfile\\'"
-    :mode "\\.dockerfile\\'"
-    :mode "\\.containerfile\\'")
+(use-package dockerfile-mode
+  :mode ("/Dockerfile\\'" . dockerfile-ts-mode)
+  :mode ("/Containerfile\\'" . dockerfile-ts-mode)
+  :mode ("\\.dockerfile\\'" . dockerfile-ts-mode)
+  :mode ("\\.containerfile\\'" . dockerfile-ts-mode))
+#+end_src
+*** [[https://github.com/ottbot/vagrant.el][vagrant]]
+#+begin_src emacs-lisp
+(use-package vagrant
+  :bind
+  (:map smahm006/container-map
+		("v s" . vagrant-status)
+		("v u" . vagrant-up)
+		("v d" . vagrant-halt)
+		("v k" . vagrant-destroy)
+		("v p" . vagrant-provision)))
+#+end_src
+*** [[https://github.com/dougm/vagrant-tramp][vagrant-tramp]]
+#+begin_src emacs-lisp
+(use-package vagrant-tramp)
 #+end_src
 ** Snippets
 *** [[https://github.com/minad/tempel.git][tempel]]
@@ -2324,6 +2355,12 @@ Enable snippets for with completions
   (NOW (format-time-string "%Y-%m-%d %a %H:%M"))
   (yesterday (format-time-string "%Y-%m-%d" (time-subtract nil (* 24 60 60))))
   (tomorrow (format-time-string "%Y-%m-%d" (time-add nil (* 24 60 60))))
+#+end_src
+*** org snippets
+#+begin_src emacs-lisp :tangle snippets/org.eld :mkdirp yes
+org-mode
+(src "#+begin_src p" n q n "#+end_src")
+(src-lisp "#+begin_src emacs-lisp" n q n "#+end_src")
 #+end_src
 ** Footer
 #+begin_src text
