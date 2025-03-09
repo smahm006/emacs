@@ -477,8 +477,8 @@ The default paths used to store configuration files and persistent data are not 
 #+end_src
 *** Authentication
 I use a GPG key stored in a Yubikey for most of my authentication
-#+begin_src emacs-lisp
 **** epa
+#+begin_src emacs-lisp
 (use-package epa-file
   :ensure nil
   :init
@@ -493,6 +493,7 @@ I use a GPG key stored in a Yubikey for most of my authentication
 #+end_src
 **** [[https://elpa.gnu.org/devel/pinentry.html][pinentry]]
 #+begin_src emacs-lisp
+;; https://stackoverflow.com/questions/60812866/emacs-gpg-pinentry-el-for-authentication
 (use-package pinentry
   :init
   (pinentry-start)
@@ -1882,10 +1883,6 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
    (eat-mode . (lambda () (setq-local corfu-auto nil) (corfu-mode))))
   :bind
   (:map corfu-map
-  		("TAB" . corfu-next)
-  		([tab] . corfu-next)
-  		("S-TAB" . corfu-previous)
-  		([backtab] . corfu-previous)
   		("<escape>"  . corfu-quit))
   :preface
   ;; Completing in the minibuffer
@@ -1904,27 +1901,43 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
   (corfu-auto-prefix 2)               ; Complete with less prefix keys
   (corfu-preview-current t)           ; Disable current candidate preview
   (corfu-preselect 'directory)        ; Preselect the fisrt canidate exept for directories select the prompt
-  (completion-cycle-threshold nil)    ; TAB cycle if there are only few candidates
-  (tab-always-indent t)               ; Enable indentation+completion using the TAB key.
+  (completion-cycle-threshold 3)      ; TAB cycle if there are only few candidates
+  (tab-always-indent 'complete)       ; Enable indentation+completion using the TAB key.
   ;; Hide commands in M-x which do not apply to the current mode.
   (read-extended-command-predicate
    #'command-completion-default-include-p)
   :config
-  (define-key corfu-map [remap previous-line] nil)
-  (define-key corfu-map [remap next-line] nil)
+  ;; (define-key corfu-map [remap previous-line] nil)
+  ;; (define-key corfu-map [remap next-line] nil)
   (require 'corfu-echo)
   (require 'corfu-history)
   (require 'corfu-popupinfo)
   (eldoc-add-command #'corfu-insert))
 #+end_src
-*** dabrev
-Dynamic abbrevs allow the meanings of abbreviations to be determined automatically from the contents of the buffer
+*** [[https://www.masteringemacs.org/article/text-expansion-hippie-expand][hippie-expand]]
+Better dynamic expansion
 #+begin_src emacs-lisp
-(use-package dabbrev
-  :ensure nil
+(use-package hippie-exp
+  :bind
+  ([remap dabbrev-expand] . hippie-expand)
   :custom
-  (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
+  (hippie-expand-verbose t)
+  (hippie-expand-dabbrev-skip-space t)
+  :config
+  ;; change the order it tries things ;; http://xahlee.info/emacs/emacs/emacs_hippie_expand_setup.html
+  (setq hippie-expand-try-functions-list
+		'( try-expand-dabbrev
+		   try-expand-dabbrev-all-buffers
+		   try-expand-dabbrev-from-kill
+		   try-complete-lisp-symbol-partially
+		   try-complete-lisp-symbol
+		   try-expand-list
+		   try-expand-line
+		   try-complete-file-name-partially
+		   try-complete-file-name
+		   try-expand-all-abbrevs)))
 #+end_src
+Dynamic abbrevs allow the meanings of abbreviations to be determined automatically from the contents of the buffer
 *** completion-preview
 Preview completion candidate
 #+begin_src emacs-lisp
@@ -2096,9 +2109,11 @@ The magical git client.
 *** [[https://github.com/alphapapa/magit-todos.git][magit-todos]]
 Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
 #+begin_src emacs-lisp
-  (use-package magit-todos
-    :after magit
-    :init (magit-todos-mode))
+(use-package magit-todos
+  :after magit
+  :init (magit-todos-mode)
+  :config
+  (setq magit-todos-rg-extra-args '("-.")))
 #+end_src
 *** [[https://github.com/dgutov/diff-hl.git][diff-hl]]
 Emacs package for highlighting uncommitted changes.
@@ -2206,7 +2221,6 @@ A client for Language Server Protocol servers.
       (defun smahm006/eglot-capf ()
         (setq-local completion-at-point-functions
                     (cons (cape-capf-super
-                           #'cape-file
                            #'eglot-completion-at-point
                            #'tempel-complete)
                           completion-at-point-functions)))
