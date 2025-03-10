@@ -805,14 +805,15 @@ make our reading easier.
   (set-face-attribute 'default nil :font "JetBrainsMonoNerdFont 14")
   (set-fontset-font t 'latin "Noto Sans")
 #+end_src
-*** [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
+*** Icons
+**** [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
 A library for Nerd Font icons. Required for many icons used in other packages
 #+begin_src emacs-lisp
   (use-package nerd-icons
     :custom
     (nerd-icons-font-family "JetBrains Mono Nerd Font"))
 #+end_src
-*** [[https://github.com/rainstormstudio/nerd-icons-completion.git][nerd-icons-completion]]
+**** [[https://github.com/rainstormstudio/nerd-icons-completion.git][nerd-icons-completion]]
 #+begin_src emacs-lisp
   (use-package nerd-icons-completion
     :after marginalia vertico
@@ -821,7 +822,7 @@ A library for Nerd Font icons. Required for many icons used in other packages
     :config
     (nerd-icons-completion-mode))
 #+end_src
-*** [[https://github.com/LuigiPiucco/nerd-icons-corfu.git][nerd-icons-corfu]]
+**** [[https://github.com/LuigiPiucco/nerd-icons-corfu.git][nerd-icons-corfu]]
 Icons for corfu via nerd-icons.
 #+begin_src emacs-lisp
   (use-package nerd-icons-corfu
@@ -846,29 +847,36 @@ Distinguish "work" buffers from "side" ones
 *** [[https://github.com/emacs-dashboard/emacs-dashboard][dashboard]]
 An extensible emacs startup screen showing you what’s most important.
 #+begin_src emacs-lisp
-    (use-package dashboard
-      :init
-      (dashboard-setup-startup-hook)
-      :custom
-      (dashboard-banner-logo-title "Get Busy Living Or Get Busy Dying!")
-      (dashboard-startup-banner 'logo)
-      (dashboard-center-content t)
-      (dashboard-vertically-center-content t)
-      (dashboard-items '((agenda)
-                         (projects . 3)
-                         (recents   . 3)))
-      (dashboard-set-file-icons t)
-      (dashboard-set-heading-icons t)
-      (dashboard-icon-type 'nerd-icons)
-      (dashboard-startupify-list
-       '(dashboard-insert-banner
-         dashboard-insert-newline
-         dashboard-insert-banner-title
-         dashboard-insert-newline
-         dashboard-insert-navigator
-         dashboard-insert-newline
-         dashboard-insert-items
-         dashboard-insert-newline)))
+(use-package dashboard
+  :init
+  (dashboard-setup-startup-hook)
+  :custom
+  (dashboard-banner-logo-title "بِسْمِ اللّٰہِ الرَّحْمٰنِ الرَّحِیْم")
+  (dashboard-startup-banner 2)
+  (dashboard-center-content t)
+  (dashboard-vertically-center-content t)
+  (dashboard-items '((agenda)
+					 (recents   . 10)
+					 (bookmarks . 5)
+                     (projects . 5)))
+  (dashboard-item-shortcuts '((recents   . "r")
+                              (bookmarks . "b")
+                              (projects  . "p")
+                              (agenda    . "a")))
+  (dashboard-set-file-icons t)
+  (dashboard-set-heading-icons t)
+  (dashboard-icon-type 'nerd-icons)
+  (dashboard-startupify-list
+   '(dashboard-insert-newline
+	 dashboard-insert-newline
+	 dashboard-insert-banner-title
+     dashboard-insert-navigator
+     dashboard-insert-newline
+     dashboard-insert-items
+     dashboard-insert-newline))
+  :config
+  (custom-set-faces
+   '(dashboard-banner-logo-title ((t (:inherit font-lock-keyword-face :height 3.0 :width wide))))))
 #+end_src
 ** Line Guides
 *** display-line-numbers
