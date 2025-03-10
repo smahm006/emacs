@@ -513,7 +513,7 @@ I use a GPG key stored in a Yubikey for most of my authentication
 (require 'smahm006-org)
 #+end_src
 #+begin_src text
-;; init.el - Org configuration file, managing structure, defaults, and integrations
+;; smahm006-org.el - Configures Org mode for structured note-taking, task management, and agenda organization.
 ;; Copyright (C) 2023-2025 Sohaib Mahmood
 ;; Homepage: https://github.com/smahm006/emacs
 ;; Code:
@@ -753,7 +753,7 @@ the UNIX command line.
 (require 'smahm006-ui)
 #+end_src
 #+begin_src text
-;; init.el - Configures themes, fonts, icons, and other UI enhancements for a polished experience
+;; smahm006-ui.el - Defines visual elements and layout settings to enhance the Emacs UI.
 ;; Copyright (C) 2023-2025 Sohaib Mahmood
 ;; Homepage: https://github.com/smahm006/emacs
 ;; Code:
@@ -969,7 +969,7 @@ An Emacs plugin that hides (or masks) the current buffer's mode-line.
 (require 'smahm006-ux)
 #+end_src
 #+begin_src text
-;; init.el - Adds better completion, configures window/buffer/file management
+;; smahm006-ux.el - Enhances usability with minibuffer completion, window, buffer, and file management improvements.
 ;; Copyright (C) 2023-2025 Sohaib Mahmood
 ;; Homepage: https://github.com/smahm006/emacs
 ;; Code:
@@ -1532,7 +1532,7 @@ Project.el is more than enough for my project management needs
 (require 'smahm006-editing)
 #+end_src
 #+begin_src text
-;; init.el - Editing
+;; smahm006-editing.el - Enhances text editing with structural manipulation, navigation, and undo/redo improvements.
 ;; Copyright (C) 2023-2025 Sohaib Mahmood
 ;; Homepage: https://github.com/smahm006/emacs
 ;; Code:
@@ -2045,7 +2045,7 @@ Enchanted Spell Checker.
 (require 'smahm006-development)
 #+end_src
 #+begin_src text
-;; init.el - Development
+;; smahm005-development.el - Provides tools for coding, debugging, version control, and remote access.
 ;; Copyright (C) 2023-2025 Sohaib Mahmood
 ;; Homepage: https://github.com/smahm006/emacs
 ;; Code:
@@ -2411,7 +2411,7 @@ org-mode
 (require 'smahm006-languages)
 #+end_src
 #+begin_src text
-;; init.el - Languages
+;; smahm006-languages.el -  Configures support for various programming, scripting, and markup languages.
 ;; Copyright (C) 2023-2025 Sohaib Mahmood
 ;; Homepage: https://github.com/smahm006/emacs
 ;; Code:
