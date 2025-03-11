@@ -85,103 +85,103 @@ This is the configuration for my personal GNU Emacs setup.
 #+end_src
 ** [[https://wiki.archlinux.org/title/XDG_Base_Directory][XDG Directory]]
 #+begin_src emacs-lisp
-  (use-package emacs
-    :ensure nil
-    :preface
-    (defvar xdg-home (getenv "HOME"))
-    (defvar xdg-state (getenv "XDG_STATE_HOME"))
-    (defvar xdg-data (getenv "XDG_DATA_HOME"))
-    (defvar xdg-config (getenv "XDG_CONFIG_HOME"))
-    (defvar xdg-cache (getenv "XDG_CACHE_HOME"))
-    (defvar xdg-lib (getenv "XDG_LIB_HOME")))
+(use-package emacs
+  :ensure nil
+  :preface
+  (defvar xdg-home (getenv "HOME"))
+  (defvar xdg-state (getenv "XDG_STATE_HOME"))
+  (defvar xdg-data (getenv "XDG_DATA_HOME"))
+  (defvar xdg-config (getenv "XDG_CONFIG_HOME"))
+  (defvar xdg-cache (getenv "XDG_CACHE_HOME"))
+  (defvar xdg-lib (getenv "XDG_LIB_HOME")))
 #+end_src
 ** Optimize Startup Time
 #+begin_src emacs-lisp
-  ;; We're going to increase the gc-cons-threshold to a very high number to decrease the load time and add a hook to measure Emacs startup time.
-  (setq gc-cons-threshold most-positive-fixnum
-        gc-cons-percentage 0.6)
+;; We're going to increase the gc-cons-threshold to a very high number to decrease the load time and add a hook to measure Emacs startup time.
+(setq gc-cons-threshold most-positive-fixnum
+      gc-cons-percentage 0.6)
 
-  ;; Let's lower our GC thresholds back down to a sane level.
-  (add-hook 'after-init-hook
-            (lambda ()
-              ;; restore after startup
-              (setq gc-cons-threshold (* 16 1024 1024))) 99)
+;; Let's lower our GC thresholds back down to a sane level.
+(add-hook 'after-init-hook
+          (lambda ()
+            ;; restore after startup
+            (setq gc-cons-threshold (* 16 1024 1024))) 99)
 
-  ;; Profile emacs startup
-  (add-hook 'after-init-hook
-            (lambda ()
-              (message "🚀 Emacs loaded in %s with %d garbage collections."
-                       (format "%.2f seconds"
-                               (float-time
-                                (time-subtract after-init-time before-init-time)))
-                       gcs-done)))
+;; Profile emacs startup
+(add-hook 'after-init-hook
+          (lambda ()
+            (message "🚀 Emacs loaded in %s with %d garbage collections."
+                     (format "%.2f seconds"
+                             (float-time
+                              (time-subtract after-init-time before-init-time)))
+                     gcs-done)))
 
-  ;; Resizing the Emacs frame can be a terribly expensive part of changing the
-  ;; font. By inhibiting this, we easily halve startup times with fonts that are
-  ;; larger than the system default.
-  (setq frame-inhibit-implied-resize t)
+;; Resizing the Emacs frame can be a terribly expensive part of changing the
+;; font. By inhibiting this, we easily halve startup times with fonts that are
+;; larger than the system default.
+(setq frame-inhibit-implied-resize t)
 
-  ;; Ignore X resources; its settings would be redundant with the other settings
-  ;; in this file and can conflict with later config (particularly where the
-  ;; cursor color is concerned).
-  (advice-add #'x-apply-session-resources :override #'ignore)
+;; Ignore X resources; its settings would be redundant with the other settings
+;; in this file and can conflict with later config (particularly where the
+;; cursor color is concerned).
+(advice-add #'x-apply-session-resources :override #'ignore)
 
-  ;; remove "for information about gnu emacs..." message at startup
-  (advice-add #'display-startup-echo-area-message :override #'ignore)
+;; remove "for information about gnu emacs..." message at startup
+(advice-add #'display-startup-echo-area-message :override #'ignore)
 
-  ;; suppress the vanilla startup screen completely. we've disabled it with
-  ;; `inhibit-startup-screen', but it would still initialize anyway.
-  (advice-add #'display-startup-screen :override #'ignore)
+;; suppress the vanilla startup screen completely. we've disabled it with
+;; `inhibit-startup-screen', but it would still initialize anyway.
+(advice-add #'display-startup-screen :override #'ignore)
 
-  ;; never show the hello file
-  (defalias #'view-hello-file #'ignore)
+;; never show the hello file
+(defalias #'view-hello-file #'ignore)
 
-  ;; Disable warnings from the legacy advice API. They aren't useful.
-  (setq ad-redefinition-action 'accept)
+;; Disable warnings from the legacy advice API. They aren't useful.
+(setq ad-redefinition-action 'accept)
 
-  ;; Ignore warnings about "existing variables being aliased".
-  (setq warning-suppress-types '((defvaralias) (lexical-binding)))
+;; Ignore warnings about "existing variables being aliased".
+(setq warning-suppress-types '((defvaralias) (lexical-binding)))
 
-  ;; Unset `file-name-handler-alist' too (temporarily). Every file opened and
-  ;; loaded by Emacs will run through this list to check for a proper handler for
-  ;; the file, but during startup, it won’t need any of them.
-  (defvar file-name-handler-alist-old file-name-handler-alist)
-  (setq file-name-handler-alist nil)
-  (add-hook 'emacs-startup-hook
-            (lambda ()
-              (setq file-name-handler-alist file-name-handler-alist-old)))
+;; Unset `file-name-handler-alist' too (temporarily). Every file opened and
+;; loaded by Emacs will run through this list to check for a proper handler for
+;; the file, but during startup, it won’t need any of them.
+(defvar file-name-handler-alist-old file-name-handler-alist)
+(setq file-name-handler-alist nil)
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (setq file-name-handler-alist file-name-handler-alist-old)))
 
-  ;; Remove irreleant command line options for faster startup
-  (setq command-line-x-option-alist nil)
+;; Remove irreleant command line options for faster startup
+(setq command-line-x-option-alist nil)
 
-  ;; Minimal UI
-  (menu-bar-mode -1)
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1)
+;; Minimal UI
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
 #+end_src
 ** Configure Byte Compile
 #+begin_src emacs-lisp
-  ;; In noninteractive sessions, prioritize non-byte-compiled source files to
-  ;; prevent the use of stale byte-code. Otherwise, it saves us a little IO time
-  ;; to skip the mtime checks on every *.elc file.
-  (setq load-prefer-newer t)
+;; In noninteractive sessions, prioritize non-byte-compiled source files to
+;; prevent the use of stale byte-code. Otherwise, it saves us a little IO time
+;; to skip the mtime checks on every *.elc file.
+(setq load-prefer-newer t)
 
-  ;; Ensure JIT compilation is enabled for improved performance by
-  ;; native-compiling loaded .elc files asynchronously
-  (setq native-comp-jit-compilation t)
+;; Ensure JIT compilation is enabled for improved performance by
+;; native-compiling loaded .elc files asynchronously
+(setq native-comp-jit-compilation t)
 
-  ;; Move native compilation cache directory to xdg-cache
-  (when (boundp 'native-comp-eln-load-path)
-    (startup-redirect-eln-cache
-     (expand-file-name (format "%s/emacs/eln-cache/" xdg-cache))))
+;; Move native compilation cache directory to xdg-cache
+(when (boundp 'native-comp-eln-load-path)
+  (startup-redirect-eln-cache
+   (expand-file-name (format "%s/emacs/eln-cache/" xdg-cache))))
 
-  ;; Disable certain byte compiler warnings to cut down on the noise.
-  (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
+;; Disable certain byte compiler warnings to cut down on the noise.
+(setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
 
-  ;; Ensure that quitting only occurs once Emacs finishes native compiling,
-  ;; preventing incomplete or leftover compilation files in `/tmp`.
-  (setq native-comp-async-query-on-exit t)
-  (setq confirm-kill-processes t)
+;; Ensure that quitting only occurs once Emacs finishes native compiling,
+;; preventing incomplete or leftover compilation files in `/tmp`.
+(setq native-comp-async-query-on-exit t)
+(setq confirm-kill-processes t)
 #+end_src
 ** Runtime optimizations
 #+begin_src emacs-lisp
@@ -243,123 +243,123 @@ This is the configuration for my personal GNU Emacs setup.
 #+end_src
 ** General Defaults
 #+begin_src emacs-lisp
-  (use-package emacs
-    :ensure nil
-    :hook
-    (kill-emacs . (lambda () (setq kill-ring (mapcar 'substring-no-properties kill-ring))))
-    :custom
-    ;; User details
-    (user-full-name "Sohaib Mahmood")                     ; Set the full name of the current user
-    (user-mail-address "soh.mahmood@fastmail.com")        ; Set the email address of the current user
+(use-package emacs
+  :ensure nil
+  :hook
+  (kill-emacs . (lambda () (setq kill-ring (mapcar 'substring-no-properties kill-ring))))
+  :custom
+  ;; User details
+  (user-full-name "Sohaib Mahmood")                     ; Set the full name of the current user
+  (user-mail-address "soh.mahmood@fastmail.com")        ; Set the email address of the current user
 
-    ;; Startup
-    ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
-    (inhibit-splash-screen t)                            ; Disable startup screens and messages
-    (inhibit-startup-buffer-menu t)                      ; Disable display of buffer list when more than 2 files are loaded
-    (inhibit-startup-echo-area-message t)                ; Disable initial echo message
-    (inhibit-startup-message t)                          ; Disable startup message
-    (inhibit-startup-screen t)                           ; Disable start-up screen
-    (initial-scratch-message "")                         ; Empty the initial *scratch* buffer
+  ;; Startup
+  ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
+  (inhibit-splash-screen t)                            ; Disable startup screens and messages
+  (inhibit-startup-buffer-menu t)                      ; Disable display of buffer list when more than 2 files are loaded
+  (inhibit-startup-echo-area-message t)                ; Disable initial echo message
+  (inhibit-startup-message t)                          ; Disable startup message
+  (inhibit-startup-screen t)                           ; Disable start-up screen
+  (initial-scratch-message "")                         ; Empty the initial *scratch* buffer
 
-    ;; Dialogs
-    ;; use simple text prompts
-    (use-dialog-box nil)                                 ; Don't pop up UI dialogs when prompting
-    (use-file-dialog nil)                                ; Don't use UI dialogs for file search
-    (use-short-answers t)                                ; Replace yes/no prompts with y/n
-    (confirm-nonexistent-file-or-buffer nil)             ; Ok to visit non existent files
+  ;; Dialogs
+  ;; use simple text prompts
+  (use-dialog-box nil)                                 ; Don't pop up UI dialogs when prompting
+  (use-file-dialog nil)                                ; Don't use UI dialogs for file search
+  (use-short-answers t)                                ; Replace yes/no prompts with y/n
+  (confirm-nonexistent-file-or-buffer nil)             ; Ok to visit non existent files
 
-    ;; Default mode
-    ;; Default & initial mode is text.
-    (initial-major-mode 'fundamental-mode)               ; Initial mode is text
-    (default-major-mode 'fundamental-mode)               ; Default mode is text
+  ;; Default mode
+  ;; Default & initial mode is text.
+  (initial-major-mode 'fundamental-mode)               ; Initial mode is text
+  (default-major-mode 'fundamental-mode)               ; Default mode is text
 
-    ;; Performance
-    ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
-    (read-process-output-max (* 1024 1024))              ; Increase how much is read from processes in a single chunk.
-    (select-active-regions 'only)                        ; Emacs hangs when large selections contain mixed line endings.
-    (vc-handled-backends '(Git SVN))                     ; Remove unused VC backend
+  ;; Performance
+  ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
+  (read-process-output-max (* 1024 1024))              ; Increase how much is read from processes in a single chunk.
+  (select-active-regions 'only)                        ; Emacs hangs when large selections contain mixed line endings.
+  (vc-handled-backends '(Git SVN))                     ; Remove unused VC backend
 
-	;; Merge system's and Emacs' clipboard
-	(select-enable-clipboard t)
-	(x-select-enable-clipboard t)
+  ;; Merge system's and Emacs' clipboard
+  (select-enable-clipboard t)
+  (x-select-enable-clipboard t)
 
-    ;; Miscellaneous
-    (native-comp-async-report-warnings-errors 'silent)   ; Disable native compiler warnings
-    (fringes-outside-margins t)                          ; DOOM: add some space between fringe it and buffer.
-    (windmove-mode nil)                                  ; Diasble windmove mode
-    (comment-auto-fill-only-comments t)                  ; Use auto fill mode only in comments
-    (custom-buffer-done-kill t)                          ; Kill custom buffer when done
-	(compilation-scroll-output 'first-error)             ; Scroll compilation up to first error
-    :config
-    (add-to-list 'load-path (expand-file-name (format "%s/emacs/lisp/" xdg-config)))
-    ;; Disable suspend keys
-    (global-unset-key (kbd "C-z"))
-    (global-unset-key (kbd "C-x C-z")))
+  ;; Miscellaneous
+  (native-comp-async-report-warnings-errors 'silent)   ; Disable native compiler warnings
+  (fringes-outside-margins t)                          ; DOOM: add some space between fringe it and buffer.
+  (windmove-mode nil)                                  ; Diasble windmove mode
+  (comment-auto-fill-only-comments t)                  ; Use auto fill mode only in comments
+  (custom-buffer-done-kill t)                          ; Kill custom buffer when done
+  (compilation-scroll-output 'first-error)             ; Scroll compilation up to first error
+  :config
+  (add-to-list 'load-path (expand-file-name (format "%s/emacs/lisp/" xdg-config)))
+  ;; Disable suspend keys
+  (global-unset-key (kbd "C-z"))
+  (global-unset-key (kbd "C-x C-z")))
 #+end_src
 ** Functions
 Some useful utility functions
 #+begin_src emacs-lisp
-  (use-package emacs
-    :ensure nil
-    :bind
-    (("<f5>" . smahm006/reload-config))
-    :preface
-    ;; Non-interactive
-    (defun smahm006/emacs.d (path)
-      "Return the full path pointing to user-emacs-directory"
-      (expand-file-name path user-emacs-directory))
-    (defun smahm006/mkdir (dir-path)
-      "Make directory in DIR-PATH if it doesn't exist."
-      (unless (file-exists-p dir-path)
-        (make-directory dir-path t)))
-    (defun smahm006/location ()
-      "Return 'home' if system-name starts with 'sm-', otherwise return 'work'."
-      (if (string-match-p "^sm-" (system-name))
-      	"home"
-        "work"))
-    ;; Interactive
-    (defun smahm006/reload-config ()
-      "Reload init file, which will effectively reload everything"
-      (interactive)
-      (load-file (expand-file-name "init.el" user-emacs-directory)))
-    (global-set-key (kbd "<f5>") 'smahm006/reload-config)
-    (defun smahm006/revert-buffer-no-confirm ()
-      "Revert buffer without confirmation."
-      (interactive)
-      (revert-buffer :ignore-auto :noconfirm)))
+(use-package emacs
+  :ensure nil
+  :bind
+  (("<f5>" . smahm006/reload-config))
+  :preface
+  ;; Non-interactive
+  (defun smahm006/emacs.d (path)
+    "Return the full path pointing to user-emacs-directory"
+    (expand-file-name path user-emacs-directory))
+  (defun smahm006/mkdir (dir-path)
+    "Make directory in DIR-PATH if it doesn't exist."
+    (unless (file-exists-p dir-path)
+      (make-directory dir-path t)))
+  (defun smahm006/location ()
+    "Return 'home' if system-name starts with 'sm-', otherwise return 'work'."
+    (if (string-match-p "^sm-" (system-name))
+        "home"
+      "work"))
+  ;; Interactive
+  (defun smahm006/reload-config ()
+    "Reload init file, which will effectively reload everything"
+    (interactive)
+    (load-file (expand-file-name "init.el" user-emacs-directory)))
+  (global-set-key (kbd "<f5>") 'smahm006/reload-config)
+  (defun smahm006/revert-buffer-no-confirm ()
+    "Revert buffer without confirmation."
+    (interactive)
+    (revert-buffer :ignore-auto :noconfirm)))
 #+end_src
 ** Keymaps
 Keymaps used for important built-in command or commands from other packages
 #+begin_src emacs-lisp
-  (use-package emacs
-    :ensure nil
-    :preface
-    (defvar smahm006/org-map (make-sparse-keymap) "key-map for org commands")
-    (defvar smahm006/note-map (make-sparse-keymap) "key-map for note taking commands")
-    (defvar smahm006/window-map (make-sparse-keymap) "key-map for window commands")
-    (defvar smahm006/buffer-map (make-sparse-keymap) "key-map for buffer commands")
-    (defvar smahm006/file-map (make-sparse-keymap) "key-map for file commands")
-    (defvar smahm006/search-map (make-sparse-keymap) "key-map for searching")
-    (defvar smahm006/goto-map (make-sparse-keymap) "key-map for going to places")
-    (defvar smahm006/mc-map (make-sparse-keymap) "key-map for multiple cursors commands")
-    (defvar smahm006/vc-map (make-sparse-keymap) "key-map for version control commands")
-    (defvar smahm006/lsp-map (make-sparse-keymap) "key-map for language server protocol commands")
-	(defvar smahm006/container-map (make-sparse-keymap) "key-map for container commands")
-    (defvar smahm006/run-map (make-sparse-keymap) "key-map for running program specific commands")
-    :config
-    (define-key mode-specific-map (kbd "o") (cons "org" smahm006/org-map))
-    (define-key mode-specific-map (kbd "n") (cons "note" smahm006/note-map))
-    (define-key mode-specific-map (kbd "w") (cons "window" smahm006/window-map))
-    (define-key mode-specific-map (kbd "b") (cons "buffer" smahm006/buffer-map))
-    (define-key mode-specific-map (kbd "f") (cons "file" smahm006/file-map))
-    (define-key mode-specific-map (kbd "p") (cons "project" project-prefix-map))
-    (define-key mode-specific-map (kbd "s") (cons "search" smahm006/search-map))
-    (define-key mode-specific-map (kbd "g") (cons "goto" smahm006/goto-map))
-    (define-key mode-specific-map (kbd "m") (cons "multi" smahm006/mc-map))
-    (define-key mode-specific-map (kbd "v") (cons "version control" smahm006/vc-map))
-    (define-key mode-specific-map (kbd "l") (cons "langauge server protocol" smahm006/lsp-map))
-	(define-key mode-specific-map (kbd "c") (cons "container" smahm006/container-map))
-    (define-key mode-specific-map (kbd "r") (cons "run" smahm006/run-map)))
+(use-package emacs
+  :ensure nil
+  :preface
+  (defvar smahm006/org-map (make-sparse-keymap) "key-map for org commands")
+  (defvar smahm006/note-map (make-sparse-keymap) "key-map for note taking commands")
+  (defvar smahm006/window-map (make-sparse-keymap) "key-map for window commands")
+  (defvar smahm006/buffer-map (make-sparse-keymap) "key-map for buffer commands")
+  (defvar smahm006/file-map (make-sparse-keymap) "key-map for file commands")
+  (defvar smahm006/search-map (make-sparse-keymap) "key-map for searching")
+  (defvar smahm006/goto-map (make-sparse-keymap) "key-map for going to places")
+  (defvar smahm006/mc-map (make-sparse-keymap) "key-map for multiple cursors commands")
+  (defvar smahm006/vc-map (make-sparse-keymap) "key-map for version control commands")
+  (defvar smahm006/lsp-map (make-sparse-keymap) "key-map for language server protocol commands")
+  (defvar smahm006/container-map (make-sparse-keymap) "key-map for container commands")
+  (defvar smahm006/run-map (make-sparse-keymap) "key-map for running program specific commands")
+  :config
+  (define-key mode-specific-map (kbd "o") (cons "org" smahm006/org-map))
+  (define-key mode-specific-map (kbd "n") (cons "note" smahm006/note-map))
+  (define-key mode-specific-map (kbd "w") (cons "window" smahm006/window-map))
+  (define-key mode-specific-map (kbd "b") (cons "buffer" smahm006/buffer-map))
+  (define-key mode-specific-map (kbd "f") (cons "file" smahm006/file-map))
+  (define-key mode-specific-map (kbd "p") (cons "project" project-prefix-map))
+  (define-key mode-specific-map (kbd "s") (cons "search" smahm006/search-map))
+  (define-key mode-specific-map (kbd "g") (cons "goto" smahm006/goto-map))
+  (define-key mode-specific-map (kbd "m") (cons "multi" smahm006/mc-map))
+  (define-key mode-specific-map (kbd "v") (cons "version control" smahm006/vc-map))
+  (define-key mode-specific-map (kbd "l") (cons "langauge server protocol" smahm006/lsp-map))
+  (define-key mode-specific-map (kbd "c") (cons "container" smahm006/container-map))
+  (define-key mode-specific-map (kbd "r") (cons "run" smahm006/run-map)))
 #+end_src
 ** Modes
 #+begin_src emacs-lisp
@@ -379,21 +379,21 @@ Keymaps used for important built-in command or commands from other packages
   nil
   (if (symbol-value sensitive-mode)
       (progn
-  		;; Disable backups
-  		(set (make-local-variable 'backup-inhibited) t)
-  		;; Disable auto-save
-  		(if auto-save-default
-  			(auto-save-mode -1)))
+        ;; Disable backups
+        (set (make-local-variable 'backup-inhibited) t)
+        ;; Disable auto-save
+        (if auto-save-default
+            (auto-save-mode -1)))
     ;; Resort to default value of backup-inhibited
     (kill-local-variable 'backup-inhibited)
     ;; Resort to default auto save setting
     (if auto-save-default
-  		(auto-save-mode 1))))
+        (auto-save-mode 1))))
 #+end_src
 ** Packages
-To manage packages, I use [[https://github.com/jwiegley/use-package/][use-package]].
+To manage packages, I use the built-in use-package system.
 *** Package Configuration
-To manage the package configurations with use-package, we add some required libraries
+To manage the package configurations with use-package, we add some required package repositories
 #+begin_src emacs-lisp
 (use-package use-package
   :ensure nil
@@ -407,20 +407,20 @@ To manage the package configurations with use-package, we add some required libr
                            ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
   ;; Highest number gets priority (what is not mentioned has priority 0)
   (setq package-archive-priorities
-      	'(("gnu-elpa" . 3)
+        '(("gnu-elpa" . 3)
           ("melpa" . 2)
           ("nongnu" . 1)))
   ;; Make use-package more verbose when `--debug-init` flag is passed
   (when init-file-debug
     (setq use-package-verbose t
-  		  use-package-expand-minimally nil
-  		  use-package-compute-statistics t
-  		  jka-compr-verbose t
-  		  warning-minimum-level :warning
-  		  byte-compile-warnings t
-  		  byte-compile-verbose t
-  		  native-comp-warning-on-missing-source t
-  		  debug-on-error t)))
+          use-package-expand-minimally nil
+          use-package-compute-statistics t
+          jka-compr-verbose t
+          warning-minimum-level :warning
+          byte-compile-warnings t
+          byte-compile-verbose t
+          native-comp-warning-on-missing-source t
+          debug-on-error t)))
 #+end_src
 *** Package Automatic Updates
 There is no default way to auto update packages so we will use the
@@ -488,8 +488,8 @@ I use a GPG key stored in a Yubikey for most of my authentication
   ;; Alternatively, to protect only some files, like some .txt files, use a line like
   ;; // -*-mode:asciidoc; mode:sensitive-minor; fill-column:132-*-
   (setq auto-mode-alist
-  		(append
-  		 (list '("\\.\\(vcf\\|gpg\\)$" . sensitive-mode)) auto-mode-alist)))
+        (append
+         (list '("\\.\\(vcf\\|gpg\\)$" . sensitive-mode)) auto-mode-alist)))
 #+end_src
 **** [[https://elpa.gnu.org/devel/pinentry.html][pinentry]]
 #+begin_src emacs-lisp
@@ -575,8 +575,8 @@ Org short for organization of my life mainly by using org-mode
   (org-babel-load-languages
    '((emacs-lisp . t)
      (shell . t)
-  	 (python . t)
-  	 (ledger . t))))
+     (python . t)
+     (ledger . t))))
 #+end_src
 *** [[https://github.com/snosov1/toc-org.git][toc-org]]
 Toc-org is an Emacs utility to have an up-to-date table of contents in the org files without exporting (useful primarily for readme files on GitHub).
@@ -592,7 +592,7 @@ Using the async package and the org-babel-tangle command, the code below will ex
 (use-package async
   :init
   (add-hook 'org-mode-hook
-			(lambda ()
+            (lambda ()
               (add-hook 'after-save-hook 'smahm006/config-tangle nil 'make-it-local)))
   :preface
   (defcustom smahm006/config-file (expand-file-name "emacs.org" user-emacs-directory)
@@ -663,11 +663,11 @@ Simple notes with an efficient file-naming scheme
   :hook (dired-mode . denote-dired-mode)
   :bind
   (:map smahm006/note-map
-  		(("n" . denote)
-  		 ("r" . denote-rename-file)
-  		 ("l" . denote-link)
-  		 ("b" . denote-backlinks)
-  		 ("d" . denote-sort-dired)))
+        (("n" . denote)
+         ("r" . denote-rename-file)
+         ("l" . denote-link)
+         ("b" . denote-backlinks)
+         ("d" . denote-sort-dired)))
   :config
   (let ((org-notes-directory (format "%s/notes/" org-directory)))
     (smahm006/mkdir org-notes-directory)
@@ -676,16 +676,16 @@ Simple notes with an efficient file-naming scheme
 #+end_src
 *** [[https://github.com/emacs-straight/consult-denote.git][consult-denote]]
 #+begin_src emacs-lisp
-  (use-package consult-denote
-    :after denote consult
-    :bind
-    (:map smahm006/note-map
-          ("f" . consult-denote-find)
-          ("g" . consult-denote-grep))
-	:custom
-	(consult-denote-grep-command 'consult-ripgrep)
-    :config
-    (consult-denote-mode 1))
+(use-package consult-denote
+  :after denote consult
+  :bind
+  (:map smahm006/note-map
+        ("f" . consult-denote-find)
+        ("g" . consult-denote-grep))
+  :custom
+  (consult-denote-grep-command 'consult-ripgrep)
+  :config
+  (consult-denote-mode 1))
 #+end_src
 *** [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
 Distraction-free writing for Emacs.
@@ -705,39 +705,39 @@ Distraction-free writing for Emacs.
   (let ((org-agenda-directory (format "%s/agenda/" org-directory)))
     (smahm006/mkdir org-agenda-directory)
     (org-agenda-files org-agenda-directory)))
- #+end_src
+#+end_src
 ** Finance
 *** [[https://github.com/ledger/ledger-mode][ledger-mode]]
 Good money management is a skill to be acquired as soon as possible. Fortunately
 for us, [[https://www.ledger-cli.org/][Ledger]] allows you to have a double-entry accounting system directly from
 the UNIX command line.
 #+begin_src emacs-lisp
-  (use-package ledger-mode
-    :after org
-    :mode ("\\.\\(dat\\|ledger\\)\\'")
-    :hook (ledger-mode . ledger-flymake-enable)
-    :bind
-    (:map ledger-mode-map
-          ("C-x C-s" . smahm006/ledger-save))
-    (:map smahm006/org-map
-          ("l" . smahm006/org-open-current-ledger))
-    :preface
-    (defun smahm006/org-open-current-ledger ()
-      "Open the ledger file corresponding to the current year."
-      (interactive)
-      (let* ((current-year (format-time-string "%Y"))
-             (ledger-file (format "%s/ledger/%s.org.gpg" org-dir current-year)))
-        (find-file ledger-file)))
-    (defun smahm006/ledger-save ()
-      "Clean the ledger buffer at each save."
-      (interactive)
-      (ledger-mode-clean-buffer)
-      (save-buffer))
-    :custom
-    (ledger-clear-whole-transactions t)
-    :config
-    (let ((org-ledger-directory (format "%s/ledger/" org-directory)))
-      (smahm006/mkdir org-ledger-directory)))
+(use-package ledger-mode
+  :after org
+  :mode ("\\.\\(dat\\|ledger\\)\\'")
+  :hook (ledger-mode . ledger-flymake-enable)
+  :bind
+  (:map ledger-mode-map
+        ("C-x C-s" . smahm006/ledger-save))
+  (:map smahm006/org-map
+        ("l" . smahm006/org-open-current-ledger))
+  :preface
+  (defun smahm006/org-open-current-ledger ()
+    "Open the ledger file corresponding to the current year."
+    (interactive)
+    (let* ((current-year (format-time-string "%Y"))
+           (ledger-file (format "%s/ledger/%s.org.gpg" org-dir current-year)))
+      (find-file ledger-file)))
+  (defun smahm006/ledger-save ()
+    "Clean the ledger buffer at each save."
+    (interactive)
+    (ledger-mode-clean-buffer)
+    (save-buffer))
+  :custom
+  (ledger-clear-whole-transactions t)
+  :config
+  (let ((org-ledger-directory (format "%s/ledger/" org-directory)))
+    (smahm006/mkdir org-ledger-directory)))
 #+end_src
 ** Footer
 #+begin_src text
@@ -760,26 +760,26 @@ the UNIX command line.
 #+end_src
 ** UI Defaults
 #+begin_src emacs-lisp
-  (use-package emacs
-    :ensure nil
-    :custom
-    ;; Mouse
-    (context-menu-mode (display-graphic-p))              ; Enable context menu on right click
-    (mouse-yank-at-point t)                              ; Yank at point rather than pointer
-    (xterm-mouse-mode (not (display-graphic-p)))         ; Mouse active in tty mode.
-    (make-pointer-invisible t)                           ; Hide mouse pointer when typing
+(use-package emacs
+  :ensure nil
+  :custom
+  ;; Mouse
+  (context-menu-mode (display-graphic-p))              ; Enable context menu on right click
+  (mouse-yank-at-point t)                              ; Yank at point rather than pointer
+  (xterm-mouse-mode (not (display-graphic-p)))         ; Mouse active in tty mode.
+  (make-pointer-invisible t)                           ; Hide mouse pointer when typing
 
-    ;; Cursor
-    (cursor-type t)                                      ; Default block shaped cursor
-    (cursor-intangible-mode t)                           ; Enforce cursor intangibility
-    (x-stretch-cursor nil)                               ; Don't stretch cursor to the glyph width
-    (blink-cursor-mode t)                                ; Blink cursor
+  ;; Cursor
+  (cursor-type t)                                      ; Default block shaped cursor
+  (cursor-intangible-mode t)                           ; Enforce cursor intangibility
+  (x-stretch-cursor nil)                               ; Don't stretch cursor to the glyph width
+  (blink-cursor-mode t)                                ; Blink cursor
 
-    ;; Enable window dividers
-    (window-divider-default-bottom-width 2)
-    (window-divider-default-right-width 2)
-    (window-divider-default-places t)
-    (window-divider-mode t))
+  ;; Enable window dividers
+  (window-divider-default-bottom-width 2)
+  (window-divider-default-right-width 2)
+  (window-divider-default-places t)
+  (window-divider-mode t))
 #+end_src
 ** Appearance
 *** Theme
@@ -802,39 +802,39 @@ I switch themes quite often but usually I prefer high contrast dark themes.
 Spending most of our time on GNU Emacs, it is important to use a font that will
 make our reading easier.
 #+begin_src emacs-lisp
-  (set-face-attribute 'default nil :font "JetBrainsMonoNerdFont 14")
-  (set-fontset-font t 'latin "Noto Sans")
+(set-face-attribute 'default nil :font "JetBrainsMonoNerdFont 14")
+(set-fontset-font t 'latin "Noto Sans")
 #+end_src
 *** Icons
 **** [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
 A library for Nerd Font icons. Required for many icons used in other packages
 #+begin_src emacs-lisp
-  (use-package nerd-icons
-    :custom
-    (nerd-icons-font-family "JetBrains Mono Nerd Font"))
+(use-package nerd-icons
+  :custom
+  (nerd-icons-font-family "JetBrains Mono Nerd Font"))
 #+end_src
 **** [[https://github.com/rainstormstudio/nerd-icons-completion.git][nerd-icons-completion]]
 #+begin_src emacs-lisp
-  (use-package nerd-icons-completion
-    :after marginalia vertico
-    :hook
-    (marginalia-mode . nerd-icons-completion-marginalia-setup)
-    :config
-    (nerd-icons-completion-mode))
+(use-package nerd-icons-completion
+  :after marginalia vertico
+  :hook
+  (marginalia-mode . nerd-icons-completion-marginalia-setup)
+  :config
+  (nerd-icons-completion-mode))
 #+end_src
 **** [[https://github.com/LuigiPiucco/nerd-icons-corfu.git][nerd-icons-corfu]]
 Icons for corfu via nerd-icons.
 #+begin_src emacs-lisp
-  (use-package nerd-icons-corfu
-    :after nerd-icons corfu
-    :init
-    (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)
-    :config
-    (setq nerd-icons-corfu-mapping
-  		'((array :style "cod" :icon "symbol_array" :face font-lock-type-face)
-  		  (boolean :style "cod" :icon "symbol_boolean" :face font-lock-builtin-face)
-  		  (file :fn nerd-icons-icon-for-file :face font-lock-string-face)
-  		  (t :style "cod" :icon "code" :face font-lock-warning-face))))
+(use-package nerd-icons-corfu
+  :after nerd-icons corfu
+  :init
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)
+  :config
+  (setq nerd-icons-corfu-mapping
+        '((array :style "cod" :icon "symbol_array" :face font-lock-type-face)
+          (boolean :style "cod" :icon "symbol_boolean" :face font-lock-builtin-face)
+          (file :fn nerd-icons-icon-for-file :face font-lock-string-face)
+          (t :style "cod" :icon "code" :face font-lock-warning-face))))
 #+end_src
 *** [[https://github.com/hlissner/emacs-solaire-mode][solaire-mode]]
 Distinguish "work" buffers from "side" ones
@@ -856,8 +856,8 @@ An extensible emacs startup screen showing you what’s most important.
   (dashboard-center-content t)
   (dashboard-vertically-center-content t)
   (dashboard-items '((agenda)
-					 (recents   . 10)
-					 (bookmarks . 5)
+                     (recents   . 10)
+                     (bookmarks . 5)
                      (projects . 5)))
   (dashboard-item-shortcuts '((recents   . "r")
                               (bookmarks . "b")
@@ -868,8 +868,8 @@ An extensible emacs startup screen showing you what’s most important.
   (dashboard-icon-type 'nerd-icons)
   (dashboard-startupify-list
    '(dashboard-insert-newline
-	 dashboard-insert-newline
-	 dashboard-insert-banner-title
+     dashboard-insert-newline
+     dashboard-insert-banner-title
      dashboard-insert-navigator
      dashboard-insert-newline
      dashboard-insert-items
@@ -882,48 +882,48 @@ An extensible emacs startup screen showing you what’s most important.
 *** display-line-numbers
 Enable line numbers for some modes
 #+begin_src emacs-lisp
-  (use-package display-line-numbers
-    :ensure nil
-    :custom
-    ;; Shift display once to accomodate growing line column
-    (display-line-numbers-grow-only t)
-    :hook
-    (;; Enabled modes
-     ((prog-mode) . display-line-numbers-mode)
-     ((conf-mode) . display-line-numbers-mode)
-     ((text-mode) . display-line-numbers-mode)
-     ;; Disabled modes
-     (org-mode . (lambda () (display-line-numbers-mode -1))))
-     (eat-mode . (lambda () (display-line-numbers-mode -1))))
+(use-package display-line-numbers
+  :ensure nil
+  :custom
+  ;; Shift display once to accomodate growing line column
+  (display-line-numbers-grow-only t)
+  :hook
+  (;; Enabled modes
+   ((prog-mode) . display-line-numbers-mode)
+   ((conf-mode) . display-line-numbers-mode)
+   ((text-mode) . display-line-numbers-mode)
+   ;; Disabled modes
+   (org-mode . (lambda () (display-line-numbers-mode -1))))
+  (eat-mode . (lambda () (display-line-numbers-mode -1))))
 #+end_src
 *** highlight-line
 Highlighting of the current line (native mode)
 #+begin_src emacs-lisp
-  (use-package hl-line
-    :ensure nil
-    :hook
-    ((prog-mode org-mode) . global-hl-line-mode))
+(use-package hl-line
+  :ensure nil
+  :hook
+  ((prog-mode org-mode) . global-hl-line-mode))
 #+end_src
 *** [[https://github.com/jdtsmith/indent-bars.git][indent-bars]]
 Fast, configurable indentation guide-bars for Emacs.
 #+begin_src emacs-lisp
-  (use-package indent-bars
-    :custom
-    (indent-bars-treesit-support t)
-    (indent-bars-treesit-ignore-blank-lines-types '("module"))
-    (indent-bars-treesit-wrap '((python
-                                 argument_list parameters list list_comprehension dictionary
-                                 dictionary_comprehension parenthesized_expression subscript)))
-    (indent-bars-treesit-scope '((python
-                                  function_definition class_definition for_statement
-                                  if_statement with_statement while_statement)))
-    (indent-bars-color-by-depth nil)
-    (indent-bars-highlight-current-depth '(:face default :blend 0.4))
-    (indent-bars-pad-frac 0.1)
-    (indent-bars-pattern ".")
-    (indent-bars-width-frac 0.2)
-    :hook
-    ((python-base-mode yaml-ts-mode emacs-lisp-mode) . indent-bars-mode))
+(use-package indent-bars
+  :custom
+  (indent-bars-treesit-support t)
+  (indent-bars-treesit-ignore-blank-lines-types '("module"))
+  (indent-bars-treesit-wrap '((python
+                               argument_list parameters list list_comprehension dictionary
+                               dictionary_comprehension parenthesized_expression subscript)))
+  (indent-bars-treesit-scope '((python
+                                function_definition class_definition for_statement
+                                if_statement with_statement while_statement)))
+  (indent-bars-color-by-depth nil)
+  (indent-bars-highlight-current-depth '(:face default :blend 0.4))
+  (indent-bars-pad-frac 0.1)
+  (indent-bars-pattern ".")
+  (indent-bars-width-frac 0.2)
+  :hook
+  ((python-base-mode yaml-ts-mode emacs-lisp-mode) . indent-bars-mode))
 #+end_src
 ** Mode Line
 *** [[https://github.com/emacsmirror/mood-line][mood-line]]
@@ -938,15 +938,15 @@ A lightweight, drop-in replacement for the default Emacs mode line configuration
   (setq mood-line-format
         (mood-line-defformat
          :left
-		 (((mood-line-segment-buffer-status) . " ")
-		  ((mood-line-segment-major-mode) . " - ")
-		  ((mood-line-segment-buffer-name) . " "))
+         (((mood-line-segment-buffer-status) . " ")
+          ((mood-line-segment-major-mode) . " - ")
+          ((mood-line-segment-buffer-name) . " "))
          :right
-		 (((mood-line-segment-multiple-cursors) . " | ")
-		  ((mood-line-segment-cursor-position) . " ")
-		  ((mood-line-segment-vc) . " ")
-		  ((mood-line-segment-checker) . " "))
-		 :padding " ")))
+         (((mood-line-segment-multiple-cursors) . " | ")
+          ((mood-line-segment-cursor-position) . " ")
+          ((mood-line-segment-vc) . " ")
+          ((mood-line-segment-checker) . " "))
+         :padding " ")))
 #+end_src
 *** [[https://github.com/tarsius/minions][minions]]
 Nest all major and minor modes in mode line
@@ -959,10 +959,10 @@ Nest all major and minor modes in mode line
 *** [[https://github.com/hlissner/emacs-hide-mode-line.git][hide-mode-line]]
 An Emacs plugin that hides (or masks) the current buffer's mode-line.
 #+begin_src emacs-lisp
-  (use-package hide-mode-line)
-    ;; :hook
-    ;; (symbols-outline-mode . hide-mode-line-mode)
-    #+end_src
+(use-package hide-mode-line)
+;; :hook
+;; (symbols-outline-mode . hide-mode-line-mode)
+#+end_src
 ** Footer
 #+begin_src text
 ;; smahm006-ui.el end
@@ -984,257 +984,257 @@ An Emacs plugin that hides (or masks) the current buffer's mode-line.
 #+end_src
 ** UX Defaults
 #+begin_src emacs-lisp
-  (use-package emacs
-    :ensure nil
-    :custom
-    ;; Smoother scrolling
-    (scroll-margin 0)                                    ; Reduce margin triggering automatic scrolling
-    (scroll-conservatively 101)                          ; Avoid recentering when scrolling far
-    (scroll-preserve-screen-position t)                  ; Don't move point when scrolling
-    (fast-but-imprecise-scrolling t)                     ; More performant rapid scrolling over unfontified regions
-    (pixel-scroll-precision-interpolate-mice nil)        ; Disable interpolation (causes wired jumps)
-    (pixel-scroll-precision-mode (display-graphic-p))    ; Enable pixel-wise scrolling
-    (pixel-scroll-precision-use-momentum t))             ; Enable momentum for scrolling lagre buffers
+(use-package emacs
+  :ensure nil
+  :custom
+  ;; Smoother scrolling
+  (scroll-margin 0)                                    ; Reduce margin triggering automatic scrolling
+  (scroll-conservatively 101)                          ; Avoid recentering when scrolling far
+  (scroll-preserve-screen-position t)                  ; Don't move point when scrolling
+  (fast-but-imprecise-scrolling t)                     ; More performant rapid scrolling over unfontified regions
+  (pixel-scroll-precision-interpolate-mice nil)        ; Disable interpolation (causes wired jumps)
+  (pixel-scroll-precision-mode (display-graphic-p))    ; Enable pixel-wise scrolling
+  (pixel-scroll-precision-use-momentum t))             ; Enable momentum for scrolling lagre buffers
 #+end_src
 ** UX Completion
 *** [[https://github.com/justbur/emacs-which-key.git][which-key]]
 The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
 #+begin_src emacs-lisp
-  (use-package which-key
-    :ensure nil
-    :hook
-    (after-init . which-key-mode)
-    :custom
-    (which-key-idle-delay 0.5)
-    (which-key-compute-remaps t)
-    (which-key-prefix-prefix "󰜄 ")
-    (which-key-separator " ")
-    :config
-    (which-key-setup-minibuffer))
- #+end_src
+(use-package which-key
+  :ensure nil
+  :hook
+  (after-init . which-key-mode)
+  :custom
+  (which-key-idle-delay 0.5)
+  (which-key-compute-remaps t)
+  (which-key-prefix-prefix "󰜄 ")
+  (which-key-separator " ")
+  :config
+  (which-key-setup-minibuffer))
+#+end_src
 *** [[https://github.com/emacs-straight/vertico.git][vertico]]
 Vertico provides a performant and minimalistic vertical completion UI based on the default completion system.
 #+begin_src emacs-lisp
-  (use-package vertico
-    :init
-    (require 'vertico-directory)
-    :hook
-    ((minibuffer-setup . cursor-intangible-mode)
-     (after-init . vertico-mode))
-    :custom
-    (vertico-count 20)                         ; Show more candidates
-    (vertico-resize t)                         ; Grow and shrink the Vertico minibuffer
-    (vertico-cycle t)                          ; Enable cycling for `vertico-next' and `vertico-previous'.
-    (minibuffer-prompt-properties              ; Do not allow the cursor in the minibuffer prompt
-     '(read-only t cursor-intangible t face minibuffer-prompt))
-    (read-extended-command-predicate           ; Vertico commands are hidden in normal buffers.
-     #'command-completion-default-include-p)
-    (enable-recursive-minibuffers t)           ; Enable recursive minibuffers
-    (vertico-mouse-mode t))                    ; Enable Mouse support
+(use-package vertico
+  :init
+  (require 'vertico-directory)
+  :hook
+  ((minibuffer-setup . cursor-intangible-mode)
+   (after-init . vertico-mode))
+  :custom
+  (vertico-count 20)                         ; Show more candidates
+  (vertico-resize t)                         ; Grow and shrink the Vertico minibuffer
+  (vertico-cycle t)                          ; Enable cycling for `vertico-next' and `vertico-previous'.
+  (minibuffer-prompt-properties              ; Do not allow the cursor in the minibuffer prompt
+   '(read-only t cursor-intangible t face minibuffer-prompt))
+  (read-extended-command-predicate           ; Vertico commands are hidden in normal buffers.
+   #'command-completion-default-include-p)
+  (enable-recursive-minibuffers t)           ; Enable recursive minibuffers
+  (vertico-mouse-mode t))                    ; Enable Mouse support
 #+end_src
 *** [[https://github.com/minad/marginalia.git][marginalia]]
 Richer annotations in the minibuffer.
 #+begin_src emacs-lisp
-  (use-package marginalia
-    :after vertico
-    :hook
-    (vertico-mode . marginalia-mode)
-    :custom
-    (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil)))
+(use-package marginalia
+  :after vertico
+  :hook
+  (vertico-mode . marginalia-mode)
+  :custom
+  (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil)))
 #+end_src
 *** [[https://github.com/oantolin/orderless.git][orderless]]
 Emacs completion style that matches multiple regexps in any order
 #+begin_src emacs-lisp
-  (use-package orderless
-    :custom
-    (completion-styles '(orderless basic))
-    (completion-category-defaults nil)
-    (completion-category-overrides '((file (styles basic partial-completion)))))
+(use-package orderless
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles basic partial-completion)))))
 #+end_src
 *** [[https://github.com/minad/consult.git][consult]]
 Additional featureful completion commands.
 #+begin_src emacs-lisp
-  (use-package consult
-    :bind (([remap Info-searpch] . consult-info)
-           ([remap bookmark-jump] . consult-bookmark)
-           ([remap load-theme] . consult-theme)
-           ([remap man] . consult-man)
-           :map minibuffer-local-map
-           ("M-s" . consult-history)
-           ("M-r" . consult-history))
-    :custom
-    (register-preview-delay 0.5)
-    (register-preview-function #'consult-register-format)
-    (xref-show-xrefs-function #'consult-xref)
-    (xref-show-definitions-function #'consult-xref))
+(use-package consult
+  :bind (([remap Info-searpch] . consult-info)
+         ([remap bookmark-jump] . consult-bookmark)
+         ([remap load-theme] . consult-theme)
+         ([remap man] . consult-man)
+         :map minibuffer-local-map
+         ("M-s" . consult-history)
+         ("M-r" . consult-history))
+  :custom
+  (register-preview-delay 0.5)
+  (register-preview-function #'consult-register-format)
+  (xref-show-xrefs-function #'consult-xref)
+  (xref-show-definitions-function #'consult-xref))
 #+end_src
 *** [[https://github.com/oantolin/embark.git][embark]]
 Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session and in normal buffers.
 #+begin_src emacs-lisp
-  (use-package embark
-    :after which-key
-    :bind
-    (("C-." . embark-act)          ;; pick some com fortable binding
-     ("C-:" . embark-dwim)         ;; good alternative: M-.
-     ("C-h B" . embark-bindings))  ;; alternative for `describe-bindings'
-    :custom
-    ;; Optionally replace the key help with a completing-read interface
-    (prefix-help-command #'embark-prefix-help-command)
-    :preface
-    ;; The built-in embark-verbose-indicator displays actions in a buffer along with their keybindings and the first line of their docstrings.
-    ;; Users desiring a more compact display can use which-key instead with the following configuration:
-    ;; ref.: https://github.com/oantolin/embark/wiki/Additional-Configuration#use-which-key-like-a-key-menu-prompt
-    (defun embark-which-key-indicator ()
-      "An embark indicator that displays keymaps using which-key.
+(use-package embark
+  :after which-key
+  :bind
+  (("C-." . embark-act)          ;; pick some com fortable binding
+   ("C-:" . embark-dwim)         ;; good alternative: M-.
+   ("C-h B" . embark-bindings))  ;; alternative for `describe-bindings'
+  :custom
+  ;; Optionally replace the key help with a completing-read interface
+  (prefix-help-command #'embark-prefix-help-command)
+  :preface
+  ;; The built-in embark-verbose-indicator displays actions in a buffer along with their keybindings and the first line of their docstrings.
+  ;; Users desiring a more compact display can use which-key instead with the following configuration:
+  ;; ref.: https://github.com/oantolin/embark/wiki/Additional-Configuration#use-which-key-like-a-key-menu-prompt
+  (defun embark-which-key-indicator ()
+    "An embark indicator that displays keymaps using which-key.
        The which-key help message will show the type and value of the
        current target followed by an ellipsis if there are further
        targets."
-      (lambda (&optional keymap targets prefix)
-        (if (null keymap)
-            (which-key--hide-popup-ignore-command)
-          (which-key--show-keymap
-           (if (eq (plist-get (car targets) :type) 'embark-become)
-               "Become"
-             (format "Act on %s '%s'%s"
-                     (plist-get (car targets) :type)
-                     (embark--truncate-target (plist-get (car targets) :target))
-                     (if (cdr targets) "…" "")))
-           (if prefix
-               (pcase (lookup-key keymap prefix 'accept-default)
-                 ((and (pred keymapp) km) km)
-                 (_ (key-binding prefix 'accept-default)))
-             keymap)
-           nil nil t (lambda (binding)
-                       (not (string-suffix-p "-argument" (cdr binding))))))))
-    (defun embark-hide-which-key-indicator (fn &rest args)
-      "Hide the which-key indicator immediately when using
+    (lambda (&optional keymap targets prefix)
+      (if (null keymap)
+          (which-key--hide-popup-ignore-command)
+        (which-key--show-keymap
+         (if (eq (plist-get (car targets) :type) 'embark-become)
+             "Become"
+           (format "Act on %s '%s'%s"
+                   (plist-get (car targets) :type)
+                   (embark--truncate-target (plist-get (car targets) :target))
+                   (if (cdr targets) "…" "")))
+         (if prefix
+             (pcase (lookup-key keymap prefix 'accept-default)
+               ((and (pred keymapp) km) km)
+               (_ (key-binding prefix 'accept-default)))
+           keymap)
+         nil nil t (lambda (binding)
+                     (not (string-suffix-p "-argument" (cdr binding))))))))
+  (defun embark-hide-which-key-indicator (fn &rest args)
+    "Hide the which-key indicator immediately when using
       the completing-read prompter."
-      (which-key--hide-popup-ignore-command)
-      (let ((embark-indicators
-             (remq #'embark-which-key-indicator embark-indicators)))
-        (apply fn args)))
-    :config
-    ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
-    ;; strategy, if you want to see the documentation from multiple providers.
-    (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-    (setq embark-indicators
-          '(embark-which-key-indicator
-            embark-highlight-indicator
-            embark-isearch-highlight-indicator))
-    (advice-add #'embark-completing-read-prompter
-                :around #'embark-hide-which-key-indicator))
+    (which-key--hide-popup-ignore-command)
+    (let ((embark-indicators
+           (remq #'embark-which-key-indicator embark-indicators)))
+      (apply fn args)))
+  :config
+  ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
+  ;; strategy, if you want to see the documentation from multiple providers.
+  (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+  (setq embark-indicators
+        '(embark-which-key-indicator
+          embark-highlight-indicator
+          embark-isearch-highlight-indicator))
+  (advice-add #'embark-completing-read-prompter
+              :around #'embark-hide-which-key-indicator))
 #+end_src
 **** [[https://github.com/oantolin/embark/blob/master/embark-consult.el][embark-consult]]
 Consult users will also want the embark-consult package.
 #+begin_src emacs-lisp
-  (use-package embark-consult
-    :after embark
-    :hook
-    (embark-collect-mode . consult-preview-at-point-mode))
+(use-package embark-consult
+  :after embark
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 ** Window Management
 *** [[https://github.com/abo-abo/ace-window.git][ace-window]]
 Quickly switch windows in Emacs.
 #+begin_src emacs-lisp
-  (use-package ace-window
-    :autoload ace-display-buffer
-    :init
-    (winner-mode)
-    :bind
-    (("M-o" . ace-window)
-     ("M-O" . smham006/ace-window-prefix)
-     ("M-u" . smahm006/toggle-fullscreen-window)
-     ([remap split-window-right] . smahm006/hsplit-last-window)
-     ([remap split-window-below] . smahm006/vsplit-last-window)
-     (:map smahm006/window-map
-  	 ("b" . balance-windows)
-  	 ("c" . recenter-top-bottom)
-  	 ("i" . enlarge-window)
-  	 ("j" . shrink-window-horizontally)
-  	 ("k" . shrink-window)
-  	 ("u" . winner-undo)
-  	 ("r" . winner-redo)
-  	 ("l" . enlarge-window-horizontally)
-  	 ("s" . switch-window-then-swap-buffer)
-  	 ("-" . text-scale-decrease)
-  	 ("+" . text-scale-increase)
-  	 ("=" . (lambda () (interactive) (text-scale-increase 0)))))
-    :preface
-    (defun smahm006/hsplit-last-window ()
-      "Focus to the last created horizontal window."
-      (interactive)
-      (split-window-horizontally)
-      (other-window 1))
-    (defun smahm006/vsplit-last-window ()
-      "Focus to the last created vertical window."
-      (interactive)
-      (split-window-vertically)
-      (other-window 1))
-    (defun smahm006/toggle-fullscreen-window ()
-      "Toggle a buffer as fullscreen"
-      (interactive)
-      (if (= 1 (length (window-list)))
-  	(jump-to-register '_)
-        (progn
-  	(window-configuration-to-register '_)
-  	(delete-other-windows))))
-    (defun smham006/ace-window-prefix ()
-      "https://karthinks.com/software/emacs-window-management-almanac/#a-window-prefix-command-for-ace-window"
-      (interactive)
-      (display-buffer-override-next-command
-       (lambda (buffer _)
-         (let (window type)
-           (setq
-            window (aw-select (propertize " ACE" 'face 'mode-line-highlight))
-            type 'reuse)
-           (cons window type)))
-       nil "[ace-window]")
-      (message "Use `ace-window' to display next command buffer..."))
-    :custom
-    (aw-minibuffer-flag nil)
-    ;; Make Emacs ask where to place a new buffer
-    (display-buffer-base-action
-     '((display-buffer-reuse-window
-        display-buffer-in-previous-window
-        ace-display-buffer)))
-    :custom-face
-    (aw-leading-char-face ((t (:foreground "red" :weight bold :height 2.0))))
-    :config
-    ;; Ignore the inibuffer
-    (add-to-list 'aw-ignored-buffers 'minibuffer-mode))
+(use-package ace-window
+  :autoload ace-display-buffer
+  :init
+  (winner-mode)
+  :bind
+  (("M-o" . ace-window)
+   ("M-O" . smham006/ace-window-prefix)
+   ("M-u" . smahm006/toggle-fullscreen-window)
+   ([remap split-window-right] . smahm006/hsplit-last-window)
+   ([remap split-window-below] . smahm006/vsplit-last-window)
+   (:map smahm006/window-map
+         ("b" . balance-windows)
+         ("c" . recenter-top-bottom)
+         ("i" . enlarge-window)
+         ("j" . shrink-window-horizontally)
+         ("k" . shrink-window)
+         ("u" . winner-undo)
+         ("r" . winner-redo)
+         ("l" . enlarge-window-horizontally)
+         ("s" . switch-window-then-swap-buffer)
+         ("-" . text-scale-decrease)
+         ("+" . text-scale-increase)
+         ("=" . (lambda () (interactive) (text-scale-increase 0)))))
+  :preface
+  (defun smahm006/hsplit-last-window ()
+    "Focus to the last created horizontal window."
+    (interactive)
+    (split-window-horizontally)
+    (other-window 1))
+  (defun smahm006/vsplit-last-window ()
+    "Focus to the last created vertical window."
+    (interactive)
+    (split-window-vertically)
+    (other-window 1))
+  (defun smahm006/toggle-fullscreen-window ()
+    "Toggle a buffer as fullscreen"
+    (interactive)
+    (if (= 1 (length (window-list)))
+        (jump-to-register '_)
+      (progn
+        (window-configuration-to-register '_)
+        (delete-other-windows))))
+  (defun smham006/ace-window-prefix ()
+    "https://karthinks.com/software/emacs-window-management-almanac/#a-window-prefix-command-for-ace-window"
+    (interactive)
+    (display-buffer-override-next-command
+     (lambda (buffer _)
+       (let (window type)
+         (setq
+          window (aw-select (propertize " ACE" 'face 'mode-line-highlight))
+          type 'reuse)
+         (cons window type)))
+     nil "[ace-window]")
+    (message "Use `ace-window' to display next command buffer..."))
+  :custom
+  (aw-minibuffer-flag nil)
+  ;; Make Emacs ask where to place a new buffer
+  (display-buffer-base-action
+   '((display-buffer-reuse-window
+      display-buffer-in-previous-window
+      ace-display-buffer)))
+  :custom-face
+  (aw-leading-char-face ((t (:foreground "red" :weight bold :height 2.0))))
+  :config
+  ;; Ignore the inibuffer
+  (add-to-list 'aw-ignored-buffers 'minibuffer-mode))
 #+end_src
 *** [[https://github.com/hkjels/mini-ontop.el.git][mini-ontop]]
 Prevent windows from jumping on minibuffer activation.
 #+begin_src emacs-lisp
-  (use-package mini-ontop
-    :vc (:url "https://github.com/hkjels/mini-ontop.el" :branch "main")
-    :hook
-    (after-init . mini-ontop-mode)
-    :custom
-    (mini-ontop-lines 22)
-    :config
-    (with-eval-after-load 'embark
-      (add-to-list
-       'mini-ontop-ignore-predicates
-       (lambda nil (eq this-command #'embark-act)))))
+(use-package mini-ontop
+  :vc (:url "https://github.com/hkjels/mini-ontop.el" :branch "main")
+  :hook
+  (after-init . mini-ontop-mode)
+  :custom
+  (mini-ontop-lines 22)
+  :config
+  (with-eval-after-load 'embark
+    (add-to-list
+     'mini-ontop-ignore-predicates
+     (lambda nil (eq this-command #'embark-act)))))
 #+end_src
 ** Buffer Management
 *** ibuffer
 To manage them better, I use the ibuffer built-in package instead of buffer-menu, to have a nicer visual interface with a syntax color. I also include additional functions from Emacs Redux that I have found useful
 #+begin_src emacs-lisp
-  (use-package ibuffer
-    :ensure nil
-    :bind
-    (([remap switch-to-buffer] . consult-buffer)
-    ([remap switch-to-buffer-other-window] . consult-buffer-other-window)
-    ([remap switch-to-buffer-other-frame]  . consult-buffer-other-frame)
-    ([remap kill-buffer] . kill-current-buffer)
-    :map ctl-x-map
-    ("B" . smahm006/switch-to-previous-buffer)
-    :map smahm006/buffer-map
-    ("r" . smahm006/rename-file-and-buffer)
-    ("d" . smahm006/delete-file-and-buffer)
-    ("o" . smahm006/kill-other-buffers))
+(use-package ibuffer
+  :ensure nil
+  :bind
+  (([remap switch-to-buffer] . consult-buffer)
+   ([remap switch-to-buffer-other-window] . consult-buffer-other-window)
+   ([remap switch-to-buffer-other-frame]  . consult-buffer-other-frame)
+   ([remap kill-buffer] . kill-current-buffer)
+   :map ctl-x-map
+   ("B" . smahm006/switch-to-previous-buffer)
+   :map smahm006/buffer-map
+   ("r" . smahm006/rename-file-and-buffer)
+   ("d" . smahm006/delete-file-and-buffer)
+   ("o" . smahm006/kill-other-buffers))
   :init (smahm006/protected-buffers)
   :preface
   (defvar protected-buffers '("*scratch*" "*Messages*"))
@@ -1285,13 +1285,13 @@ To manage them better, I use the ibuffer built-in package instead of buffer-menu
 *** uniquify
 We can override eamcs default mechanism for making buffer name unique
 #+begin_src emacs-lisp
-  (use-package uniquify
-    :ensure nil
-    :config
-    (setq uniquify-buffer-name-style 'forward)
-    (setq uniquify-separator "/")
-    (setq uniquify-after-kill-buffer-p t)
-    (setq uniquify-ignore-buffers-re "^\\*"))
+(use-package uniquify
+  :ensure nil
+  :config
+  (setq uniquify-buffer-name-style 'forward)
+  (setq uniquify-separator "/")
+  (setq uniquify-after-kill-buffer-p t)
+  (setq uniquify-ignore-buffers-re "^\\*"))
 #+end_src
 ** File Management
 *** [[https://github.com/lewang/backup-walker][backup-walker]]
@@ -1300,231 +1300,231 @@ The following configuration forces a backup on every save of a file.
 It also auto backups a file after a few seconds
 We can also view the diff between backups and selectively restore one
 #+begin_src emacs-lisp
-  (use-package backup-walker
-    :demand t
-    :hook
-    (after-init . savehist-mode)
-    (before-save . smahm006/backup-buffer)
-    :init
-    (defvar backup-session-dir (format "%s/emacs/backups/session/" xdg-data))
-    (defvar backup-save-dir (format "%s/emacs/backups/save/" xdg-data))
-    (let* ((auto-save-dir (format "%s/emacs/auto-save/" xdg-cache)))
-      (smahm006/mkdir backup-session-dir)
-      (smahm006/mkdir backup-save-dir)
-      (smahm006/mkdir auto-save-dir)
-      (setq auto-save-file-name-transforms `((".*" ,auto-save-dir t))))
-    (setq backup-directory-alist `(("." . ,backup-save-dir)))
-    :preface
-    (defun smahm006/backup-buffer ()
-      "Make a session backup at the first save of each emacs session and a save backup on each subsequent save."
-      (when (not buffer-backed-up)
-        (let ((backup-directory-alist `(("." . ,backup-session-dir)))
-  	    (kept-new-versions 3))
-  	(backup-buffer)))
-      (let ((buffer-backed-up nil))
+(use-package backup-walker
+  :demand t
+  :hook
+  (after-init . savehist-mode)
+  (before-save . smahm006/backup-buffer)
+  :init
+  (defvar backup-session-dir (format "%s/emacs/backups/session/" xdg-data))
+  (defvar backup-save-dir (format "%s/emacs/backups/save/" xdg-data))
+  (let* ((auto-save-dir (format "%s/emacs/auto-save/" xdg-cache)))
+    (smahm006/mkdir backup-session-dir)
+    (smahm006/mkdir backup-save-dir)
+    (smahm006/mkdir auto-save-dir)
+    (setq auto-save-file-name-transforms `((".*" ,auto-save-dir t))))
+  (setq backup-directory-alist `(("." . ,backup-save-dir)))
+  :preface
+  (defun smahm006/backup-buffer ()
+    "Make a session backup at the first save of each emacs session and a save backup on each subsequent save."
+    (when (not buffer-backed-up)
+      (let ((backup-directory-alist `(("." . ,backup-session-dir)))
+            (kept-new-versions 3))
         (backup-buffer)))
-    :custom
-    ;; Session backups
-    (backup-by-copying t)                              ; Backs up by moving the actual file, no symlinks
-    (vc-make-backup-files t)                           ; Backup versioned files
-    (version-control t)                                ; Version numbers for backup files
-    (make-backup-files t)                              ; Backup of a file the first time it is saved.
-    (kept-new-versions 100)                            ; Number of newest versions to keep
-    (kept-old-versions 2)                              ; Number of oldest versions to keep
-    (delete-old-versions t)                            ; Delete excess backup files silently
-    (delete-by-moving-to-trash t)                      ; Delete backups to trash
+    (let ((buffer-backed-up nil))
+      (backup-buffer)))
+  :custom
+  ;; Session backups
+  (backup-by-copying t)                              ; Backs up by moving the actual file, no symlinks
+  (vc-make-backup-files t)                           ; Backup versioned files
+  (version-control t)                                ; Version numbers for backup files
+  (make-backup-files t)                              ; Backup of a file the first time it is saved.
+  (kept-new-versions 100)                            ; Number of newest versions to keep
+  (kept-old-versions 2)                              ; Number of oldest versions to keep
+  (delete-old-versions t)                            ; Delete excess backup files silently
+  (delete-by-moving-to-trash t)                      ; Delete backups to trash
 
-    ;; Auto save backups
-    (auto-save-default t)                              ; Auto-save every buffer that visits a file
-    (auto-save-timeout 30)                             ; Number of seconds between auto-save
-    (auto-save-interval 300)                           ; Number of keystrokes between auto-saves
-	(auto-save-list-file-prefix nil)                   ; Do not record saved files
+  ;; Auto save backups
+  (auto-save-default t)                              ; Auto-save every buffer that visits a file
+  (auto-save-timeout 30)                             ; Number of seconds between auto-save
+  (auto-save-interval 300)                           ; Number of keystrokes between auto-saves
+  (auto-save-list-file-prefix nil)                   ; Do not record saved files
 
-    ;; Command history backup
-    (history-delete-duplicates t)                      ; Delete duplicates in history
-    (history-length 500)                               ; Max history length
-    (savehist-file (format "%s/emacs/history" xdg-cache))
-    (savehist-additional-variables
-     '(kill-ring
-       command-history
-       set-variable-value-history
-       custom-variable-history
-       query-replace-history
-       read-expression-history
-       minibuffer-history
-       read-char-history
-       face-name-history
-       bookmark-history
-       file-name-history))
-    :config
-    (put 'minibuffer-history         'history-length 500)
-    (put 'file-name-history          'history-length 500)
-    (put 'set-variable-value-history 'history-length 250)
-    (put 'custom-variable-history    'history-length 250)
-    (put 'query-replace-history      'history-length 250)
-    (put 'read-expression-history    'history-length 250)
-    (put 'read-char-history          'history-length 250)
-    (put 'face-name-history          'history-length 250)
-    (put 'bookmark-history           'history-length 250))
+  ;; Command history backup
+  (history-delete-duplicates t)                      ; Delete duplicates in history
+  (history-length 500)                               ; Max history length
+  (savehist-file (format "%s/emacs/history" xdg-cache))
+  (savehist-additional-variables
+   '(kill-ring
+     command-history
+     set-variable-value-history
+     custom-variable-history
+     query-replace-history
+     read-expression-history
+     minibuffer-history
+     read-char-history
+     face-name-history
+     bookmark-history
+     file-name-history))
+  :config
+  (put 'minibuffer-history         'history-length 500)
+  (put 'file-name-history          'history-length 500)
+  (put 'set-variable-value-history 'history-length 250)
+  (put 'custom-variable-history    'history-length 250)
+  (put 'query-replace-history      'history-length 250)
+  (put 'read-expression-history    'history-length 250)
+  (put 'read-char-history          'history-length 250)
+  (put 'face-name-history          'history-length 250)
+  (put 'bookmark-history           'history-length 250))
 
 #+end_src
 *** autorevert
 Revert buffers when the underlying file has changed
 #+begin_src emacs-lisp
-  (use-package autorevert
-    :ensure nil
-    :bind
-    (:map smahm006/file-map
-          ("x" . revert-buffer))
-    :hook
-    (after-init . global-auto-revert-mode)
-    :custom
-    ;; Revert Dired and other buffers
-    (global-auto-revert-non-file-buffers t)
-    ;; Avoid polling for changes and rather get notified by the system
-    (auto-revert-use-notify t)
-    (auto-revert-avoid-polling t))
+(use-package autorevert
+  :ensure nil
+  :bind
+  (:map smahm006/file-map
+        ("x" . revert-buffer))
+  :hook
+  (after-init . global-auto-revert-mode)
+  :custom
+  ;; Revert Dired and other buffers
+  (global-auto-revert-non-file-buffers t)
+  ;; Avoid polling for changes and rather get notified by the system
+  (auto-revert-use-notify t)
+  (auto-revert-avoid-polling t))
 #+end_src
 *** recentf
 #+begin_src emacs-lisp
-  (use-package recentf
-    :ensure nil
-    :hook
-    (after-init . recentf-mode)
-    :bind
-    ([remap recentf-open] . consult-recent-file)
-    ([remap recentf-open-files] . consult-recent-file)
-    (:map smahm006/file-map
-          ("r" . recentf-open))
-    :custom
-    (recentf-keep '(file-remote-p file-readable-p))
-    (recentf-max-menu-items 10)
-    (recentf-max-saved-items 100)
-    (recentf-save-file (format "%s/emacs/recentf" xdg-cache))
-    :config
-    (add-to-list 'recentf-exclude
-                 (recentf-expand-file-name no-littering-var-directory))
-    (add-to-list 'recentf-exclude
-                 (recentf-expand-file-name no-littering-etc-directory)))
+(use-package recentf
+  :ensure nil
+  :hook
+  (after-init . recentf-mode)
+  :bind
+  ([remap recentf-open] . consult-recent-file)
+  ([remap recentf-open-files] . consult-recent-file)
+  (:map smahm006/file-map
+        ("r" . recentf-open))
+  :custom
+  (recentf-keep '(file-remote-p file-readable-p))
+  (recentf-max-menu-items 10)
+  (recentf-max-saved-items 100)
+  (recentf-save-file (format "%s/emacs/recentf" xdg-cache))
+  :config
+  (add-to-list 'recentf-exclude
+               (recentf-expand-file-name no-littering-var-directory))
+  (add-to-list 'recentf-exclude
+               (recentf-expand-file-name no-littering-etc-directory)))
 #+end_src
 *** [[https://github.com/shingo256/trashed][trashed]]
 Open, view, browse, restore or permanently delete trashed files
 #+begin_src emacs-lisp
-  (use-package trashed
-    :bind
-    (:map smahm006/file-map
-          ("t" . trashed))
-    :custom
-    (delete-by-moving-to-trash t)
-    (trashed-action-confirmer 'y-or-n-p)
-    (trashed-use-header-line t)
-    (trashed-sort-key '("Date deleted" . t))
-    (trashed-date-format "%Y-%m-%d %H:%M:%S"))
+(use-package trashed
+  :bind
+  (:map smahm006/file-map
+        ("t" . trashed))
+  :custom
+  (delete-by-moving-to-trash t)
+  (trashed-action-confirmer 'y-or-n-p)
+  (trashed-use-header-line t)
+  (trashed-sort-key '("Date deleted" . t))
+  (trashed-date-format "%Y-%m-%d %H:%M:%S"))
 #+end_src
 *** [[https://github.com/alexluigit/dirvish][dirvish]]
 Dirvish is an improved version built on Emacs's builtin file manager Dired.
 #+begin_src emacs-lisp
-  (use-package dirvish
-    :init
-    (dirvish-override-dired-mode)
-    :bind
-    ("<f1>" . dirvish-side)
-    (:map smahm006/file-map
-  	("d" . dirvish)
-  	("f" . dirvish-fd))
-    (:map dirvish-mode-map
-  	("F"   . dirvish-toggle-fullscreen)
-  	("N"   . dirvish-narrow)
-  	("M-f" . dirvish-history-go-forward)
-  	("M-b" . dirvish-history-go-backward)
-  	("M-p" . dired-up-directory)
-  	("M-n" . dired-find-file)
-  	("M-d" . empty-trash)
-  	("M-l" . dirvish-ls-switches-menu)
-  	("M-m" . dirvish-mark-menu)
-  	("M-s" . dirvish-setup-menu)
-  	("M-t" . dirvish-layout-toggle)
-  	("a"   . dirvish-quick-access)
-  	("s"   . dirvish-quicksort)
-  	("f"   . dirvish-file-info-menu)
-  	("y"   . dirvish-yank-menu)
-  	("v"   . dirvish-vc-menu)
-  	("^"   . dirvish-history-last)
-  	("h"   . dirvish-history-jump)
-  	("z"   . dirvish-show-history)
-  	("TAB" . dirvish-subtree-toggle))
-    :custom
-    (dirvish-reuse-session nil)
-    (dirvish-subtree-state-style 'nerd)
-    (dirvish-use-header-line 'global)
-    (dired-listing-switches
-     "-l --almost-all --human-readable --group-directories-first --no-group")
-    (dirvish-attributes
-     '(nerd-icons file-time file-size collapse subtree-state vc-state))
-    (dirvish-path-separators (list
-                              (format "  %s " (nerd-icons-codicon "nf-cod-home"))
-                              (format "  %s " (nerd-icons-codicon "nf-cod-root_folder"))
-                              (format " %s " (nerd-icons-faicon "nf-fa-angle_right"))))
-    (dirvish-header-line-format
-     '(:left (path) :right (free-space))
-     dirvish-mode-line-format
-     '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
-    (dirvish-mode-line-format
-     '(:left (sort symlink) :right (vc-info yank index)))
-    (dirvish-quick-access-entries
-     '(("h" "~/"                                          "Home")
-       ("d" "~/dump/"                                     "Downloads")
-       ("w" "~/workstation"                               "Workstation")
-       ("p" "~/media/pictures/"                           "Pictures")
-       ("m" "/mnt/"                                       "Drives")
-       ("t" "~/.local/share/Trash/files/"                 "TrashCan")
-       ("r" "/"                                           "Root")))
-    :config
-    (dirvish-side-follow-mode))
+(use-package dirvish
+  :init
+  (dirvish-override-dired-mode)
+  :bind
+  ("<f1>" . dirvish-side)
+  (:map smahm006/file-map
+        ("d" . dirvish)
+        ("f" . dirvish-fd))
+  (:map dirvish-mode-map
+        ("F"   . dirvish-toggle-fullscreen)
+        ("N"   . dirvish-narrow)
+        ("M-f" . dirvish-history-go-forward)
+        ("M-b" . dirvish-history-go-backward)
+        ("M-p" . dired-up-directory)
+        ("M-n" . dired-find-file)
+        ("M-d" . empty-trash)
+        ("M-l" . dirvish-ls-switches-menu)
+        ("M-m" . dirvish-mark-menu)
+        ("M-s" . dirvish-setup-menu)
+        ("M-t" . dirvish-layout-toggle)
+        ("a"   . dirvish-quick-access)
+        ("s"   . dirvish-quicksort)
+        ("f"   . dirvish-file-info-menu)
+        ("y"   . dirvish-yank-menu)
+        ("v"   . dirvish-vc-menu)
+        ("^"   . dirvish-history-last)
+        ("h"   . dirvish-history-jump)
+        ("z"   . dirvish-show-history)
+        ("TAB" . dirvish-subtree-toggle))
+  :custom
+  (dirvish-reuse-session nil)
+  (dirvish-subtree-state-style 'nerd)
+  (dirvish-use-header-line 'global)
+  (dired-listing-switches
+   "-l --almost-all --human-readable --group-directories-first --no-group")
+  (dirvish-attributes
+   '(nerd-icons file-time file-size collapse subtree-state vc-state))
+  (dirvish-path-separators (list
+                            (format "  %s " (nerd-icons-codicon "nf-cod-home"))
+                            (format "  %s " (nerd-icons-codicon "nf-cod-root_folder"))
+                            (format " %s " (nerd-icons-faicon "nf-fa-angle_right"))))
+  (dirvish-header-line-format
+   '(:left (path) :right (free-space))
+   dirvish-mode-line-format
+   '(:left (sort file-time " " file-size symlink) :right (omit yank index)))
+  (dirvish-mode-line-format
+   '(:left (sort symlink) :right (vc-info yank index)))
+  (dirvish-quick-access-entries
+   '(("h" "~/"                                          "Home")
+     ("d" "~/dump/"                                     "Downloads")
+     ("w" "~/workstation"                               "Workstation")
+     ("p" "~/media/pictures/"                           "Pictures")
+     ("m" "/mnt/"                                       "Drives")
+     ("t" "~/.local/share/Trash/files/"                 "TrashCan")
+     ("r" "/"                                           "Root")))
+  :config
+  (dirvish-side-follow-mode))
 #+end_src
 *** project
 Project.el is more than enough for my project management needs
 #+begin_src emacs-lisp
-  (use-package project
-    :ensure nil
-    :bind
-    (([remap project-list-buffers] . consult-project-buffer)
-     :map ctl-x-map
-     ("C-p" . project-find-file)
-     :map project-prefix-map
-     ("l" . project-list-buffers)
-     ("S" . smahm006/project-save-all-buffers)
-     ("s" . project-search))
-    :preface
-    (defun smahm006/project-save-all-buffers (&optional proj arg)
-      "Save all file-visiting buffers in project without asking."
-      (interactive)
-      (let* ((proj (or proj (project-current)))
-             (buffers (project-buffers (proj))))
-        (dolist (buf buffers)
-          ;; Act on base buffer of indirect buffers, if needed.
-          (with-current-buffer (or (buffer-base-buffer buf) buf)
-            (when (and (buffer-file-name buf)   ; Ignore all non-file-visiting buffers.
-                       (buffer-modified-p buf)) ; Ignore all unchanged buffers.
-              (let ((buffer-save-without-query t))  ; Save silently.
-                (save-buffer arg)))))))
-    :config
-    (setq project-buffers-viewer 'project-list-buffers-ibuffer)
-    (setq project-kill-buffers-display-buffer-list t)
-    (setq project-switch-commands
-  		'((project-find-file "Find file" "f")
-  		  (project-find-dir "Find dir" "d")
-  		  (project-dired "Dired" "D")
-  		  (consult-ripgrep "ripgrep" "r")
-  		  (magit-project-status "Magit" "m")))
-    (setq project-vc-extra-root-markers '(".project")))
+(use-package project
+  :ensure nil
+  :bind
+  (([remap project-list-buffers] . consult-project-buffer)
+   :map ctl-x-map
+   ("C-p" . project-find-file)
+   :map project-prefix-map
+   ("l" . project-list-buffers)
+   ("S" . smahm006/project-save-all-buffers)
+   ("s" . project-search))
+  :preface
+  (defun smahm006/project-save-all-buffers (&optional proj arg)
+    "Save all file-visiting buffers in project without asking."
+    (interactive)
+    (let* ((proj (or proj (project-current)))
+           (buffers (project-buffers (proj))))
+      (dolist (buf buffers)
+        ;; Act on base buffer of indirect buffers, if needed.
+        (with-current-buffer (or (buffer-base-buffer buf) buf)
+          (when (and (buffer-file-name buf)   ; Ignore all non-file-visiting buffers.
+                     (buffer-modified-p buf)) ; Ignore all unchanged buffers.
+            (let ((buffer-save-without-query t))  ; Save silently.
+              (save-buffer arg)))))))
+  :config
+  (setq project-buffers-viewer 'project-list-buffers-ibuffer)
+  (setq project-kill-buffers-display-buffer-list t)
+  (setq project-switch-commands
+        '((project-find-file "Find file" "f")
+          (project-find-dir "Find dir" "d")
+          (project-dired "Dired" "D")
+          (consult-ripgrep "ripgrep" "r")
+          (magit-project-status "Magit" "m")))
+  (setq project-vc-extra-root-markers '(".project")))
 #+end_src
 *** [[https://github.com/smahm006/emacs/blob/main/config.org#sudo][sudo-edit]]
 #+begin_src emacs-lisp
-  (use-package sudo-edit
-    :bind
-    (:map smahm006/file-map
-          ("e" . sudo-edit)))
+(use-package sudo-edit
+  :bind
+  (:map smahm006/file-map
+        ("e" . sudo-edit)))
 #+end_src
 ** Footer
 #+begin_src text
@@ -1547,235 +1547,235 @@ Project.el is more than enough for my project management needs
 #+end_src
 ** Editing Defaults
 #+begin_src emacs-lisp
-  (use-package emacs
-    :ensure nil
-    :custom
-    ;; Typography
-    (fill-column 80)                                     ; Default line width
-    (tab-width 4)                                        ; Set width for tabs
-    (kill-ring-max 128)                                  ; Maximum length of kill ring
-    (mark-ring-max 128)                                  ; Maximum length of mark ring
-    (kill-do-not-save-duplicates t)                      ; Remove duplicates from kill ring
-    (delete-selection-mode t)                            ; Typing will replace a selected region
-    (require-final-newline t)                            ; Always add new line to end of file
-    (sentence-end-double-space nil)                      ; Use a single space after dots
-    (truncate-string-ellipsis "…")                       ; Nicer ellipsis
+(use-package emacs
+  :ensure nil
+  :custom
+  ;; Typography
+  (fill-column 80)                                     ; Default line width
+  (tab-width 4)                                        ; Set width for tabs
+  (kill-ring-max 128)                                  ; Maximum length of kill ring
+  (mark-ring-max 128)                                  ; Maximum length of mark ring
+  (kill-do-not-save-duplicates t)                      ; Remove duplicates from kill ring
+  (delete-selection-mode t)                            ; Typing will replace a selected region
+  (require-final-newline t)                            ; Always add new line to end of file
+  (sentence-end-double-space nil)                      ; Use a single space after dots
+  (truncate-string-ellipsis "…")                       ; Nicer ellipsis
 
-    ;; Default to utf-8 encoding
-    (set-default-coding-systems 'utf-8)
-    (prefer-coding-system 'utf-8)
-    (set-language-environment 'utf-8)
-    (set-default-coding-systems 'utf-8)
-    (set-terminal-coding-system 'utf-8)
-    (set-selection-coding-system 'utf-8))
+  ;; Default to utf-8 encoding
+  (set-default-coding-systems 'utf-8)
+  (prefer-coding-system 'utf-8)
+  (set-language-environment 'utf-8)
+  (set-default-coding-systems 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-selection-coding-system 'utf-8))
 #+end_src
 ** Navigation
 *** navigation
 Better navigation bindings
 #+begin_src emacs-lisp
-  (use-package simple
-    :ensure nil
-    :bind (("M-p" . smahm006/move-line-up)
-  		 ("M-n" . smahm006/move-line-down)
-  		 ("C-a" . smahm006/smarter-move-beginning-of-line)
-  		 ("C-<return>" . smahm006/smart-open-line-below)
-  		 ("M-<return>" . smahm006/smart-open-line-above)
-  		 ("M-<backspace>" . smahm006/smart-kill-line-backwards)
-  		 ([remap kill-whole-line] . smahm006/smart-kill-whole-line)
-           ([remap goto-line] . consult-goto-line)
-           :map smahm006/goto-map
-           ("e" . consult-compile-error)
-           ("f" . consult-flymake)
-           ("g" . consult-goto-line)
-           ("o" . consult-outline)
-           ("m" . consult-mark)
-           ("k" . consult-global-mark)
-           ("i" . consult-imenu)
-           ("I" . consult-imenu-multi))
-    :preface
-    (defun smahm006/smarter-move-beginning-of-line (arg)
-      "Move point back to indentation of beginning of line."
-      (interactive "^p")
-      (setq arg (or arg 1))
-      (when (/= arg 1)
-        (let ((line-move-visual nil))
-          (forward-line (1- arg))))
-      (let ((orig-point (point)))
-        (back-to-indentation)
-        (when (= orig-point (point))
-          (move-beginning-of-line 1))))
-    (defun smahm006/smart-kill-whole-line (&optional arg)
-      "A simple wrapper around `kill-whole-line' that respects indentation."
-      (interactive "P")
-      (kill-whole-line arg)
-      (back-to-indentation))
-    (defun smahm006/move-line-up ()
-      "Move up the current line."
-      (interactive)
-      (transpose-lines 1)
-      (forward-line -2)
-      (indent-according-to-mode))
-    (defun smahm006/move-line-down ()
-      "Move down the current line."
-      (interactive)
-      (forward-line 1)
-      (transpose-lines 1)
-      (forward-line -1)
-      (indent-according-to-mode))
-    (defun smahm006/smart-open-line-below ()
-      "Insert an empty line after the current line.
+(use-package simple
+  :ensure nil
+  :bind (("M-p" . smahm006/move-line-up)
+         ("M-n" . smahm006/move-line-down)
+         ("C-a" . smahm006/smarter-move-beginning-of-line)
+         ("C-<return>" . smahm006/smart-open-line-below)
+         ("M-<return>" . smahm006/smart-open-line-above)
+         ("M-<backspace>" . smahm006/smart-kill-line-backwards)
+         ([remap kill-whole-line] . smahm006/smart-kill-whole-line)
+         ([remap goto-line] . consult-goto-line)
+         :map smahm006/goto-map
+         ("e" . consult-compile-error)
+         ("f" . consult-flymake)
+         ("g" . consult-goto-line)
+         ("o" . consult-outline)
+         ("m" . consult-mark)
+         ("k" . consult-global-mark)
+         ("i" . consult-imenu)
+         ("I" . consult-imenu-multi))
+  :preface
+  (defun smahm006/smarter-move-beginning-of-line (arg)
+    "Move point back to indentation of beginning of line."
+    (interactive "^p")
+    (setq arg (or arg 1))
+    (when (/= arg 1)
+      (let ((line-move-visual nil))
+        (forward-line (1- arg))))
+    (let ((orig-point (point)))
+      (back-to-indentation)
+      (when (= orig-point (point))
+        (move-beginning-of-line 1))))
+  (defun smahm006/smart-kill-whole-line (&optional arg)
+    "A simple wrapper around `kill-whole-line' that respects indentation."
+    (interactive "P")
+    (kill-whole-line arg)
+    (back-to-indentation))
+  (defun smahm006/move-line-up ()
+    "Move up the current line."
+    (interactive)
+    (transpose-lines 1)
+    (forward-line -2)
+    (indent-according-to-mode))
+  (defun smahm006/move-line-down ()
+    "Move down the current line."
+    (interactive)
+    (forward-line 1)
+    (transpose-lines 1)
+    (forward-line -1)
+    (indent-according-to-mode))
+  (defun smahm006/smart-open-line-below ()
+    "Insert an empty line after the current line.
           Position the cursor at its beginning, according to the current mode."
-      (interactive)
-      (move-end-of-line nil)
-      (newline-and-indent))
-    (defun smahm006/smart-open-line-above ()
-      "Insert an empty line above the current line.
+    (interactive)
+    (move-end-of-line nil)
+    (newline-and-indent))
+  (defun smahm006/smart-open-line-above ()
+    "Insert an empty line above the current line.
         Position the cursor at it's beginning, according to the current mode."
-      (interactive)
-      (move-beginning-of-line nil)
-      (newline-and-indent)
-      (forward-line -1)
-      (indent-according-to-mode))
-    (defun smahm006/smart-kill-line-backwards ()
-      "Insert an empty line above the current line.
+    (interactive)
+    (move-beginning-of-line nil)
+    (newline-and-indent)
+    (forward-line -1)
+    (indent-according-to-mode))
+  (defun smahm006/smart-kill-line-backwards ()
+    "Insert an empty line above the current line.
         Position the cursor at it's beginning, according to the current mode."
-      (interactive)
-      (kill-line 0)
-      (indent-according-to-mode)))
+    (interactive)
+    (kill-line 0)
+    (indent-according-to-mode)))
 #+end_src
 *** isearch
 Better search bindings
 #+begin_src emacs-lisp
-  (use-package isearch
-    :ensure nil
-    :bind (:map smahm006/search-map
-  	 ("f" . consult-find)
-           ("F" . consult-locate)
-           ("g" . consult-grep)
-           ("G" . consult-git-grep)
-           ("r" . consult-ripgrep)
-           ("l" . consult-line)
-           ("L" . consult-line-multi)
-           ("k" . consult-keep-lines)
-           ("u" . consult-focus-lines)
-           ("e" . consult-isearch-history)
-           :map isearch-mode-map
-           ("M-e" . consult-isearch-history)
-           ("M-s e" . consult-isearch-history)
-           ("M-s l" . consult-line)
-           ("M-s L" . consult-line-multi)))
+(use-package isearch
+  :ensure nil
+  :bind (:map smahm006/search-map
+			  ("f" . consult-find)
+			  ("F" . consult-locate)
+			  ("g" . consult-grep)
+			  ("G" . consult-git-grep)
+			  ("r" . consult-ripgrep)
+			  ("l" . consult-line)
+			  ("L" . consult-line-multi)
+			  ("k" . consult-keep-lines)
+			  ("u" . consult-focus-lines)
+			  ("e" . consult-isearch-history)
+			  :map isearch-mode-map
+			  ("M-e" . consult-isearch-history)
+			  ("M-s e" . consult-isearch-history)
+			  ("M-s l" . consult-line)
+			  ("M-s L" . consult-line-multi)))
 #+end_src
 *** [[https://github.com/abo-abo/avy][avy]]
 Jump to visible text using a char-based decision tree
 #+begin_src emacs-lisp
-  (use-package avy
-    :bind (:map smahm006/search-map
-  	      ("a" . avy-goto-char-timer))
-    :preface
-    (defun avy-action-embark (pt)
-      (unwind-protect
-          (save-excursion
-            (goto-char pt)
-            (embark-act))
-        (select-window
-         (cdr (ring-ref avy-ring 0))))
-      t)
-    :config
-    (setf (alist-get ?. avy-dispatch-alist) 'avy-action-embark))
+(use-package avy
+  :bind (:map smahm006/search-map
+              ("a" . avy-goto-char-timer))
+  :preface
+  (defun avy-action-embark (pt)
+    (unwind-protect
+        (save-excursion
+          (goto-char pt)
+          (embark-act))
+      (select-window
+       (cdr (ring-ref avy-ring 0))))
+    t)
+  :config
+  (setf (alist-get ?. avy-dispatch-alist) 'avy-action-embark))
 #+end_src
 *** speedbar
 #+begin_src emacs-lisp
-  (use-package speedbar
-    :ensure nil
-    :hook
-    ((speedbar-mode . (lambda()
-                        ;; Disable word wrapping in speedbar if you always enable it globally.
-                        (visual-line-mode 0)
-                        ;; Change speedbar's text size.  May need to alter the icon size if you change size.
-                        (text-scale-adjust -1))))
-    :bind (:map speedbar-file-key-map
-  			  ("<tab>" . speedbar-expand-line )
-  			  ("<backtab>" . speedbar-contract-line ))
-    :custom
-    (speedbar-frame-parameters
-     '((name . "speedbar")
-       (title . "speedbar")
-       (minibuffer . nil)
-       (border-width . 2)
-       (menu-bar-lines . 0)
-       (tool-bar-lines . 0)
-       (unsplittable . t)
-       (left-fringe . 10)))
-    ;; Increase the indentation for better useability.
-    (speedbar-indentation-width 3)
-    ;; make speedbar update automaticaly, and dont use ugly icons(images)
-    (speedbar-update-flag t)
-    (speedbar-use-images nil)
-    :config
-    ;; list of supported file-extensions
-    ;; feel free to add to this list
-    (speedbar-add-supported-extension
-     (list
-      ;; lua and fennel(lisp that transpiles to lua)
-      ".lua"
-      ".fnl"
-      ".fennel"
-      ;; shellscript
-      ".sh"
-      ".bash";;is this ever used?
-      ;; web languages
-      ;; Hyper-Text-markup-language(html) and php
-      ".php"
-      ".html"
-      ".htm"
-      ;; ecma(java/type)-script
-      ".js"
-      ".json"
-      ".ts"
-      ;; stylasheets
-      ".css"
-      ".less"
-      ".scss"
-      ".sass"
-      ;; c/c++ and makefiles
-      ".c"
-      ".cpp"
-      ".h"
-      "makefile"
-      "MAKEFILE"
-      "Makefile"
-      ;; runs on JVM, java,kotlin etc
-      ".java"
-      ".kt";;this is for kotlin
-      ".mvn"
-      ".gradle" ".properties";; this is for gradle-projects
-      ".clj";;lisp on the JVM
-      ;; lisps
-      ".cl"
-      ".el"
-      ".scm"
-      ".lisp"
-      ;; configuration
-      ".yaml"
-      ".toml"
-      ;; json is already in this list
-      ;; notes,markup and orgmode
-      ".md"
-      ".markdown"
-      ".org"
-      ".txt"
-      "README"
-      ;; Jupyter Notebooks
-      ".ipynb")))
+(use-package speedbar
+  :ensure nil
+  :hook
+  ((speedbar-mode . (lambda()
+                      ;; Disable word wrapping in speedbar if you always enable it globally.
+                      (visual-line-mode 0)
+                      ;; Change speedbar's text size.  May need to alter the icon size if you change size.
+                      (text-scale-adjust -1))))
+  :bind (:map speedbar-file-key-map
+              ("<tab>" . speedbar-expand-line )
+              ("<backtab>" . speedbar-contract-line ))
+  :custom
+  (speedbar-frame-parameters
+   '((name . "speedbar")
+     (title . "speedbar")
+     (minibuffer . nil)
+     (border-width . 2)
+     (menu-bar-lines . 0)
+     (tool-bar-lines . 0)
+     (unsplittable . t)
+     (left-fringe . 10)))
+  ;; Increase the indentation for better useability.
+  (speedbar-indentation-width 3)
+  ;; make speedbar update automaticaly, and dont use ugly icons(images)
+  (speedbar-update-flag t)
+  (speedbar-use-images nil)
+  :config
+  ;; list of supported file-extensions
+  ;; feel free to add to this list
+  (speedbar-add-supported-extension
+   (list
+    ;; lua and fennel(lisp that transpiles to lua)
+    ".lua"
+    ".fnl"
+    ".fennel"
+    ;; shellscript
+    ".sh"
+    ".bash";;is this ever used?
+    ;; web languages
+    ;; Hyper-Text-markup-language(html) and php
+    ".php"
+    ".html"
+    ".htm"
+    ;; ecma(java/type)-script
+    ".js"
+    ".json"
+    ".ts"
+    ;; stylasheets
+    ".css"
+    ".less"
+    ".scss"
+    ".sass"
+    ;; c/c++ and makefiles
+    ".c"
+    ".cpp"
+    ".h"
+    "makefile"
+    "MAKEFILE"
+    "Makefile"
+    ;; runs on JVM, java,kotlin etc
+    ".java"
+    ".kt";;this is for kotlin
+    ".mvn"
+    ".gradle" ".properties";; this is for gradle-projects
+    ".clj";;lisp on the JVM
+    ;; lisps
+    ".cl"
+    ".el"
+    ".scm"
+    ".lisp"
+    ;; configuration
+    ".yaml"
+    ".toml"
+    ;; json is already in this list
+    ;; notes,markup and orgmode
+    ".md"
+    ".markdown"
+    ".org"
+    ".txt"
+    "README"
+    ;; Jupyter Notebooks
+    ".ipynb")))
 #+end_src
 *** [[https://github.com/emacsorphanage/sr-speedbar.git][sr-speedbar]]
 Same frame speedbar.
 #+begin_src emacs-lisp
-  (use-package sr-speedbar
-    :custom
-    (sr-speedbar-right-side nil)
-    :bind
-    ("<f2>" . sr-speedbar-toggle))
+(use-package sr-speedbar
+  :custom
+  (sr-speedbar-right-side nil)
+  :bind
+  ("<f2>" . sr-speedbar-toggle))
 #+end_src
 ** Text Manipulation
 *** kill/yank
@@ -1823,34 +1823,34 @@ Better kill and yank bindings
 *** [[https://github.com/szermatt/visual-replace][visual-replace]]
 Nicer interface to Query-Replace
 #+begin_src emacs-lisp
-  (use-package visual-replace
-    :bind (([remap query-replace] . visual-replace)
-           :map isearch-mode-map
-           ("M-%" . visual-replace-from-isearch))
-    :config
-    (define-key visual-replace-mode-map [remap yank] nil)
-    (define-key visual-replace-mode-map [remap yank-pop] nil)
-    (define-key visual-replace-mode-map (kbd "M-%")
-                visual-replace-secondary-mode-map))
+(use-package visual-replace
+  :bind (([remap query-replace] . visual-replace)
+         :map isearch-mode-map
+         ("M-%" . visual-replace-from-isearch))
+  :config
+  (define-key visual-replace-mode-map [remap yank] nil)
+  (define-key visual-replace-mode-map [remap yank-pop] nil)
+  (define-key visual-replace-mode-map (kbd "M-%")
+              visual-replace-secondary-mode-map))
 #+end_src
 *** [[https://github.com/magnars/multiple-cursors.el][multiple-cursors]]
 Edit multiple lines at once
 #+begin_src emacs-lisp
-  (use-package multiple-cursors
-    :bind (:map smahm006/mc-map
-  			  ("<escape>" . mc/keyboard-quit)
-  			  ("r" . mc/mark-all-in-region-regexp)
-  			  ("b" . mc/edit-beginnings-of-lines)
-  			  ("e" . mc/edit-ends-of-lines)
-  			  :repeat-map smahm006/mc-map
-  			  ("n" . mc/mark-next-like-this)
-  			  ("p" . mc/mark-previous-like-this)
-  			  :exit
-  			  ("a" . mc/mark-all-like-this)
-  			  ("m" . mc/edit-lines)))
+(use-package multiple-cursors
+  :bind (:map smahm006/mc-map
+              ("<escape>" . mc/keyboard-quit)
+              ("r" . mc/mark-all-in-region-regexp)
+              ("b" . mc/edit-beginnings-of-lines)
+              ("e" . mc/edit-ends-of-lines)
+              :repeat-map smahm006/mc-map
+              ("n" . mc/mark-next-like-this)
+              ("p" . mc/mark-previous-like-this)
+              :exit
+              ("a" . mc/mark-all-like-this)
+              ("m" . mc/edit-lines)))
 #+end_src
 *** [[https://github.com/paldepind/smart-comment][smart-comment]]
- Smarter commenting + decommenting and marking comments for deletion
+Smarter commenting + decommenting and marking comments for deletion
 #+begin_src emacs-lisp
 (use-package smart-comment
   :bind ("M-;" . smart-comment))
@@ -1859,22 +1859,22 @@ Edit multiple lines at once
 *** elec-pair
 Automatically add closing parentheses, quotes, etc.
 #+begin_src emacs-lisp
-  (use-package elec-pair
-    :ensure nil
-    :hook
-    ((prog-mode conf-mode) . electric-pair-mode))
+(use-package elec-pair
+  :ensure nil
+  :hook
+  ((prog-mode conf-mode) . electric-pair-mode))
 #+end_src
 *** paren
 Paren mode for highlighting matching parenthesis
 #+begin_src emacs-lisp
-  (use-package paren
-    :ensure nil
-    :custom
-    (show-paren-style 'parenthesis)
-    (show-paren-when-point-in-periphery t)
-    (show-paren-when-point-inside-paren nil)
-    :hook
-    (prog-mode . show-paren-mode))
+(use-package paren
+  :ensure nil
+  :custom
+  (show-paren-style 'parenthesis)
+  (show-paren-when-point-in-periphery t)
+  (show-paren-when-point-inside-paren nil)
+  :hook
+  (prog-mode . show-paren-mode))
 #+end_src
 ** Inline Completion
 *** [[https://github.com/minad/cape.git][cape]]
@@ -1904,7 +1904,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
    (eat-mode . (lambda () (setq-local corfu-auto nil) (corfu-mode))))
   :bind
   (:map corfu-map
-  		("<escape>"  . corfu-quit))
+        ("<escape>"  . corfu-quit))
   :preface
   ;; Completing in the minibuffer
   (defun smahm006/corfu-enable-always-in-minibuffer ()
@@ -1947,97 +1947,97 @@ Better dynamic expansion
   :config
   ;; change the order it tries things ;; http://xahlee.info/emacs/emacs/emacs_hippie_expand_setup.html
   (setq hippie-expand-try-functions-list
-		'( try-expand-dabbrev
-		   try-expand-dabbrev-all-buffers
-		   try-expand-dabbrev-from-kill
-		   try-complete-lisp-symbol-partially
-		   try-complete-lisp-symbol
-		   try-expand-list
-		   try-expand-line
-		   try-complete-file-name-partially
-		   try-complete-file-name
-		   try-expand-all-abbrevs)))
+        '( try-expand-dabbrev
+           try-expand-dabbrev-all-buffers
+           try-expand-dabbrev-from-kill
+           try-complete-lisp-symbol-partially
+           try-complete-lisp-symbol
+           try-expand-list
+           try-expand-line
+           try-complete-file-name-partially
+           try-complete-file-name
+           try-expand-all-abbrevs)))
 #+end_src
 Dynamic abbrevs allow the meanings of abbreviations to be determined automatically from the contents of the buffer
 *** completion-preview
 Preview completion candidate
 #+begin_src emacs-lisp
-  (use-package completion-preview
-    :ensure nil
-    :hook ((prog-mode conf-mode) . completion-preview-mode)
-    :bind
-    (:map completion-preview-active-mode-map
-  	("M-n" . completion-preview-next-candidate)
-  	("M-p" . completion-preview-prev-candidate)))
+(use-package completion-preview
+  :ensure nil
+  :hook ((prog-mode conf-mode) . completion-preview-mode)
+  :bind
+  (:map completion-preview-active-mode-map
+        ("M-n" . completion-preview-next-candidate)
+        ("M-p" . completion-preview-prev-candidate)))
 #+end_src
 ** Undo/Redo
 *** [[https://github.com/emacs-straight/vundo.git][vundo]]
 Vundo (visual undo) displays the undo history as a tree and lets you move in the tree to go back to previous buffer states.
 #+begin_src emacs-lisp
-  (use-package vundo
-    :bind
-    (:map ctl-x-map
-          ("u". vundo))
-    :config
-    (when (display-graphic-p)
-      (setq vundo-glyph-alist vundo-unicode-symbols)))
+(use-package vundo
+  :bind
+  (:map ctl-x-map
+        ("u". vundo))
+  :config
+  (when (display-graphic-p)
+    (setq vundo-glyph-alist vundo-unicode-symbols)))
 #+end_src
 *** [[https://github.com/emacsmirror/undo-fu][undo-fu]]
 Light weight wrapper for Emacs built-in undo system, adding convenient undo/redo without losing access to the full undo history,
 #+begin_src emacs-lisp
-  (use-package undo-fu
-    :bind (([remap undo] . undo-fu-only-undo)
-           ([remap undo-redo] . undo-fu-only-redo))
-	:custom
-	(undo-fu-allow-undo-in-region t)
-    (undo-limit 67108864) ; 64MB.
-    (undo-strong-limit 100663296) ; 96MB.
-    (undo-outer-limit 1006632960)) ; 960MB
+(use-package undo-fu
+  :bind (([remap undo] . undo-fu-only-undo)
+         ([remap undo-redo] . undo-fu-only-redo))
+  :custom
+  (undo-fu-allow-undo-in-region t)
+  (undo-limit 67108864) ; 64MB.
+  (undo-strong-limit 100663296) ; 96MB.
+  (undo-outer-limit 1006632960)) ; 960MB
 #+end_src
 ** Spell Checking
 *** ispell
 Default spell checker
 #+begin_src emacs-lisp
-  (use-package ispell
-    :ensure nil
-    :after flyspell
-    :if (executable-find "hunspell")
-    :custom
-    (ispell-program-name "hunspell")
-    (ispell-dictionary "en_US,de_DE")
-    :config
-    (ispell-set-spellchecker-params)
-    (ispell-hunspell-add-multi-dic "en_US,de_DE"))
+(use-package ispell
+  :ensure nil
+  :after flyspell
+  :if (executable-find "hunspell")
+  :custom
+  (ispell-program-name "hunspell")
+  (ispell-dictionary "en_US,de_DE")
+  :config
+  (ispell-set-spellchecker-params)
+  (ispell-hunspell-add-multi-dic "en_US,de_DE"))
 #+end_src
 *** flyspell
 #+begin_src emacs-lisp
-  (use-package flyspell
-    :if (not (executable-find "enchant-2"))
-    :ensure nil
-    :hook
-    (((text-mode org-mode LaTeX-mode) . flyspell-mode)
-     ((prog-mode conf-mode) . flyspell-prog-mode)
-     (ispell-change-dictionary . restart-flyspell-mode))
-    :preface
-    (defun my/restart-flyspell-mode ()
-      (when flyspell-mode
-        (flyspell-mode-off)
-        (flyspell-mode-on)
-        (flyspell-buffer)))
-    :custom
-    (flyspell-issue-welcome-flag nil)
-    (flyspell-issue-message-flag nil))
+(use-package flyspell
+  :if (not (executable-find "enchant-2"))
+  :ensure nil
+  :hook
+  (((text-mode org-mode LaTeX-mode) . flyspell-mode)
+   ((prog-mode conf-mode) . flyspell-prog-mode)
+   (ispell-change-dictionary . restart-flyspell-mode))
+  :preface
+  (defun my/restart-flyspell-mode ()
+    (when flyspell-mode
+      (flyspell-mode-off)
+      (flyspell-mode-on)
+      (flyspell-buffer)))
+  :custom
+  (flyspell-issue-welcome-flag nil)
+  (flyspell-issue-message-flag nil))
 #+end_src
 *** [[https://github.com/minad/jinx.git][jinx]]
 Enchanted Spell Checker.
 #+begin_src emacs-lisp
-  (use-package jinx
-    :if (executable-find "enchant-2")
-    :hook (emacs-startup . global-jinx-mode)
-    :bind (("M-$" . jinx-correct)
-           ("C-M-$" . jinx-languages))
-    :custom
-    (jinx-languages "en_US"))
+(use-package jinx
+  :if (executable-find "enchant-2")
+  :hook (emacs-startup . global-jinx-mode)
+  :bind (("M-$" . jinx-correct)
+         ("C-M-$" . jinx-languages))
+  :custom
+  (jinx-languages "en_US"))
 #+end_src
 ** Footer
 #+begin_src text
@@ -2062,70 +2062,105 @@ Enchanted Spell Checker.
 *** tramp
 remote file editing through ssh/scp.
 #+begin_src emacs-lisp
-  (use-package tramp
-    :ensure nil
-    :custom
-    (tramp-verbose 0)
-    (tramp-chunksize 2000)
-    (tramp-histfile-override nil)
-    (tramp-default-method "ssh")
-    :config
-    ;; Allows more dirvish features over tamp
-    ;; Remove if casuing emacs to hang
-    (add-to-list 'tramp-connection-properties
-                 (list (regexp-quote "/ssh:")
-                       "direct-async-process" t)))
+(use-package tramp
+  :ensure nil
+  :custom
+  (tramp-verbose 0)
+  (tramp-chunksize 2000)
+  (tramp-histfile-override nil)
+  (tramp-default-method "ssh")
+  :config
+  ;; Allows more dirvish features over tamp
+  ;; Remove if casuing emacs to hang
+  (add-to-list 'tramp-connection-properties
+               (list (regexp-quote "/ssh:")
+                     "direct-async-process" t)))
 #+end_src
 *** [[https://codeberg.org/akib/emacs-eat][eat]]
 Eat is the best terminal emulator which three modes to switch from
 #+begin_src emacs-lisp
-  (use-package eat
-    :bind
-    ("C-x t" . eat)
-    :config
-    (define-key eat-semi-char-mode-map (kbd "M-o") nil) ;; M-o is used to switch windows
-    (define-key eat-semi-char-mode-map (kbd "M-u") nil) ;; M-u is used to fullscreen buffer
-    )
+(use-package eat
+  :bind
+  ("C-x t" . eat)
+  :config
+  (define-key eat-semi-char-mode-map (kbd "M-o") nil) ;; M-o is used to switch windows
+  (define-key eat-semi-char-mode-map (kbd "M-u") nil) ;; M-u is used to fullscreen buffer
+  )
 #+end_src
 ** Version Control
 *** [[https://github.com/magit/magit.git][magit]]
 The magical git client.
 #+begin_src emacs-lisp
-  (use-package magit
-    :bind
-    (:map ctl-x-map
-      	("g" . magit-status))
-    (:map smahm006/vc-map
-  		("f"  . magit-fetch)
-          ("F"  . magit-fetch-all)
-  		("p"  . magit-pull-branch)
-          ("P"  . magit-push-current)
-          ("b"  . magit-branch-or-checkout)
-          ("c"  . magit-commit)
-  		("a"  . smahm006/magit-amend-file-and-push)
-  		("A"  . smahm006/magit-amend-all-and-push)
-          ("d"  . magit-diff-unstaged)
-          ("la" . magit-log-all)
-          ("lc" . magit-log-current)
-          ("lf" . magit-log-buffer-file)
-          ("r"  . magit-rebase))
-    :preface
-    (defun smahm006/magit-amend-file-and-push ()
-  	"Stage only the current file, amend the last commit without editing, and force push with lease."
-  	(interactive)
-  	(let ((file (buffer-file-name)))
-  	  (if file
-  		  (progn
-  			(magit-run-git "add" file)
-  			(magit-run-git "commit" "--amend" "--no-edit")
-  			(magit-run-git "push" "--force-with-lease"))
-  		(message "No file associated with this buffer!"))))
-    (defun smahm006/magit-amend-all-and-push ()
-  	"Stage all unstaged files, amend the last commit without editing, and force push with lease."
-  	(interactive)
-  	(magit-stage-modified)
-  	(magit-run-git "commit" "--amend" "--no-edit")
-  	(magit-run-git "push" "--force-with-lease")))
+(use-package magit
+  :bind
+  (:map ctl-x-map
+        ("g" . magit-status))
+  (:map smahm006/vc-map
+        ("f"  . magit-fetch)
+        ("F"  . magit-fetch-all)
+        ("p"  . magit-pull-branch)
+        ("P"  . magit-push-current)
+        ("b"  . magit-branch-or-checkout)
+        ("c"  . magit-commit)
+        ("a"  . smahm006/magit-amend-file-and-push)
+        ("A"  . smahm006/magit-amend-all-and-push)
+        ("d"  . magit-diff-unstaged)
+        ("la" . magit-log-all)
+        ("lc" . magit-log-current)
+        ("lf" . magit-log-buffer-file)
+        ("r"  . magit-rebase)
+        ("o"  . smahm006/open-on-github))
+  :preface
+  (defun smahm006/magit-amend-file-and-push ()
+    "Stage only the current file, amend the last commit without editing, and force push with lease."
+    (interactive)
+    (let ((file (buffer-file-name)))
+      (if file
+          (progn
+            (magit-run-git "add" file)
+            (magit-run-git "commit" "--amend" "--no-edit")
+            (magit-run-git "push" "--force-with-lease"))
+        (message "No file associated with this buffer!"))))
+  (defun smahm006/magit-amend-all-and-push ()
+    "Stage all unstaged files, amend the last commit without editing, and force push with lease."
+    (interactive)
+    (magit-stage-modified)
+    (magit-run-git "commit" "--amend" "--no-edit")
+    (magit-run-git "push" "--force-with-lease"))
+  (defun smahm006/open-on-github ()
+    "Open the current file in GitHub."
+    (interactive)
+    (let* ((base-dir (vc-root-dir)) ; Get the Git root directory
+           (repo-url (magit-git-string "remote" "get-url" "--push" "origin")) ; Get remote origin URL
+           (branch-name (magit-git-string "rev-parse" "--abbrev-ref" "HEAD")) ; Get branch name
+           ;; Get start and end line numbers
+           (start-line (if (use-region-p)
+                           (line-number-at-pos (region-beginning))
+                         (line-number-at-pos)))
+           (end-line (if (use-region-p) (line-number-at-pos (region-end))))
+           ;; Calculate relative path
+           (relative-path (if base-dir
+                              (file-relative-name buffer-file-name base-dir)
+                            (error "Could not determine project root")))
+           ;; Convert SSH repo URL to HTTPS
+           (https-repo-url (if (string-prefix-p "git@" repo-url)
+                               (concat "https://"
+                                       (replace-regexp-in-string
+                                        ":" "/" (substring repo-url 4)))
+                             repo-url))
+           ;; Construct the final URL
+           (github-url (concat
+                        (substring https-repo-url 0 -4) ; Remove `.git` suffix
+                        "/blob/"
+                        branch-name
+                        "/"
+                        relative-path
+                        "#L" (number-to-string start-line)
+                        (if (and (use-region-p) (< 0 (- end-line start-line)))
+                            (concat "..L" (number-to-string end-line)))))) ; Final URL
+      (unless repo-url
+        (error "No remote repository found"))
+      (browse-url github-url))))
 #+end_src
 *** [[https://github.com/alphapapa/magit-todos.git][magit-todos]]
 Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
@@ -2139,210 +2174,210 @@ Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
 *** [[https://github.com/dgutov/diff-hl.git][diff-hl]]
 Emacs package for highlighting uncommitted changes.
 #+begin_src emacs-lisp
-  (use-package diff-hl
-    :hook
-    ((find-file    . diff-hl-mode)
-     (vc-dir-mode  . diff-hl-dir-mode)
-     (dired-mode   . diff-hl-dired-mode)
-     (diff-hl-mode . diff-hl-flydiff-mode)
-     (magit-pre-refresh . diff-hl-magit-pre-refresh)
-     (magit-post-refresh . diff-hl-magit-post-refresh))
-    :bind
-    (:map smahm006/vc-map
-          ("g" . diff-hl-show-hunk)
-          :repeat-map diff-hl-show-hunk-map
-          ("n" . diff-hl-show-hunk-next)
-          ("p" . diff-hl-show-hunk-previous)
-          ("r" . diff-hl-revert-hunk)
-          ("S" . diff-hl-stage-current-hunk)
-          :exit
-          ("C" . magit-commit-create))
-    :custom
-    ;; A slightly faster algorithm for diffing.
-    (vc-git-diff-switches '("--histogram"))
-    ;; Slightly more conservative delay before updating the diff
-    (diff-hl-flydiff-delay 0.5)  ; default: 0.3
-    ;; UX: get realtime feedback in diffs after staging/unstaging hunks.
-    (diff-hl-show-staged-changes nil)
-    :preface
-    (defun smahm006/diff-hl-inline-popup-show-adv (orig-func &rest args)
-      (setcar (nthcdr 2 args) "")
-      (apply orig-func args))
-    (defun smahm006/diff-hl-fix-face-colors (&rest _)
-      "Set foreground to background color for diff-hl faces"
-      (seq-do (lambda (face)
-                (if-let ((color (face-background face)))
-                    (progn (set-face-foreground face color)
-                           (set-face-background face nil))))
-              '(diff-hl-insert
-                diff-hl-delete
-                diff-hl-change)))
-    :config
-    (advice-add #'diff-hl-inline-popup-show :around #'smahm006/diff-hl-inline-popup-show-adv)
-    ;; UI: minimal fringe indicators
-    ;; https://github.com/dgutov/diff-hl/issues/116#issuecomment-1573253134
-    (let* ((width 2)
-           (bitmap (vector (1- (expt 2 width)))))
-      (define-fringe-bitmap 'smahm006/diff-hl-bitmap bitmap 1 width '(top t)))
-    (setq diff-hl-fringe-bmp-function (lambda (type pos) 'smahm006/diff-hl-bitmap))
-    (smahm006/diff-hl-fix-face-colors)
-    (advice-add #'enable-theme :after #'smahm006/diff-hl-fix-face-colors)
-    (when (not (display-graphic-p))
-      (diff-hl-margin-mode)))
+(use-package diff-hl
+  :hook
+  ((find-file    . diff-hl-mode)
+   (vc-dir-mode  . diff-hl-dir-mode)
+   (dired-mode   . diff-hl-dired-mode)
+   (diff-hl-mode . diff-hl-flydiff-mode)
+   (magit-pre-refresh . diff-hl-magit-pre-refresh)
+   (magit-post-refresh . diff-hl-magit-post-refresh))
+  :bind
+  (:map smahm006/vc-map
+        ("g" . diff-hl-show-hunk)
+        :repeat-map diff-hl-show-hunk-map
+        ("n" . diff-hl-show-hunk-next)
+        ("p" . diff-hl-show-hunk-previous)
+        ("r" . diff-hl-revert-hunk)
+        ("S" . diff-hl-stage-current-hunk)
+        :exit
+        ("C" . magit-commit-create))
+  :custom
+  ;; A slightly faster algorithm for diffing.
+  (vc-git-diff-switches '("--histogram"))
+  ;; Slightly more conservative delay before updating the diff
+  (diff-hl-flydiff-delay 0.5)  ; default: 0.3
+  ;; UX: get realtime feedback in diffs after staging/unstaging hunks.
+  (diff-hl-show-staged-changes nil)
+  :preface
+  (defun smahm006/diff-hl-inline-popup-show-adv (orig-func &rest args)
+    (setcar (nthcdr 2 args) "")
+    (apply orig-func args))
+  (defun smahm006/diff-hl-fix-face-colors (&rest _)
+    "Set foreground to background color for diff-hl faces"
+    (seq-do (lambda (face)
+              (if-let ((color (face-background face)))
+                  (progn (set-face-foreground face color)
+                         (set-face-background face nil))))
+            '(diff-hl-insert
+              diff-hl-delete
+              diff-hl-change)))
+  :config
+  (advice-add #'diff-hl-inline-popup-show :around #'smahm006/diff-hl-inline-popup-show-adv)
+  ;; UI: minimal fringe indicators
+  ;; https://github.com/dgutov/diff-hl/issues/116#issuecomment-1573253134
+  (let* ((width 2)
+         (bitmap (vector (1- (expt 2 width)))))
+    (define-fringe-bitmap 'smahm006/diff-hl-bitmap bitmap 1 width '(top t)))
+  (setq diff-hl-fringe-bmp-function (lambda (type pos) 'smahm006/diff-hl-bitmap))
+  (smahm006/diff-hl-fix-face-colors)
+  (advice-add #'enable-theme :after #'smahm006/diff-hl-fix-face-colors)
+  (when (not (display-graphic-p))
+    (diff-hl-margin-mode)))
 #+end_src
 *** [[https://codeberg.org/pidu/git-timemachine.git][git-timemachine]]
 Step through historic versions of git controlled file
 #+begin_src emacs-lisp
-  (use-package git-timemachine
-    :bind
-    (:map smahm006/vc-map
-          ("t" . git-timemachine)))
+(use-package git-timemachine
+  :bind
+  (:map smahm006/vc-map
+        ("t" . git-timemachine)))
 #+end_src
 *** ediff
 The ediff package is utilized to handle file differences in emacs.
 #+begin_src emacs-lisp
-  (use-package ediff
-    :ensure nil
-    :hook
-    ((ediff-before-setup . smahm006/store-pre-ediff-winconfig)
-     (ediff-quit . smahm006/restore-pre-ediff-winconfig))
-    :preface
-    (defvar smahm006-ediff-original-windows nil)
-    (defun smahm006/store-pre-ediff-winconfig ()
-      "This function stores the current window configuration before opening ediff."
-      (setq smahm006/ediff-original-windows (current-window-configuration)))
-    (defun smahm006/restore-pre-ediff-winconfig ()
-      "This function resets the original window arrangement."
-      (set-window-configuration smahm006/ediff-original-windows))
-    :custom
-    (ediff-window-setup-function 'ediff-setup-windows-plain)
-    (ediff-split-window-function 'split-window-horizontally))
+(use-package ediff
+  :ensure nil
+  :hook
+  ((ediff-before-setup . smahm006/store-pre-ediff-winconfig)
+   (ediff-quit . smahm006/restore-pre-ediff-winconfig))
+  :preface
+  (defvar smahm006-ediff-original-windows nil)
+  (defun smahm006/store-pre-ediff-winconfig ()
+    "This function stores the current window configuration before opening ediff."
+    (setq smahm006/ediff-original-windows (current-window-configuration)))
+  (defun smahm006/restore-pre-ediff-winconfig ()
+    "This function resets the original window arrangement."
+    (set-window-configuration smahm006/ediff-original-windows))
+  :custom
+  (ediff-window-setup-function 'ediff-setup-windows-plain)
+  (ediff-split-window-function 'split-window-horizontally))
 #+end_src
 ** Language Server Protocol
 *** [[https://github.com/emacs-straight/eglot.git][eglot]]
 A client for Language Server Protocol servers.
 #+begin_src emacs-lisp
-    (use-package eglot
-      :ensure nil
-      :after project
-      :hook
-      ((eglot-managed-mode . smahm006/eglot-capf))
-      :bind
-      (:map smahm006/lsp-map
-            ("l" . eglot)
-            ("f" . eglot-format-buffer)
-            ("R" . eglot-reconnect)
-            ("f" . eglot-find-declaration)
-            ("i" . eglot-find-implementation)
-            ("k" . eglot-shutdown)
-            ("o" . eglot-code-action-organize-imports)
-            ("q" . eglot-code-action-quickfix)
-            ("r" . eglot-rename))
-      :preface
-      (defun smahm006/eglot-capf ()
-        (setq-local completion-at-point-functions
-                    (cons (cape-capf-super
-                           #'eglot-completion-at-point
-                           #'tempel-complete)
-                          completion-at-point-functions)))
-      :custom
-      ;; Filter list of all possible completions with Orderless
-      ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
-      (completion-category-defaults nil)
-      (eglot-autoshutdown t)
-      (eglot-send-changes-idle-time 3)
-      (flymake-no-changes-timeout 5)
-      :config
-      ;; Continuously update the candidates using cape cache buster
-      (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
-      ;; Don't log every event
-      (fset #'jsonrpc--log-event #'ignore))
+(use-package eglot
+  :ensure nil
+  :after project
+  :hook
+  ((eglot-managed-mode . smahm006/eglot-capf))
+  :bind
+  (:map smahm006/lsp-map
+        ("l" . eglot)
+        ("f" . eglot-format-buffer)
+        ("R" . eglot-reconnect)
+        ("f" . eglot-find-declaration)
+        ("i" . eglot-find-implementation)
+        ("k" . eglot-shutdown)
+        ("o" . eglot-code-action-organize-imports)
+        ("q" . eglot-code-action-quickfix)
+        ("r" . eglot-rename))
+  :preface
+  (defun smahm006/eglot-capf ()
+    (setq-local completion-at-point-functions
+                (cons (cape-capf-super
+                       #'eglot-completion-at-point
+                       #'tempel-complete)
+                      completion-at-point-functions)))
+  :custom
+  ;; Filter list of all possible completions with Orderless
+  ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
+  (completion-category-defaults nil)
+  (eglot-autoshutdown t)
+  (eglot-send-changes-idle-time 3)
+  (flymake-no-changes-timeout 5)
+  :config
+  ;; Continuously update the candidates using cape cache buster
+  (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
+  ;; Don't log every event
+  (fset #'jsonrpc--log-event #'ignore))
 #+end_src
 *** [[https://github.com/jdtsmith/eglot-booster.git][eglot-booster]]
 Boost eglot using [[https://github.com/blahgeek/emacs-lsp-booster][lsp-booster]].
 #+begin_src emacs-lisp
-  (use-package eglot-booster
-    :after eglot
-    :vc (:url "https://github.com/jdtsmith/eglot-booster" :branch "main")
-    :init (eglot-booster-mode))
+(use-package eglot-booster
+  :after eglot
+  :vc (:url "https://github.com/jdtsmith/eglot-booster" :branch "main")
+  :init (eglot-booster-mode))
 #+end_src
 *** [[https://github.com/renzmann/treesit-auto.git][treesit-auto]]
 Built-in tree-sitter integration for Emacs
 #+begin_src emacs-lisp
-  (use-package treesit-auto
-    :hook
-    (after-init . global-treesit-auto-mode)
-    :custom
-    (treesit-auto-install 'prompt))
+(use-package treesit-auto
+  :hook
+  (after-init . global-treesit-auto-mode)
+  :custom
+  (treesit-auto-install 'prompt))
 #+end_src
 *** [[https://github.com/emacs-tree-sitter/treesit-fold.git][treesit-fold]]
 Code-folding using tree-sitter
 #+begin_src emacs-lisp
-  (use-package treesit-fold
-    :vc (:url "https://github.com/emacs-tree-sitter/treesit-fold" :branch "master")
-    :hook
-    ((yaml-ts-mode) . treesit-fold-indicators-mode)
-    :bind
-    (:map treesit-fold-mode-map
-          ("C-<tab>" . treesit-fold-toggle))
-    :custom
-    ;; Reduce indicators priority to draw below other fringe indicators like diff-hl.
-    (treesit-fold-indicators-priority -1))
+(use-package treesit-fold
+  :vc (:url "https://github.com/emacs-tree-sitter/treesit-fold" :branch "master")
+  :hook
+  ((yaml-ts-mode) . treesit-fold-indicators-mode)
+  :bind
+  (:map treesit-fold-mode-map
+        ("C-<tab>" . treesit-fold-toggle))
+  :custom
+  ;; Reduce indicators priority to draw below other fringe indicators like diff-hl.
+  (treesit-fold-indicators-priority -1))
 #+end_src
 ** Code Feedback & Hints
 *** [[https://github.com/emacs-straight/eldoc.git][eldoc]]
 Configure emacs documentation support.
 #+begin_src emacs-lisp
-  (use-package eldoc
-    :ensure nil
-    :custom
-    (eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
-    :bind
-    (:map smahm006/lsp-map
-          ("d" . eldoc-doc-buffer))
-    :config
-    (eldoc-add-command-completions "paredit-")
-    (with-eval-after-load 'combobulate
-      (eldoc-add-command-completions "combobulate-")))
+(use-package eldoc
+  :ensure nil
+  :custom
+  (eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
+  :bind
+  (:map smahm006/lsp-map
+        ("d" . eldoc-doc-buffer))
+  :config
+  (eldoc-add-command-completions "paredit-")
+  (with-eval-after-load 'combobulate
+    (eldoc-add-command-completions "combobulate-")))
 #+end_src
 *** [[https://github.com/casouri/eldoc-box.git][eldoc-box]]
 Childframe doc for eglot and anything that uses eldoc.
 #+begin_src emacs-lisp
-  (use-package eldoc-box
-    :after eglot
-    :bind
-    (:map smahm006/lsp-map
-          ("D" . eldoc-box-hover-at-point-mode))
-    :config
-    (with-eval-after-load 'pixel-scroll
-      (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-precision)
-      (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-start-momentum)))
+(use-package eldoc-box
+  :after eglot
+  :bind
+  (:map smahm006/lsp-map
+        ("D" . eldoc-box-hover-at-point-mode))
+  :config
+  (with-eval-after-load 'pixel-scroll
+    (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-precision)
+    (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-start-momentum)))
 #+end_src
 *** [[https://github.com/emacs-straight/flymake.git][flymake]]
 Universal on-the-fly syntax checker for Emacs.
 #+begin_src emacs-lisp
-  (use-package flymake
-    :ensure nil
-    :after project
-    :custom
-    ;; Let git gutter have left fringe, flymake can have right fringe
-    (flymake-fringe-indicator-position 'right-fringe))
-    #+end_src
+(use-package flymake
+  :ensure nil
+  :after project
+  :custom
+  ;; Let git gutter have left fringe, flymake can have right fringe
+  (flymake-fringe-indicator-position 'right-fringe))
+#+end_src
 ** Virtualization
 *** tramp-continer
-  (use-package tramp-container
-    :ensure nil
-    :after docker)
+(use-package tramp-container
+:ensure nil
+:after docker)
 *** [[https://github.com/Silex/docker.el][docker]]
 #+begin_src emacs-lisp
 (use-package docker
   :bind
   (:map smahm006/container-map
-		("d c" . docker-containers)
-		("d i" . docker-images)
-		("d u" . docker-compose-up)
-		("d d" . docker-compose-down)
-		("d b" . docker-compose-build)))
+        ("d c" . docker-containers)
+        ("d i" . docker-images)
+        ("d u" . docker-compose-up)
+        ("d d" . docker-compose-down)
+        ("d b" . docker-compose-build)))
 #+end_src
 *** [[https://github.com/spotify/dockerfile-mode.git][dockerfile-mode]]
 An emacs mode for handling Dockerfiles.
@@ -2358,11 +2393,11 @@ An emacs mode for handling Dockerfiles.
 (use-package vagrant
   :bind
   (:map smahm006/container-map
-		("v s" . vagrant-status)
-		("v u" . vagrant-up)
-		("v d" . vagrant-halt)
-		("v k" . vagrant-destroy)
-		("v p" . vagrant-provision)))
+        ("v s" . vagrant-status)
+        ("v u" . vagrant-up)
+        ("v d" . vagrant-halt)
+        ("v k" . vagrant-destroy)
+        ("v p" . vagrant-provision)))
 #+end_src
 *** [[https://github.com/dougm/vagrant-tramp][vagrant-tramp]]
 #+begin_src emacs-lisp
@@ -2372,32 +2407,32 @@ An emacs mode for handling Dockerfiles.
 *** [[https://github.com/minad/tempel.git][tempel]]
 Enable snippets for with completions
 #+begin_src emacs-lisp
-  (use-package tempel
-    :hook
-    (conf-mode . smahm006/tempel-setup-capf)
-    (prog-mode . smahm006/tempel-setup-capf)
-    (text-mode . smahm006/tempel-setup-capf)
-    :bind (("M-+" . tempel-expand)
-           ("M-*" . tempel-insert)
-           (:map tempel-map (("C-n" . tempel-next)
-                             ("C-p" . tempel-previous))))
-    :preface
-    ;; Setup completion at point
-    (defun smahm006/tempel-setup-capf ()
-      ;; Add the Tempel Capf to `completion-at-point-functions'.
-      (setq-local completion-at-point-functions
-                  (cons #'tempel-complete
-                        completion-at-point-functions)))
-    :custom
-    (tempel-path (format "%s/snippets/*.eld" user-emacs-directory)))
+(use-package tempel
+  :hook
+  (conf-mode . smahm006/tempel-setup-capf)
+  (prog-mode . smahm006/tempel-setup-capf)
+  (text-mode . smahm006/tempel-setup-capf)
+  :bind (("M-+" . tempel-expand)
+         ("M-*" . tempel-insert)
+         (:map tempel-map (("C-n" . tempel-next)
+                           ("C-p" . tempel-previous))))
+  :preface
+  ;; Setup completion at point
+  (defun smahm006/tempel-setup-capf ()
+    ;; Add the Tempel Capf to `completion-at-point-functions'.
+    (setq-local completion-at-point-functions
+                (cons #'tempel-complete
+                      completion-at-point-functions)))
+  :custom
+  (tempel-path (format "%s/snippets/*.eld" user-emacs-directory)))
 #+end_src
 *** global snippets
 #+begin_src emacs-lisp :tangle snippets/fundamental.eld :mkdirp yes
-  fundamental-mode
-  (today (format-time-string "%Y-%m-%d"))
-  (NOW (format-time-string "%Y-%m-%d %a %H:%M"))
-  (yesterday (format-time-string "%Y-%m-%d" (time-subtract nil (* 24 60 60))))
-  (tomorrow (format-time-string "%Y-%m-%d" (time-add nil (* 24 60 60))))
+fundamental-mode
+(today (format-time-string "%Y-%m-%d"))
+(NOW (format-time-string "%Y-%m-%d %a %H:%M"))
+(yesterday (format-time-string "%Y-%m-%d" (time-subtract nil (* 24 60 60))))
+(tomorrow (format-time-string "%Y-%m-%d" (time-add nil (* 24 60 60))))
 #+end_src
 *** org snippets
 #+begin_src emacs-lisp :tangle snippets/org.eld :mkdirp yes
@@ -2434,16 +2469,16 @@ org-mode
   :mode (("\\.json\\'"  . json-ts-mode))
   :hook
   (json-ts-mode . (lambda ()
-  		      (define-key smahm006/run-map (kbd "f") #'smahm006/json-format)))
+                    (define-key smahm006/run-map (kbd "f") #'smahm006/json-format)))
   :preface
   (defun smahm006/json-format ()
-	"Format the current buffer as JSON using jq if available, else python -m json.tool."
-	(interactive)
-	(let* ((jq-exists (executable-find "jq"))
+    "Format the current buffer as JSON using jq if available, else python -m json.tool."
+    (interactive)
+    (let* ((jq-exists (executable-find "jq"))
            (cmd (if jq-exists
-					(format "out=$(jq . < %s) && echo \"$out\" > %s"
-							(shell-quote-argument buffer-file-name)
-							(shell-quote-argument buffer-file-name))
+                    (format "out=$(jq . < %s) && echo \"$out\" > %s"
+                            (shell-quote-argument buffer-file-name)
+                            (shell-quote-argument buffer-file-name))
                   (format "out=$(python -m json.tool %s) && echo \"$out\" > %s"
                           (shell-quote-argument buffer-file-name)
                           (shell-quote-argument buffer-file-name))))
@@ -2468,14 +2503,14 @@ org-mode
   :hook
   (yaml-ts-mode . (lambda ()
                     (define-key smahm006/run-map (kbd "c") #'smahm006/yaml-check)
-  		    (define-key smahm006/run-map (kbd "f") #'smahm006/yaml-format)))
+                    (define-key smahm006/run-map (kbd "f") #'smahm006/yaml-format)))
   :preface
   (defun smahm006/yaml-format ()
-  	"Format buffer using yamlfmt"
-  	(interactive)
-  	(let ((output (shell-command-to-string (format "yamlfmt -quiet %s" (shell-quote-argument buffer-file-name)))))
-  	  (message "%s" (string-trim output)))
-  	(smahm006/revert-buffer-no-confirm))
+    "Format buffer using yamlfmt"
+    (interactive)
+    (let ((output (shell-command-to-string (format "yamlfmt -quiet %s" (shell-quote-argument buffer-file-name)))))
+      (message "%s" (string-trim output)))
+    (smahm006/revert-buffer-no-confirm))
   (defun smahm006/yaml-check ()
     "Compile current buffer file with yaml."
     (interactive)
@@ -2483,13 +2518,13 @@ org-mode
   :config
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
-    			 '(yaml-ts-mode . ("yaml-language-server" "--stdio")))))
+                 '(yaml-ts-mode . ("yaml-language-server" "--stdio")))))
 #+end_src
 **** [[https://github.com/zkry/yaml-pro][yaml-pro]]
 #+begin_src emacs-lisp
-  (use-package yaml-pro
-    :hook
-    (yaml-ts-mode . yaml-pro-ts-mode))
+(use-package yaml-pro
+  :hook
+  (yaml-ts-mode . yaml-pro-ts-mode))
 #+end_src
 ** Scripting
 *** Bash
@@ -2503,9 +2538,9 @@ org-mode
   (bash-ts-mode . eglot-ensure)
   :hook
   (bash-ts-mode . (lambda ()
-    			(define-key smahm006/run-map (kbd "r") #'smahm006/bash-run)
-    			(define-key smahm006/run-map (kbd "c") #'smahm006/bash-check)
-  			(define-key smahm006/run-map (kbd "f") #'smahm006/bash-format)))
+                    (define-key smahm006/run-map (kbd "r") #'smahm006/bash-run)
+                    (define-key smahm006/run-map (kbd "c") #'smahm006/bash-check)
+                    (define-key smahm006/run-map (kbd "f") #'smahm006/bash-format)))
   :preface
   (defun smahm006/bash-run ()
     "Compile current buffer file with sh."
@@ -2514,19 +2549,18 @@ org-mode
   (defun smahm006/bash-format ()
     "Format current buffer with shfmt."
     (interactive)
-	(let ((output (shell-command-to-string
-				   (format "shfmt -w %s" (shell-quote-argument buffer-file-name)))))
-	  (message "%s" (string-trim output)))
-	(smahm006/revert-buffer-no-confirm))
+    (let ((output (shell-command-to-string
+                   (format "shfmt -w %s" (shell-quote-argument buffer-file-name)))))
+      (message "%s" (string-trim output)))
+    (smahm006/revert-buffer-no-confirm))
   (defun smahm006/bash-check ()
     "Compile current buffer file with sh."
     (interactive)
     (compile (format "shellcheck %s" buffer-file-name)))
   (with-eval-after-load 'eglot
-    	(add-to-list 'eglot-server-programs
-    				 '(bash-ts-mode . ("bash-language-server" "start")))))
+    (add-to-list 'eglot-server-programs
+                 '(bash-ts-mode . ("bash-language-server" "start")))))
 #+end_src
-
 **** bash snippets
 #+begin_src lisp-data :tangle snippets/bash.eld :mkdirp yes
 sh-mode sh-ts-mode bash-ts-mode
@@ -2542,173 +2576,173 @@ sh-mode sh-ts-mode bash-ts-mode
 *** Python
 **** pyhton-ts
 #+begin_src emacs-lisp
-  (use-package python
-    :ensure nil
-    :mode (("\\.py\\'" . python-ts-mode))
-    :hook
-    (python-ts-mode . eglot-ensure)
-    :hook
-    (python-ts-mode . (lambda ()
-  			(define-key smahm006/run-map (kbd "v") #'smahm006/pyrightconfig-write)
-    			(define-key smahm006/run-map (kbd "V") #'smahm006/python-venv-setup)
-    			(define-key smahm006/run-map (kbd "r") #'smahm006/python-run)
-    			(define-key smahm006/run-map (kbd "c") #'smahm006/python-check)
-  			(define-key smahm006/run-map (kbd "f") #'smahm006/python-format)))
-    :preface
-    (defun smahm006/pyrightconfig-write (virtualenv)
-    	"Write a `pyrightconfig.json' file at the Git root of a project
+(use-package python
+  :ensure nil
+  :mode (("\\.py\\'" . python-ts-mode))
+  :hook
+  (python-ts-mode . eglot-ensure)
+  :hook
+  (python-ts-mode . (lambda ()
+                      (define-key smahm006/run-map (kbd "v") #'smahm006/pyrightconfig-write)
+                      (define-key smahm006/run-map (kbd "V") #'smahm006/python-venv-setup)
+                      (define-key smahm006/run-map (kbd "r") #'smahm006/python-run)
+                      (define-key smahm006/run-map (kbd "c") #'smahm006/python-check)
+                      (define-key smahm006/run-map (kbd "f") #'smahm006/python-format)))
+  :preface
+  (defun smahm006/pyrightconfig-write (virtualenv)
+    "Write a `pyrightconfig.json' file at the Git root of a project
          with `venvPath' and `venv' set to the absolute path of
          `virtualenv'. When run interactively, prompts for a directory."
-    	(interactive "DEnv: ")
-    	(let* ((venv-dir (if (featurep 'tramp)
-  						 (tramp-file-local-name (file-truename virtualenv))
-                         (file-truename virtualenv)))
-  		   (venv-file-name (directory-file-name venv-dir))
-  		   (venvPath (file-name-directory venv-file-name))
-  		   (venv (file-name-base venv-file-name))
-  		   (base-dir (vc-git-root default-directory))
-  		   (out-file (expand-file-name "pyrightconfig.json" base-dir))
-  		   (out-contents (json-encode (list :venvPath venvPath :venv venv))))
-  	  (with-temp-file out-file (insert out-contents))
-  	  (message "Configured `%s` to use environment `%s`" out-file venv-dir)))
-    (defun smahm006/python-venv-setup ()
-      "Install .pyvenv virtual environment at the root of the project.
+    (interactive "DEnv: ")
+    (let* ((venv-dir (if (featurep 'tramp)
+                         (tramp-file-local-name (file-truename virtualenv))
+                       (file-truename virtualenv)))
+           (venv-file-name (directory-file-name venv-dir))
+           (venvPath (file-name-directory venv-file-name))
+           (venv (file-name-base venv-file-name))
+           (base-dir (vc-git-root default-directory))
+           (out-file (expand-file-name "pyrightconfig.json" base-dir))
+           (out-contents (json-encode (list :venvPath venvPath :venv venv))))
+      (with-temp-file out-file (insert out-contents))
+      (message "Configured `%s` to use environment `%s`" out-file venv-dir)))
+  (defun smahm006/python-venv-setup ()
+    "Install .pyvenv virtual environment at the root of the project.
          Additionally installed libraries from requirements.txt if it exists."
-      (interactive)
-      (let* ((base-dir (vc-git-root default-directory)) (venv-dir (concat base-dir ".venv")))
-        (progn
-          (save-window-excursion
-            (shell-command (s-concat "python3 -m venv " venv-dir)pp)
-            (when (file-exists-p (concat base-dir "requirements.txt"))
-              (shell-command (s-concat "source " venv-dir "/bin/activate && pip3 install -r " base-dir "requirements.txt")))
-            (smahm006/pyrightconfig-write venv-dir)))
-        (message (concat "Created " venv-dir))))
-    (defun smahm006/python-run ()
-      "Compile current buffer file with python."
-      (interactive)
-      (compile (format "python3 %s" (shell-quote-argument buffer-file-name))))
-    (defun smahm006/python-format ()
-  	"Format buffer using ruff"
-  	(interactive)
-  	(let ((output (shell-command-to-string (format "ruff format %s" (shell-quote-argument buffer-file-name)))))
-  	  (message "%s" (string-trim output)))
-  	(smahm006/revert-buffer-no-confirm))
-    (defun smahm006/python-fix ()
-  	"Check for and fix any errors"
-  	(interactive)
-  	(let ((output (shell-command-to-string (format "ruff check --fix %s" (shell-quote-argument buffer-file-name)))))
-  	  (message "%s" (string-trim output)))
-  	(smahm006/revert-buffer-no-confirm))
-    (defun smahm006/python-check ()
-      "Compile current buffer file with python."
-      (interactive)
-      (compile (format "ruff check %s" (shell-quote-argument buffer-file-name))))
-    :config
-    (with-eval-after-load 'eglot
-    	(add-to-list 'eglot-server-programs
-    				 '(python-ts-mode . ("basedpyright-langserver" "--stdio")))))
+    (interactive)
+    (let* ((base-dir (vc-git-root default-directory)) (venv-dir (concat base-dir ".venv")))
+      (progn
+        (save-window-excursion
+          (shell-command (s-concat "python3 -m venv " venv-dir)pp)
+          (when (file-exists-p (concat base-dir "requirements.txt"))
+            (shell-command (s-concat "source " venv-dir "/bin/activate && pip3 install -r " base-dir "requirements.txt")))
+          (smahm006/pyrightconfig-write venv-dir)))
+      (message (concat "Created " venv-dir))))
+  (defun smahm006/python-run ()
+    "Compile current buffer file with python."
+    (interactive)
+    (compile (format "python3 %s" (shell-quote-argument buffer-file-name))))
+  (defun smahm006/python-format ()
+    "Format buffer using ruff"
+    (interactive)
+    (let ((output (shell-command-to-string (format "ruff format %s" (shell-quote-argument buffer-file-name)))))
+      (message "%s" (string-trim output)))
+    (smahm006/revert-buffer-no-confirm))
+  (defun smahm006/python-fix ()
+    "Check for and fix any errors"
+    (interactive)
+    (let ((output (shell-command-to-string (format "ruff check --fix %s" (shell-quote-argument buffer-file-name)))))
+      (message "%s" (string-trim output)))
+    (smahm006/revert-buffer-no-confirm))
+  (defun smahm006/python-check ()
+    "Compile current buffer file with python."
+    (interactive)
+    (compile (format "ruff check %s" (shell-quote-argument buffer-file-name))))
+  :config
+  (with-eval-after-load 'eglot
+    (add-to-list 'eglot-server-programs
+                 '(python-ts-mode . ("basedpyright-langserver" "--stdio")))))
 #+end_src
 **** [[https://github.com/eanopolsky/sphinx-doc.el.git][sphinx-doc]]
 Generate Sphinx friendly docstrings for Python functions in Emacs.
 #+begin_src emacs-lisp
-  (use-package sphinx-doc
-    :hook
-    (python-ts-mode . sphinx-doc-mode)
-    (python-ts-mode . (lambda ()
-                        (define-key smahm006/run-map (kbd "d") #'sphinx-doc))))
+(use-package sphinx-doc
+  :hook
+  (python-ts-mode . sphinx-doc-mode)
+  (python-ts-mode . (lambda ()
+                      (define-key smahm006/run-map (kbd "d") #'sphinx-doc))))
 #+end_src
 **** python snippets
 #+begin_src emacs-lisp :tangle snippets/python.eld :mkdirp yes
-  python-mode python-ts-mode python-base-mode
-  (__contains__ "def __contains__(self, el):" n> p n> "pass")
-  (__enter__ "def __enter__(self):" n> p n> "return self")
-  (__eq__ "def __eq__(self, other):" n> "return self." p " == other." q)
-  (__exit__ "def __exit__(self, type, value, traceback):" n> p n> "pass")
-  (__getitem__ "def __len__(self):" n> p n> "pass")
-  (__repr__ "def __repr__(self):" n> q)
-  (__iter__ "def __iter__(self):" n> "return " q)
-  (__new__ "def __new__(mcs, name, bases, dict):" n> p n> "return type.__new__(mcs, name, bases, dict)")
-  (__setitem__ "__all__ = [" n> p n> "]")
-  (__str__ "def __str__(self):" n> q)
-  (parse_args "def parse_arguments():" n> "parser = argparse.ArgumentParser(description='" p "')" n> p n> "return parser.parse_args()")
-  (arg "parser.add_argument('-" p "', '--" p "'," n> p ")")
-  (arg_positional "parser.add_argument('" p "', " p ")")
-  (assert "assert " q)
-  (class "class " p":" n> "def __init__(self" p "):" n> q)
-  (classmethod "@classmethod" n> "def " p "(cls, " p "):" n> q)
-  (static "@staticmethod" n> "def " p "(" p "):" n> q)
-  (def "def " p "(self" p "):" n> q)
-  (def_decorator "def " p "(func):" n> p n> "def _" p "(*args, **kwargs):" n> p n> "ret = func(*args, **kwargs)" n> p n> "return ret" n n> "return _" q)
-  (doc "\"\"\"" p "\"\"\"")
-  (for "for " p " in " p ":" n> q)
-  (function_docstring "def " p "(" p "):" n> "\"\"\"" p "\"\"\"" n> q)
-  (if "if " p ":" n> q)
-  (ife "if " p ":" n> p n> "else:" n> q)
-  (ifmain "if __name__ == '__main__':" n> q)
-  (ig "# type: ignore" q)
-  (imp "import " q)
-  (fimp "from " p " import " q)
-  (init "def __init__(self" p "):" n> q)
-  (lambda "lambda " p ": " q)
-  (list "[" p " for " p " in " p "]")
-  (logger_name "logger = logging.getLogger(__name__)")
-  (logging "logger = logging.getLogger(\"" p "\")" n> "logger.setLevel(logging." p ")")
-  (p "print(\"" p "\")")
-  (pf "print(f\"" p "\")")
-  (return "return " q)
-  (script "#!/usr/bin/env python" n n> "def main():" n> "pass" n n> "if __name__ == '__main__':" n> "main()")
-  (super "super(" p ", self)." p "(" p ")")
-  (test_class "class Test" p "(" p "):" n> q)
-  (test_file "import pytest" n> "from " p " import *" n> p n> "if __name__ == '__main__':" n> "unittest.main()")
-  (trace "import pdb; pdb.set_trace()")
-  (try "try:" n> p n> "except " p ":" n> q)
-  (tryelse "try:" n> p n> "except " p ":" n> p n> "else:" n> q)
-  (while "while " p ":" n> q)
-  (with "with " p p ":" n> q)
+python-mode python-ts-mode python-base-mode
+(__contains__ "def __contains__(self, el):" n> p n> "pass")
+(__enter__ "def __enter__(self):" n> p n> "return self")
+(__eq__ "def __eq__(self, other):" n> "return self." p " == other." q)
+(__exit__ "def __exit__(self, type, value, traceback):" n> p n> "pass")
+(__getitem__ "def __len__(self):" n> p n> "pass")
+(__repr__ "def __repr__(self):" n> q)
+(__iter__ "def __iter__(self):" n> "return " q)
+(__new__ "def __new__(mcs, name, bases, dict):" n> p n> "return type.__new__(mcs, name, bases, dict)")
+(__setitem__ "__all__ = [" n> p n> "]")
+(__str__ "def __str__(self):" n> q)
+(parse_args "def parse_arguments():" n> "parser = argparse.ArgumentParser(description='" p "')" n> p n> "return parser.parse_args()")
+(arg "parser.add_argument('-" p "', '--" p "'," n> p ")")
+(arg_positional "parser.add_argument('" p "', " p ")")
+(assert "assert " q)
+(class "class " p":" n> "def __init__(self" p "):" n> q)
+(classmethod "@classmethod" n> "def " p "(cls, " p "):" n> q)
+(static "@staticmethod" n> "def " p "(" p "):" n> q)
+(def "def " p "(self" p "):" n> q)
+(def_decorator "def " p "(func):" n> p n> "def _" p "(*args, **kwargs):" n> p n> "ret = func(*args, **kwargs)" n> p n> "return ret" n n> "return _" q)
+(doc "\"\"\"" p "\"\"\"")
+(for "for " p " in " p ":" n> q)
+(function_docstring "def " p "(" p "):" n> "\"\"\"" p "\"\"\"" n> q)
+(if "if " p ":" n> q)
+(ife "if " p ":" n> p n> "else:" n> q)
+(ifmain "if __name__ == '__main__':" n> q)
+(ig "# type: ignore" q)
+(imp "import " q)
+(fimp "from " p " import " q)
+(init "def __init__(self" p "):" n> q)
+(lambda "lambda " p ": " q)
+(list "[" p " for " p " in " p "]")
+(logger_name "logger = logging.getLogger(__name__)")
+(logging "logger = logging.getLogger(\"" p "\")" n> "logger.setLevel(logging." p ")")
+(p "print(\"" p "\")")
+(pf "print(f\"" p "\")")
+(return "return " q)
+(script "#!/usr/bin/env python" n n> "def main():" n> "pass" n n> "if __name__ == '__main__':" n> "main()")
+(super "super(" p ", self)." p "(" p ")")
+(test_class "class Test" p "(" p "):" n> q)
+(test_file "import pytest" n> "from " p " import *" n> p n> "if __name__ == '__main__':" n> "unittest.main()")
+(trace "import pdb; pdb.set_trace()")
+(try "try:" n> p n> "except " p ":" n> q)
+(tryelse "try:" n> p n> "except " p ":" n> p n> "else:" n> q)
+(while "while " p ":" n> q)
+(with "with " p p ":" n> q)
 #+end_src
 *** Go
 **** go-ts
 #+begin_src emacs-lisp
-  (use-package go
-    :ensure nil
-    :mode ("\\.go\\'" . go-ts-mode)
-    :hook
-    (go-ts-mode . eglot-ensure)
-    (go-ts-mode . (lambda ()
-      	  	      (define-key smahm006/run-map (kbd "r") #'smahm006/go-run)
-      		      (define-key smahm006/run-map (kbd "c") #'smahm006/go-check)
-    	              (define-key smahm006/run-map (kbd "f") #'smahm006/go-format)))
-    (go-ts-mode . (lambda ()
-    		      (setq-local eglot-workspace-configuration
-    		      '((:gopls .
-    				((staticcheck . t)
-    			         (matcher . "CaseSensitive")))))))
-    :preface
-    (defun smahm006/go-run ()
-      "Compile current buffer file with go."
-      (interactive)
-      (compile (format "go run %s" (shell-quote-argument buffer-file-name))))
-    (defun smahm006/go-format ()
-      "Format current buffer file with goimports."
-      (interactive)
-    	(let ((output (shell-command-to-string (format "goimports -w %s && gofumpt -w %s" (shell-quote-argument buffer-file-name) (shell-quote-argument buffer-file-name)))))
-    	  (message "%s" (string-trim output)))
-    	(smahm006/revert-buffer-no-confirm))
-    (defun smahm006/go-check ()
-      "Check current buffer file with goimports."
-      (interactive)
-      (compile (format "gofumpt -e %s" (shell-quote-argument buffer-file-name))))
-    :custom
-    (go-ts-mode-indent-offset 4))
+(use-package go
+  :ensure nil
+  :mode ("\\.go\\'" . go-ts-mode)
+  :hook
+  (go-ts-mode . eglot-ensure)
+  (go-ts-mode . (lambda ()
+                  (define-key smahm006/run-map (kbd "r") #'smahm006/go-run)
+                  (define-key smahm006/run-map (kbd "c") #'smahm006/go-check)
+                  (define-key smahm006/run-map (kbd "f") #'smahm006/go-format)))
+  (go-ts-mode . (lambda ()
+                  (setq-local eglot-workspace-configuration
+							  '((:gopls .
+										((staticcheck . t)
+										 (matcher . "CaseSensitive")))))))
+  :preface
+  (defun smahm006/go-run ()
+    "Compile current buffer file with go."
+    (interactive)
+    (compile (format "go run %s" (shell-quote-argument buffer-file-name))))
+  (defun smahm006/go-format ()
+    "Format current buffer file with goimports."
+    (interactive)
+    (let ((output (shell-command-to-string (format "goimports -w %s && gofumpt -w %s" (shell-quote-argument buffer-file-name) (shell-quote-argument buffer-file-name)))))
+      (message "%s" (string-trim output)))
+    (smahm006/revert-buffer-no-confirm))
+  (defun smahm006/go-check ()
+    "Check current buffer file with goimports."
+    (interactive)
+    (compile (format "gofumpt -e %s" (shell-quote-argument buffer-file-name))))
+  :custom
+  (go-ts-mode-indent-offset 4))
 #+end_src
 **** [[https://github.com/emacsorphanage/go-eldoc][go-eldoc]]
 #+begin_src emacs-lisp
-  (use-package go-eldoc
-    :hook
-    (go-ts-mode . go-eldoc-setup))
+(use-package go-eldoc
+  :hook
+  (go-ts-mode . go-eldoc-setup))
 #+end_src
 **** go snippets
-#+begin_src lisp-data :tangle snippets/go.eld :mkdirp yes
+#+begin_src emacs-lisp :tangle snippets/go.eld :mkdirp yes
 go-mode go-ts-mode
 (imp "import " q)
 (impn "import (" n> q n ")")
@@ -2748,22 +2782,22 @@ go-mode go-ts-mode
   :hook
   (c-ts-mode . eglot-ensure)
   (c-ts-mode . (lambda ()
-      	  	      (define-key smahm006/run-map (kbd "r") #'smahm006/c-run)
-      		      (define-key smahm006/run-map (kbd "c") #'smahm006/c-check)
-    	              (define-key smahm006/run-map (kbd "f") #'smahm006/c-format)))
+                 (define-key smahm006/run-map (kbd "r") #'smahm006/c-run)
+                 (define-key smahm006/run-map (kbd "c") #'smahm006/c-check)
+                 (define-key smahm006/run-map (kbd "f") #'smahm006/c-format)))
   :preface
   (defun smahm006/c-run ()
     "Compile current buffer file with c."
     (interactive)
     (compile (format "clang -Wall %s -o %s.out && %s.out"
-					 (shell-quote-argument buffer-file-name)
-					 (shell-quote-argument buffer-file-name)
-					 (shell-quote-argument buffer-file-name))))
+                     (shell-quote-argument buffer-file-name)
+                     (shell-quote-argument buffer-file-name)
+                     (shell-quote-argument buffer-file-name))))
   (defun smahm006/c-format ()
     "Format current buffer file with clang-format."
     (interactive)
     (let ((output (shell-command-to-string
-				   (format "clang-format -i %s" (shell-quote-argument buffer-file-name)))))
+                   (format "clang-format -i %s" (shell-quote-argument buffer-file-name)))))
       (message "%s" (string-trim output)))
     (smahm006/revert-buffer-no-confirm))
   (defun smahm006/c-check ()
@@ -2773,17 +2807,17 @@ go-mode go-ts-mode
   :config
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
-				 '(c-ts-mode . ("clangd"
-								"-j=8"
-								"--log=error"
-								"--malloc-trim"
-								"--background-index"
-								"--clang-tidy"
-								"--all-scopes-completion"
-								"--completion-style=detailed"
-								"--pch-storage=memory"
-								"--header-insertion=never"
-								"--header-insertion-decorators=0")))))
+                 '(c-ts-mode . ("clangd"
+                                "-j=8"
+                                "--log=error"
+                                "--malloc-trim"
+                                "--background-index"
+                                "--clang-tidy"
+                                "--all-scopes-completion"
+                                "--completion-style=detailed"
+                                "--pch-storage=memory"
+                                "--header-insertion=never"
+                                "--header-insertion-decorators=0")))))
 #+end_src
 *** C++
 #+begin_src emacs-lisp
@@ -2794,22 +2828,22 @@ go-mode go-ts-mode
   :hook
   (c++-ts-mode . eglot-ensure)
   (c++-ts-mode . (lambda ()
-      	  	       (define-key smahm006/run-map (kbd "r") #'smahm006/c++-run)
-      		       (define-key smahm006/run-map (kbd "c") #'smahm006/c++-check)
-    	               (define-key smahm006/run-map (kbd "f") #'smahm006/c++-format)))
+                   (define-key smahm006/run-map (kbd "r") #'smahm006/c++-run)
+                   (define-key smahm006/run-map (kbd "c") #'smahm006/c++-check)
+                   (define-key smahm006/run-map (kbd "f") #'smahm006/c++-format)))
   :preface
   (defun smahm006/c++-run ()
     "Compile current buffer file with c."
     (interactive)
     (compile (format "clang++ -Wall %s -o %s.out && %s.out"
-					 (shell-quote-argument buffer-file-name)
-					 (shell-quote-argument buffer-file-name)
-					 (shell-quote-argument buffer-file-name))))
+                     (shell-quote-argument buffer-file-name)
+                     (shell-quote-argument buffer-file-name)
+                     (shell-quote-argument buffer-file-name))))
   (defun smahm006/c++-format ()
     "Format current buffer file with clang-format."
     (interactive)
     (let ((output (shell-command-to-string
-				   (format "clang-format -i %s" (shell-quote-argument buffer-file-name)))))
+                   (format "clang-format -i %s" (shell-quote-argument buffer-file-name)))))
       (message "%s" (string-trim output)))
     (smahm006/revert-buffer-no-confirm))
   (defun smahm006/c++-check ()
@@ -2819,17 +2853,17 @@ go-mode go-ts-mode
   :config
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
-				 '(c++-ts-mode . ("clangd"
-								  "-j=8"
-								  "--log=error"
-								  "--malloc++-trim"
-								  "--background-index"
-								  "--clang-tidy"
-								  "--all-scopes-completion"
-								  "--completion-style=detailed"
-								  "--pch-storage=memory"
-								  "--header-insertion=never"
-								  "--header-insertion-decorators=0")))))
+                 '(c++-ts-mode . ("clangd"
+                                  "-j=8"
+                                  "--log=error"
+                                  "--malloc++-trim"
+                                  "--background-index"
+                                  "--clang-tidy"
+                                  "--all-scopes-completion"
+                                  "--completion-style=detailed"
+                                  "--pch-storage=memory"
+                                  "--header-insertion=never"
+                                  "--header-insertion-decorators=0")))))
 #+end_src
 *** Rust
 **** rust-ts
@@ -2840,9 +2874,9 @@ go-mode go-ts-mode
   :hook
   (rust-ts-mode . eglot-ensure)
   (rust-ts-mode . (lambda ()
-      	  	    (define-key smahm006/run-map (kbd "r") #'smahm006/rust-run)
-      		    (define-key smahm006/run-map (kbd "c") #'smahm006/rust-check)
-    	            (define-key smahm006/run-map (kbd "f") #'smahm006/rust-format)))
+                    (define-key smahm006/run-map (kbd "r") #'smahm006/rust-run)
+                    (define-key smahm006/run-map (kbd "c") #'smahm006/rust-check)
+                    (define-key smahm006/run-map (kbd "f") #'smahm006/rust-format)))
   :preface
   (defun smahm006/rust-run ()
     "Compile current buffer file with rust."
@@ -2851,8 +2885,8 @@ go-mode go-ts-mode
   (defun smahm006/rust-format ()
     "Format currenpt buffer file with rustimports."
     (interactive)
-	(let ((output (shell-command-to-string
-				   (format "rustfmt -q %s" (shell-quote-argument buffer-file-name)))))
+    (let ((output (shell-command-to-string
+                   (format "rustfmt -q %s" (shell-quote-argument buffer-file-name)))))
       (message "%s" (string-trim output)))
     (smahm006/revert-buffer-no-confirm))
   (defun smahm006/rust-check ()
@@ -2862,7 +2896,7 @@ go-mode go-ts-mode
   :config
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
-				 '(rust-ts-mode . ("rust-analyzer" :initializationOptions (:check (:command "clippy")))))))
+                 '(rust-ts-mode . ("rust-analyzer" :initializationOptions (:check (:command "clippy")))))))
 #+end_src
 **** [[https://github.com/ayrat555/cargo-mode][cargo-mode]]
 #+begin_src emacs-lisp
