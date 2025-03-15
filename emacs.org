@@ -1888,7 +1888,8 @@ Cape provides Completion At Point Extensions
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-keyword)
   (add-to-list 'completion-at-point-functions #'cape-history)
-  (add-to-list 'completion-at-point-functions #'cape-file))
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  :bind ("M-<tab>" . cape-prefix-map))
 #+end_src
 *** [[https://github.com/emacs-straight/corfu.git][corfu]]
 Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
@@ -1904,6 +1905,9 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
    (eat-mode . (lambda () (setq-local corfu-auto nil) (corfu-mode))))
   :bind
   (:map corfu-map
+		("SPC" . corfu-insert-separator)
+        ("TAB" . corfu-insert)
+        ([tab] . corfu-insert)
         ("<escape>"  . corfu-quit))
   :preface
   ;; Completing in the minibuffer
@@ -1919,15 +1923,18 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
   (corfu-cycle t)                     ; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                      ; Enable auto completion
   (corfu-quit-no-match t)             ; Quit auto complete if there is no match
+  (corfu-quit-at-boundary 'separator) ; Quit auto complete at completion boundary
   (corfu-auto-prefix 2)               ; Complete with less prefix keys
   (corfu-preview-current t)           ; Disable current candidate preview
   (corfu-preselect 'directory)        ; Preselect the fisrt canidate exept for directories select the prompt
   (completion-cycle-threshold 3)      ; TAB cycle if there are only few candidates
-  (tab-always-indent 'complete)       ; Enable indentation+completion using the TAB key.
+  (tab-always-indent t)               ; Enable indentation+completion using the TAB key.
+  (corfu-separator 32)                ; Use space as the default corfu separator
   ;; Hide commands in M-x which do not apply to the current mode.
   (read-extended-command-predicate
    #'command-completion-default-include-p)
   :config
+  (keymap-unset corfu-map "RET")
   ;; (define-key corfu-map [remap previous-line] nil)
   ;; (define-key corfu-map [remap next-line] nil)
   (require 'corfu-echo)
@@ -1940,7 +1947,7 @@ Better dynamic expansion
 #+begin_src emacs-lisp
 (use-package hippie-exp
   :bind
-  ([remap dabbrev-expand] . hippie-expand)
+  ("C-<tab>" . hippie-expand)
   :custom
   (hippie-expand-verbose t)
   (hippie-expand-dabbrev-skip-space t)
