@@ -67,6 +67,7 @@ This is the configuration for my personal GNU Emacs setup.
 - [[#user-languages][User Languages]]
   - [[#header-7][Header]]
   - [[#markup--configuration][Markup & Configuration]]
+  - [[#latex][Latex]]
   - [[#scripting][Scripting]]
   - [[#application-programming][Application Programming]]
   - [[#software-programming][Software Programming]]
@@ -483,6 +484,8 @@ I use a GPG key stored in a Yubikey for most of my authentication
   :ensure nil
   :init
   (epa-file-enable)
+  :custom
+  (epa-file-cache-passphrase-for-symmetric-encryption t)
   :config
   ;; Disable backup and autosave of .vcf and .gpg files
   ;; Alternatively, to protect only some files, like some .txt files, use a line like
@@ -627,7 +630,7 @@ Using the async package and the org-babel-tangle command, the code below will ex
       (smahm006/async-babel-tangle smahm006/config-file))))
 #+end_src
 ** Styling
-*** [[https://github.com/minad/org-modern][org-modern]]
+*** [[https://github.com/integral-dw/org-superstar-mode][org-superstar]]
 Modernize the look of org
 #+begin_src emacs-lisp
 (use-package org-superstar
@@ -636,13 +639,19 @@ Modernize the look of org
   :custom
   (org-ellipsis "…")
   (org-pretty-entities t)
+  (org-hide-leading-stars t)
+  (org-superstar-remove-leading-stars t)
   (org-hide-emphasis-markers t)
   (org-auto-align-tags nil)
   (org-tags-column 0)
   (org-agenda-tags-column 0)
   (org-catch-invisible-edits 'show-and-error)
   (org-special-ctrl-a/e t)
-  (org-insert-heading-respect-content t))
+  (org-insert-heading-respect-content t)
+  (org-superstar-item-bullet-alist
+   '((?* . ?•)
+     (?+ . ?•)
+     (?- . ?•))))
 #+end_src
 *** [[https://github.com/awth13/org-appear][org-appear]]
 Toggle visibility of hidden Org mode element parts upon entering and leaving an element.
@@ -2532,6 +2541,49 @@ org-mode
 (use-package yaml-pro
   :hook
   (yaml-ts-mode . yaml-pro-ts-mode))
+#+end_src
+** Latex
+*** [[https://github.com/emacs-straight/auctex.git][auctex]]
+Integrated environment for *TeX*
+#+begin_src emacs-lisp
+(use-package auctex
+  :hook
+  ((LaTeX-mode . LaTeX-preview-setup)
+   (LaTeX-mode . LaTeX-math-mode)
+   (LaTeX-mode . TeX-source-correlate-mode)
+   (LaTeX-mode . turn-on-reftex))
+  :custom
+  ;; Use PDF Tools for pdf output
+  (TeX-view-program-selection
+   '(((output-dvi has-no-display-manager)
+      "dvi2tty")
+     ((output-dvi style-pstricks)
+      "dvips and gv")
+     (output-dvi "xdvi")
+     (output-pdf "PDF Tools")
+     (output-html "xdg-open")))
+  (TeX-auto-save t)                          ; Enable auto-saving of TeX files
+  (TeX-parse-self t)                         ; Enable parsing of the current TeX file
+  (TeX-clean-confirm nil)                    ; Disable confirmation when cleaning
+  (TeX-clean-intermediate t)                 ; Clean intermediate files
+  (TeX-save-query nil)                       ; Disable query prompts when saving TeX files
+  (TeX-master nil)                           ; Ask for master document
+  (TeX-PDF-mode t)                           ; Enable PDF mode for TeX files
+  (TeX-source-correlate-start-server nil))   ; Don't start server for inverse search (is already running)
+#+end_src
+*** [[https://github.com/vedang/pdf-tools.git][pdf-tools]]
+Emacs support library for PDF files.
+#+begin_src emacs-lisp
+(use-package pdf-tools
+  :magic ("%PDF" . pdf-view-mode)
+  :functions (pdf-view-refresh-themed-buffer)
+  :custom
+  (pdf-view-use-scaling t)
+  :config
+  (pdf-tools-install :no-query)
+  :hook
+  ((pdf-view-mode . pdf-view-themed-minor-mode)
+   (pdf-view-mode . pdf-isearch-minor-mode)))
 #+end_src
 ** Scripting
 *** Bash
