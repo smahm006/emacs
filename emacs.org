@@ -111,7 +111,7 @@ This is the configuration for my personal GNU Emacs setup.
 ;; Profile emacs startup
 (add-hook 'after-init-hook
           (lambda ()
-            (message "🚀 Emacs loaded in %s with %d garbage collections."
+            (message " Emacs loaded in %s with %d garbage collections."
                      (format "%.2f seconds"
                              (float-time
                               (time-subtract after-init-time before-init-time)))
@@ -811,7 +811,7 @@ I switch themes quite often but usually I prefer high contrast dark themes.
 Spending most of our time on GNU Emacs, it is important to use a font that will
 make our reading easier.
 #+begin_src emacs-lisp
-(set-face-attribute 'default nil :font "JetBrainsMonoNerdFont 14")
+(set-face-attribute 'default nil :font "MapleMonoNormal 14")
 (set-fontset-font t 'latin "Noto Sans")
 #+end_src
 *** Icons
@@ -820,7 +820,7 @@ A library for Nerd Font icons. Required for many icons used in other packages
 #+begin_src emacs-lisp
 (use-package nerd-icons
   :custom
-  (nerd-icons-font-family "JetBrains Mono Nerd Font"))
+  (nerd-icons-font-family "HackNerdFont"))
 #+end_src
 **** [[https://github.com/rainstormstudio/nerd-icons-completion.git][nerd-icons-completion]]
 #+begin_src emacs-lisp
@@ -860,7 +860,7 @@ An extensible emacs startup screen showing you what’s most important.
   :init
   (dashboard-setup-startup-hook)
   :custom
-  (dashboard-banner-logo-title "بِسْمِ اللّٰہِ الرَّحْمٰنِ الرَّحِیْم")
+  (dashboard-banner-logo-title "Bismillah ar-Rahman ar-Raheem")
   (dashboard-startup-banner 2)
   (dashboard-center-content t)
   (dashboard-vertically-center-content t)
@@ -938,32 +938,12 @@ Fast, configurable indentation guide-bars for Emacs.
 *** [[https://github.com/emacsmirror/mood-line][mood-line]]
 A lightweight, drop-in replacement for the default Emacs mode line configuration.
 #+begin_src emacs-lisp
-(use-package mood-line
-  :hook (after-init . mood-line-mode)
+(use-package doom-modeline
+  :hook (after-init . doom-modeline-mode)
   :custom
-  (mood-line-glyph-alist mood-line-glyphs-fira-code)
-  (mode-line-position-column-line-format '(" +%l:%c"))
-  :config
-  (setq mood-line-format
-        (mood-line-defformat
-         :left
-         (((mood-line-segment-buffer-status) . " ")
-          ((mood-line-segment-major-mode) . " - ")
-          ((mood-line-segment-buffer-name) . " "))
-         :right
-         (((mood-line-segment-multiple-cursors) . " | ")
-          ((mood-line-segment-cursor-position) . " ")
-          ((mood-line-segment-vc) . " ")
-          ((mood-line-segment-checker) . " "))
-         :padding " ")))
-#+end_src
-*** [[https://github.com/tarsius/minions][minions]]
-Nest all major and minor modes in mode line
-#+begin_src emacs-lisp
-(use-package minions
-  :after mood-line
-  :hook
-  (mood-line-mode . minions-mode))
+  (doom-modeline-buffer-file-name-style 'file-name)
+  (doom-modeline-icon t)
+  (doom-modeline-major-mode-icon nil))
 #+end_src
 *** [[https://github.com/hlissner/emacs-hide-mode-line.git][hide-mode-line]]
 An Emacs plugin that hides (or masks) the current buffer's mode-line.
