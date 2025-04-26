@@ -1180,7 +1180,8 @@ Quickly switch windows in Emacs.
      nil "[ace-window]")
     (message "Use `ace-window' to display next command buffer..."))
   :custom
-  (aw-minibuffer-flag nil)
+  ;; Switch to minibuffer as well
+  (aw-minibuffer-flag t)
   ;; Make Emacs ask where to place a new buffer
   (display-buffer-base-action
    '((display-buffer-reuse-window
@@ -1892,12 +1893,6 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
    (minibuffer-setup . smahm006/corfu-enable-always-in-minibuffer)
    ;; Disable auto completion for termintal
    (eat-mode . (lambda () (setq-local corfu-auto nil) (corfu-mode))))
-  :bind
-  (:map corfu-map
-		("SPC" . corfu-insert-separator)
-        ("TAB" . corfu-insert)
-        ([tab] . corfu-insert)
-        ("<escape>"  . corfu-quit))
   :preface
   ;; Completing in the minibuffer
   (defun smahm006/corfu-enable-always-in-minibuffer ()
@@ -1909,23 +1904,16 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
                   corfu-popupinfo-delay nil)
       (corfu-mode 1)))
   :custom
-  (corfu-cycle t)                     ; Enable cycling for `corfu-next/previous'
-  (corfu-auto t)                      ; Enable auto completion
-  (corfu-quit-no-match t)             ; Quit auto complete if there is no match
-  (corfu-quit-at-boundary 'separator) ; Quit auto complete at completion boundary
-  (corfu-auto-prefix 2)               ; Complete with less prefix keys
-  (corfu-preview-current t)           ; Disable current candidate preview
-  (corfu-preselect 'directory)        ; Preselect the fisrt canidate exept for directories select the prompt
-  (completion-cycle-threshold 3)      ; TAB cycle if there are only few candidates
-  (tab-always-indent t)               ; Enable indentation+completion using the TAB key.
-  (corfu-separator 32)                ; Use space as the default corfu separator
-  ;; Hide commands in M-x which do not apply to the current mode.
-  (read-extended-command-predicate
-   #'command-completion-default-include-p)
+  (corfu-cycle t)
+  (corfu-auto t)
+  (corfu-auto-prefix 1)
+  (corfu-auto-delay 0)
+  (corfu-quit-no-match 'separator)
+  (corfu-preview-current t)
+  (corfu-on-exact-match nil)
   :config
-  (keymap-unset corfu-map "RET")
-  ;; (define-key corfu-map [remap previous-line] nil)
-  ;; (define-key corfu-map [remap next-line] nil)
+  (setq completion-cycle-threshold 3)
+  (setq tab-always-indent 'complete)
   (require 'corfu-echo)
   (require 'corfu-history)
   (require 'corfu-popupinfo)
